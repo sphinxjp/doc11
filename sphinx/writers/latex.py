@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-    sphinx.latexwriter
-    ~~~~~~~~~~~~~~~~~~
+    sphinx.writers.latex
+    ~~~~~~~~~~~~~~~~~~~~
 
     Custom docutils writer for LaTeX.
 
@@ -91,7 +91,7 @@ class LaTeXWriter(writers.Writer):
 class ExtBabel(Babel):
     def get_shorthandoff(self):
         shortlang = self.language.split('_')[0]
-        if shortlang in ('de', 'sl', 'pt', 'es', 'nl', 'pl'):
+        if shortlang in ('de', 'sl', 'pt', 'es', 'nl', 'pl', 'it'):
             return '\\shorthandoff{"}'
         return ''
 
