@@ -16,7 +16,7 @@ ALLSPHINXOPTS = -d _build/doctrees $(PAPEROPT_$(PAPER)) \
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
 	@echo "  html      to make standalone HTML files"
-	@echo "  web       to make files usable by Sphinx.web"
+	@echo "  pickle    to make pickle files"
 	@echo "  htmlhelp  to make HTML files and a HTML help project"
 	@echo "  latex     to make LaTeX files, you can set PAPER=a4 or PAPER=letter"
 	@echo "  changes   to make an overview over all changed/added/deprecated items"
@@ -31,13 +31,15 @@ html:
 	@echo
 	@echo "Build finished. The HTML pages are in _build/html."
 
+text:
+	mkdir -p _build/text _build/doctrees
+	$(SPHINXBUILD) -b text $(ALLSPHINXOPTS) _build/text
+	@echo
+	@echo "Build finished."
+
 pickle:
 	mkdir -p _build/pickle _build/doctrees
 	$(SPHINXBUILD) -b pickle $(ALLSPHINXOPTS) _build/pickle
-	@echo
-	@echo "Build finished; now you can run"
-	@echo "  python -m sphinx.web _build/pickle"
-	@echo "to start the server."
 
 htmlhelp:
 	mkdir -p _build/htmlhelp _build/doctrees

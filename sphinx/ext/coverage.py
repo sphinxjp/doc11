@@ -7,7 +7,7 @@
     Dzolonga for the Google Highly Open Participation contest.
 
     :copyright: 2008 by Josip Dzolonga, Georg Brandl.
-    :license: BSD.
+    :license: BSD, see LICENSE for details.
 """
 
 import re
@@ -16,7 +16,7 @@ import inspect
 import cPickle as pickle
 from os import path
 
-from sphinx.builder import Builder
+from sphinx.builders import Builder
 
 
 # utility

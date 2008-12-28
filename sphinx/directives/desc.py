@@ -4,7 +4,7 @@
     ~~~~~~~~~~~~~~~~~~~~~~
 
     :copyright: 2007-2008 by Georg Brandl.
-    :license: BSD.
+    :license: BSD, see LICENSE for details.
 """
 
 import re
@@ -137,7 +137,8 @@ def handle_doc_fields(node, env):
     for child in node.children:
         if not isinstance(child, nodes.field_list):
             continue
-        params = None
+        params = []
+        pfield = None
         param_nodes = {}
         param_types = {}
         new_list = nodes.field_list()
@@ -152,11 +153,8 @@ def handle_doc_fields(node, env):
                     children = fbody.children
                 if typdesc == '%param':
                     if not params:
+                        # add the field that later gets all the parameters
                         pfield = nodes.field()
-                        pfield += nodes.field_name('', _('Parameters'))
-                        pfield += nodes.field_body()
-                        params = nodes.bullet_list()
-                        pfield[1] += params
                         new_list += pfield
                     dlitem = nodes.list_item()
                     dlpar = nodes.paragraph()
@@ -165,7 +163,7 @@ def handle_doc_fields(node, env):
                     dlpar += children
                     param_nodes[obj] = dlpar
                     dlitem += dlpar
-                    params += dlitem
+                    params.append(dlitem)
                 elif typdesc == '%type':
                     typenodes = fbody.children
                     if _is_only_paragraph(fbody):
@@ -198,6 +196,17 @@ def handle_doc_fields(node, env):
                     typ = fnametext.capitalize()
                 fname[0] = nodes.Text(typ)
                 new_list += field
+        if params:
+            if len(params) == 1:
+                pfield += nodes.field_name('', _('Parameter'))
+                pfield += nodes.field_body()
+                pfield[1] += params[0][0]
+            else:
+                pfield += nodes.field_name('', _('Parameters'))
+                pfield += nodes.field_body()
+                pfield[1] += nodes.bullet_list()
+                pfield[1][0].extend(params)
+
         for param, type in param_types.iteritems():
             if param in param_nodes:
                 param_nodes[param][1:1] = type
@@ -209,8 +218,9 @@ def handle_doc_fields(node, env):
 py_sig_re = re.compile(
     r'''^ ([\w.]*\.)?            # class name(s)
           (\w+)  \s*             # thing name
-          (?: \((.*)\)           # optional arguments
-          (\s* -> \s* .*)? )? $  # optional return annotation
+          (?: \((.*)\)           # optional: arguments
+           (?:\s* -> \s* (.*))?  #           return annotation
+          )? $                   # and nothing more
           ''', re.VERBOSE)
 
 py_paramlist_re = re.compile(r'([\[\],])')  # split at '[', ']' and ','
@@ -228,9 +238,6 @@ def parse_py_signature(signode, sig, desctype, module, env):
     if m is None:
         raise ValueError
     classname, name, arglist, retann = m.groups()
-
-    if retann:
-        retann = u' \N{RIGHTWARDS ARROW} ' + retann.strip()[2:]
 
     if env.currclass:
         add_module = False
@@ -267,7 +274,7 @@ def parse_py_signature(signode, sig, desctype, module, env):
             # for callables, add an empty parameter list
             signode += addnodes.desc_parameterlist()
         if retann:
-            signode += addnodes.desc_type(retann, retann)
+            signode += addnodes.desc_returns(retann, retann)
         return fullname, classname
     signode += addnodes.desc_parameterlist()
 
@@ -290,7 +297,7 @@ def parse_py_signature(signode, sig, desctype, module, env):
     if len(stack) != 1:
         raise ValueError
     if retann:
-        signode += addnodes.desc_type(retann, retann)
+        signode += addnodes.desc_returns(retann, retann)
     return fullname, classname
 
 

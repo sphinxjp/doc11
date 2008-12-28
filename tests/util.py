@@ -4,7 +4,7 @@
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     :copyright: 2008 by Georg Brandl.
-    :license: BSD.
+    :license: BSD, see LICENSE for details.
 """
 
 import sys
@@ -19,7 +19,7 @@ except ImportError:
     # functools is new in 2.4
     wraps = lambda f: (lambda w: w)
 
-from sphinx import application, builder
+from sphinx import application
 
 from path import path
 

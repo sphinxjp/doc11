@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-    sphinx.ext
-    ~~~~~~~~~~
+    sphinx.writers
+    ~~~~~~~~~~~~~~
 
-    Contains Sphinx features not activated by default.
+    Custom docutils writers.
 
     :copyright: 2008 by Georg Brandl.
     :license: BSD, see LICENSE for details.

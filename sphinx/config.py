@@ -6,7 +6,7 @@
     Build configuration file handling.
 
     :copyright: 2008 by Georg Brandl.
-    :license: BSD license.
+    :license: BSD, see LICENSE for details license.
 """
 
 import os
@@ -65,11 +65,14 @@ class Config(object):
         html_sidebars = ({}, False),
         html_additional_pages = ({}, False),
         html_use_modindex = (True, False),
+        html_add_permalinks = (True, False),
         html_use_index = (True, False),
         html_split_index = (False, False),
         html_copy_source = (True, False),
+        html_show_sourcelink = (True, False),
         html_use_opensearch = ('', False),
         html_file_suffix = (None, False),
+        html_link_suffix = (None, False),
         html_show_sphinx = (True, False),
         html_context = ({}, False),
 
@@ -111,6 +114,12 @@ class Config(object):
 
     def init_values(self):
         config = self._raw_config
+        for valname, value in self.overrides.iteritems():
+            if '.' in valname:
+                realvalname, key = valname.split('.', 1)
+                config.setdefault(realvalname, {})[key] = value
+            else:
+                config[valname] = value
         config.update(self.overrides)
         for name in config:
             if name in self.values:

@@ -1,3 +1,71 @@
+Release 0.6 (in development)
+============================
+
+New features added
+------------------
+
+* Incompatible changes:
+
+  - The ``autodoc_skip_member`` event now also gets to decide
+    whether to skip members whose name starts with underscores.
+    Previously, these members were always automatically skipped.
+    Therefore, if you handle this event, add something like this
+    to your event handler to restore the old behavior::
+
+       if name.startswith('_'):
+           return True
+
+* Markup:
+
+  - Due to popular demand, added a ``:doc:`` role which directly
+    links to another document without the need of creating a
+    label to which a ``:ref:`` could link to.
+
+  - #4: Added a ``:download:`` role that marks a non-document file
+    for inclusion into the HTML output and links to it.
+
+  - The ``toctree`` directive now supports a ``:hidden:`` flag,
+    which will prevent links from being generated in place of
+    the directive -- this allows you to define your document
+    structure, but place the links yourself.
+
+  - #77: If a description environment with info field list only
+    contains one ``:param:`` entry, no bullet list is generated.
+
+* Configuration:
+
+  - The new ``html_add_permalinks`` config value can be used to
+    switch off the generated "paragraph sign" permalinks for each
+    heading and definition environment.
+
+  - The new ``html_show_sourcelink`` config value can be used to
+    switch off the links to the reST sources in the sidebar.
+
+  - The new ``html_link_suffix`` config value can be used to select
+    the suffix of generated links between HTML files.
+
+* New translations:
+  
+  - Italian by Sandro Dentella.
+
+* Extensions and API:
+
+  - Autodoc now handles inner classes and their methods.
+
+  - There is now a ``Sphinx.add_lexer()`` method to be able to use
+    custom Pygments lexers easily.
+
+* Other changes:
+
+  - Config overrides for single dict keys can now be given on the
+    command line.
+
+  - There is now a ``doctest_global_setup`` config value that can
+    be used to give setup code for all doctests in the documentation.
+
+  - Source links in HTML are now generated with ``rel="nofollow"``.
+
+
 Release 0.5.2 (in development)
 ==============================
 

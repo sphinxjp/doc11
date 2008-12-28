@@ -21,7 +21,7 @@
       without Internet access.
 
     :copyright: 2008 by Georg Brandl.
-    :license: BSD.
+    :license: BSD, see LICENSE for details.
 """
 
 import time
@@ -31,7 +31,7 @@ from os import path
 
 from docutils import nodes
 
-from sphinx.builder import INVENTORY_FILENAME
+from sphinx.builders.html import INVENTORY_FILENAME
 
 
 def fetch_inventory(app, uri, inv):
