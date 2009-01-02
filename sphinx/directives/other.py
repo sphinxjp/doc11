@@ -4,18 +4,17 @@
     ~~~~~~~~~~~~~~~~~~~~~~~
 
     :copyright: 2007-2008 by Georg Brandl.
-    :license: BSD.
+    :license: BSD, see LICENSE for details.
 """
 
 import re
-import posixpath
 
 from docutils import nodes
 from docutils.parsers.rst import directives
 
 from sphinx import addnodes
 from sphinx.locale import pairindextypes
-from sphinx.util import patfilter, ws_re, caption_ref_re
+from sphinx.util import patfilter, ws_re, caption_ref_re, docname_join
 from sphinx.util.compat import make_admonition
 
 
@@ -25,11 +24,9 @@ def toctree_directive(name, arguments, options, content, lineno,
                       content_offset, block_text, state, state_machine):
     env = state.document.settings.env
     suffix = env.config.source_suffix
-    dirname = posixpath.dirname(env.docname)
     glob = 'glob' in options
 
     ret = []
-    subnode = addnodes.toctree()
     includefiles = []
     includetitles = {}
     all_docnames = env.found_docs.copy()
@@ -50,14 +47,14 @@ def toctree_directive(name, arguments, options, content, lineno,
             if docname.endswith(suffix):
                 docname = docname[:-len(suffix)]
             # absolutize filenames
-            docname = posixpath.normpath(posixpath.join(dirname, docname))
+            docname = docname_join(env.docname, docname)
             if docname not in env.found_docs:
                 ret.append(state.document.reporter.warning(
                     'toctree references unknown document %r' % docname, line=lineno))
             else:
                 includefiles.append(docname)
         else:
-            patname = posixpath.normpath(posixpath.join(dirname, entry))
+            patname = docname_join(env.docname, entry)
             docnames = sorted(patfilter(all_docnames, patname))
             for docname in docnames:
                 all_docnames.remove(docname) # don't include it again
@@ -66,15 +63,18 @@ def toctree_directive(name, arguments, options, content, lineno,
                 ret.append(state.document.reporter.warning(
                     'toctree glob pattern %r didn\'t match any documents' % entry,
                     line=lineno))
+    subnode = addnodes.toctree()
     subnode['includefiles'] = includefiles
     subnode['includetitles'] = includetitles
     subnode['maxdepth'] = options.get('maxdepth', -1)
     subnode['glob'] = glob
+    subnode['hidden'] = 'hidden' in options
     ret.append(subnode)
     return ret
 
 toctree_directive.content = 1
-toctree_directive.options = {'maxdepth': int, 'glob': directives.flag}
+toctree_directive.options = {'maxdepth': int, 'glob': directives.flag,
+                             'hidden': directives.flag}
 directives.register_directive('toctree', toctree_directive)
 
 

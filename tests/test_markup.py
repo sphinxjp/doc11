@@ -6,7 +6,7 @@
     Test various Sphinx-specific markup extensions.
 
     :copyright: 2008 by Georg Brandl.
-    :license: BSD.
+    :license: BSD, see LICENSE for details.
 """
 
 import re
@@ -17,8 +17,8 @@ from docutils import frontend, utils, nodes
 from docutils.parsers import rst
 
 from sphinx import addnodes
-from sphinx.htmlwriter import HTMLWriter, SmartyPantsHTMLTranslator
-from sphinx.latexwriter import LaTeXWriter, LaTeXTranslator
+from sphinx.writers.html import HTMLWriter, SmartyPantsHTMLTranslator
+from sphinx.writers.latex import LaTeXWriter, LaTeXTranslator
 
 def setup_module():
     global app, settings, parser
