@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-    sphinx.latexwriter
-    ~~~~~~~~~~~~~~~~~~
+    sphinx.writers.latex
+    ~~~~~~~~~~~~~~~~~~~~
 
     Custom docutils writer for LaTeX.
 
@@ -9,7 +9,7 @@
     docutils sandbox.
 
     :copyright: 2007-2008 by Georg Brandl, Dave Kuhlman.
-    :license: BSD.
+    :license: BSD, see LICENSE for details.
 """
 
 import re
@@ -91,7 +91,7 @@ class LaTeXWriter(writers.Writer):
 class ExtBabel(Babel):
     def get_shorthandoff(self):
         shortlang = self.language.split('_')[0]
-        if shortlang in ('de', 'sl', 'pt', 'es', 'nl', 'pl'):
+        if shortlang in ('de', 'sl', 'pt', 'es', 'nl', 'pl', 'it'):
             return '\\shorthandoff{"}'
         return ''
 
@@ -112,7 +112,8 @@ class Table(object):
 class Desc(object):
     def __init__(self, node):
         self.env = LaTeXTranslator.desc_map.get(node['desctype'], 'describe')
-        self.type = self.cls = self.name = self.params = self.annotation = ''
+        self.type = self.cls = self.name = self.params = \
+                    self.annotation = self.returns = ''
         self.count = 0
 
 
@@ -237,6 +238,8 @@ class LaTeXTranslator(nodes.NodeVisitor):
             # ... and all others are the appendices
             self.body.append('\n\\appendix\n')
             self.first_document = -1
+        if 'docname' in node:
+            self.body.append('\\hypertarget{--doc-%s}{}' % node['docname'])
         # "- 1" because the level is increased before the title is visited
         self.sectionlevel = self.top_sectionlevel - 1
     def depart_document(self, node):
@@ -259,6 +262,8 @@ class LaTeXTranslator(nodes.NodeVisitor):
         self.body.append('\n\\resetcurrentobjects\n')
         # and also, new footnotes
         self.footnotestack.append(self.collect_footnotes(node))
+        # also add a document target
+        self.body.append('\\hypertarget{--doc-%s}{}' % node['docname'])
 
     def collect_footnotes(self, node):
         fnotes = {}
@@ -394,6 +399,7 @@ class LaTeXTranslator(nodes.NodeVisitor):
         'function' : 'funcdesc',
         'class': 'classdesc',
         'method': 'methoddesc',
+        'classmethod': 'classmethoddesc',
         'staticmethod': 'staticmethoddesc',
         'exception': 'excdesc',
         'data': 'datadesc',
@@ -436,7 +442,7 @@ class LaTeXTranslator(nodes.NodeVisitor):
             t2 = "{%s}{%s}" % (d.name, d.params)
         elif d.env in ('datadesc', 'excdesc', 'csimplemacrodesc'):
             t2 = "{%s}" % (d.name)
-        elif d.env in ('methoddesc', 'staticmethoddesc'):
+        elif d.env in ('methoddesc', 'classmethoddesc', 'staticmethoddesc'):
             if d.cls:
                 t2 = "[%s]{%s}{%s}" % (d.cls, d.name, d.params)
             else:
@@ -475,6 +481,14 @@ class LaTeXTranslator(nodes.NodeVisitor):
             d.name += self.encode(node.astext())
         else:
             self.descstack[-1].type = self.encode(node.astext().strip())
+        raise nodes.SkipNode
+
+    def visit_desc_returns(self, node):
+        d = self.descstack[-1]
+        if d.env == 'describe':
+            d.name += ' $\\rightarrow$ ' + self.encode(node.astext())
+        else:
+            self.descstack[-1].returns = self.encode(node.astext().strip())
         raise nodes.SkipNode
 
     def visit_desc_name(self, node):
@@ -923,6 +937,11 @@ class LaTeXTranslator(nodes.NodeVisitor):
         elif uri.startswith('#'):
             self.body.append('\\hyperlink{%s}{' % uri[1:])
             self.context.append('}')
+        elif uri.startswith('%'):
+            hashindex = uri.find('#')
+            targetname = (hashindex == -1) and '--doc-' + uri[1:] or uri[hashindex+1:]
+            self.body.append('\\hyperlink{%s}{' % targetname)
+            self.context.append('}')
         elif uri.startswith('@token'):
             if self.in_production_list:
                 self.body.append('\\token{')
@@ -934,6 +953,11 @@ class LaTeXTranslator(nodes.NodeVisitor):
             self.context.append('')
     def depart_reference(self, node):
         self.body.append(self.context.pop())
+
+    def visit_download_reference(self, node):
+        pass
+    def depart_download_reference(self, node):
+        pass
 
     def visit_pending_xref(self, node):
         pass

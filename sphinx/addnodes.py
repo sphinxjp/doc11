@@ -6,7 +6,7 @@
     Additional docutils nodes.
 
     :copyright: 2007-2008 by Georg Brandl.
-    :license: BSD.
+    :license: BSD, see LICENSE for details.
 """
 
 from docutils import nodes
@@ -23,8 +23,12 @@ class desc(nodes.Admonition, nodes.Element): pass
 class desc_addname(nodes.Part, nodes.Inline, nodes.TextElement): pass
 # compatibility alias
 desc_classname = desc_addname
-# return type (C); object type, e.g. -> annotation (Python)
+# return type (C); object type
 class desc_type(nodes.Part, nodes.Inline, nodes.TextElement): pass
+# -> annotation (Python)
+class desc_returns(desc_type):
+    def astext(self):
+        return ' -> ' + nodes.TextElement.astext(self)
 # main name of object
 class desc_name(nodes.Part, nodes.Inline, nodes.TextElement): pass
 # argument list
@@ -64,6 +68,9 @@ class pending_xref(nodes.Element): pass
 # compact paragraph -- never makes a <p>
 class compact_paragraph(nodes.paragraph): pass
 
+# reference to a file to download
+class download_reference(nodes.reference): pass
+
 # for the ACKS list
 class acks(nodes.Element): pass
 
@@ -90,8 +97,9 @@ class meta(nodes.Special, nodes.PreBibliographic, nodes.Element): pass
 
 # make them known to docutils. this is needed, because the HTML writer
 # will choke at some point if these are not added
-nodes._add_node_class_names("""index desc desc_content desc_signature desc_type
-      desc_addname desc_name desc_parameterlist desc_parameter desc_optional
+nodes._add_node_class_names("""index desc desc_content desc_signature
+      desc_type desc_returns desc_addname desc_name desc_parameterlist
+      desc_parameter desc_optional download_reference
       centered versionmodified seealso productionlist production toctree
       pending_xref compact_paragraph highlightlang literal_emphasis
       glossary acks module start_of_file tabular_col_spec meta""".split())
