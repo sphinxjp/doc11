@@ -22,6 +22,8 @@ from docutils.parsers.rst import directives
 from docutils.statemachine import ViewList
 
 from sphinx.util import rpartition, nested_parse_with_titles
+from sphinx.pycode import ModuleAnalyzer, PycodeError
+from sphinx.util.docstrings import prepare_docstring
 
 clstypes = (type, ClassType)
 try:
@@ -171,35 +173,6 @@ def isdescriptor(x):
     return False
 
 
-def prepare_docstring(s):
-    """
-    Convert a docstring into lines of parseable reST.  Return it as a list of
-    lines usable for inserting into a docutils ViewList (used as argument
-    of nested_parse().)  An empty line is added to act as a separator between
-    this docstring and following content.
-    """
-    lines = s.expandtabs().splitlines()
-    # Find minimum indentation of any non-blank lines after first line.
-    margin = sys.maxint
-    for line in lines[1:]:
-        content = len(line.lstrip())
-        if content:
-            indent = len(line) - content
-            margin = min(margin, indent)
-    # Remove indentation.
-    if lines:
-        lines[0] = lines[0].lstrip()
-    if margin < sys.maxint:
-        for i in range(1, len(lines)): lines[i] = lines[i][margin:]
-    # Remove any leading blank lines.
-    while lines and not lines[0]:
-        lines.pop(0)
-    # make sure there is an empty line at the end
-    if lines and lines[-1]:
-        lines.append('')
-    return lines
-
-
 def get_module_charset(module):
     """Return the charset of the given module (cached in _module_charsets)."""
     if module in _module_charsets:
@@ -313,7 +286,7 @@ class RstGenerator(object):
                           'for automodule %s' % name)
             return (path or '') + base, [], None, None
 
-        elif what in ('exception', 'function', 'class'):
+        elif what in ('exception', 'function', 'class', 'data'):
             if mod is None:
                 if path:
                     mod = path.rstrip('.')
@@ -434,7 +407,9 @@ class RstGenerator(object):
                 modfile = None  # e.g. for builtin and C modules
             for part in objpath:
                 todoc = getattr(todoc, part)
-        except (ImportError, AttributeError), err:
+            # also get a source code analyzer for attribute docs
+            analyzer = ModuleAnalyzer.for_module(mod)
+        except (ImportError, AttributeError, PycodeError), err:
             self.warn('autodoc can\'t import/find %s %r, it reported error: "%s", '
                       'please check your spelling and sys.path' %
                       (what, str(fullname), err))
@@ -503,6 +478,15 @@ class RstGenerator(object):
         else:
             sourcename = 'docstring of %s' % fullname
 
+        # add content from attribute documentation
+        attr_docs = analyzer.find_attr_docs()
+        if what in ('data', 'attribute'):
+            key = ('.'.join(objpath[:-1]), objpath[-1])
+            if key in attr_docs:
+                no_docstring = True
+                for i, line in enumerate(attr_docs[key]):
+                    self.result.append(indent + line, sourcename, i)
+
         # add content from docstrings
         if not no_docstring:
             for i, line in enumerate(self.get_doc(what, fullname, todoc)):
@@ -524,9 +508,9 @@ class RstGenerator(object):
             self.env.autodoc_current_class = objpath[0]
 
         # add members, if possible
-        _all = members == ['__all__']
+        all_members = members == ['__all__']
         members_check_module = False
-        if _all:
+        if all_members:
             # unqualified :members: given
             if what == 'module':
                 if hasattr(todoc, '__all__'):
@@ -555,14 +539,28 @@ class RstGenerator(object):
         else:
             all_members = [(mname, getattr(todoc, mname)) for mname in members]
 
+        # search for members in source code too
+        namespace = '.'.join(objpath)  # will be empty for modules
+
         for (membername, member) in all_members:
-            if _all and membername.startswith('_'):
+            # if isattr is True, the member is documented as an attribute
+            isattr = False
+            # if content is not None, no extra content from docstrings will be added
+            content = None
+
+            if all_members and membername.startswith('_'):
                 # ignore members whose name starts with _ by default
                 skip = True
             else:
-                # ignore undocumented members if :undoc-members: is not given
-                doc = getattr(member, '__doc__', None)
-                skip = not self.options.undoc_members and not doc
+                if (namespace, membername) in attr_docs:
+                    # keep documented attributes
+                    skip = False
+                    isattr = True
+                else:
+                    # ignore undocumented members if :undoc-members: is not given
+                    doc = getattr(member, '__doc__', None)
+                    skip = not self.options.undoc_members and not doc
+
             # give the user a chance to decide whether this member should be skipped
             if self.env.app:
                 # let extensions preprocess docstrings
@@ -573,10 +571,11 @@ class RstGenerator(object):
             if skip:
                 continue
 
-            content = None
             if what == 'module':
                 if isinstance(member, (FunctionType, BuiltinFunctionType)):
                     memberwhat = 'function'
+                elif isattr:
+                    memberwhat = 'attribute'
                 elif isinstance(member, clstypes):
                     if member.__name__ != membername:
                         # assume it's aliased
@@ -588,10 +587,13 @@ class RstGenerator(object):
                     else:
                         memberwhat = 'class'
                 else:
-                    # XXX: todo -- attribute docs
                     continue
             else:
-                if isinstance(member, clstypes):
+                if inspect.isroutine(member):
+                    memberwhat = 'method'
+                elif isattr:
+                    memberwhat = 'attribute'
+                elif isinstance(member, clstypes):
                     if member.__name__ != membername:
                         # assume it's aliased
                         memberwhat = 'attribute'
@@ -599,12 +601,9 @@ class RstGenerator(object):
                                            source='')
                     else:
                         memberwhat = 'class'
-                elif inspect.isroutine(member):
-                    memberwhat = 'method'
                 elif isdescriptor(member):
                     memberwhat = 'attribute'
                 else:
-                    # XXX: todo -- attribute docs
                     continue
             # give explicitly separated module name, so that members of inner classes
             # can be documented
