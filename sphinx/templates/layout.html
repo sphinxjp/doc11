@@ -4,7 +4,7 @@
 {%- endblock %}
 {%- set reldelim1 = reldelim1 is not defined and ' &raquo;' or reldelim1 %}
 {%- set reldelim2 = reldelim2 is not defined and ' |' or reldelim2 %}
-{%- macro relbar %}
+{%- macro relbar() %}
     <div class="related">
       <h3>{{ _('Navigation') }}</h3>
       <ul>
@@ -24,8 +24,8 @@
       </ul>
     </div>
 {%- endmacro %}
-{%- macro sidebar %}
-      {%- if builder != 'htmlhelp' %}
+{%- macro sidebar() %}
+      {%- if not embedded %}
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
           {%- block sidebarlogo %}
@@ -51,58 +51,46 @@
             <p class="topless"><a href="{{ next.link|e }}" title="{{ _('next chapter') }}">{{ next.title }}</a></p>
           {%- endif %}
           {%- endblock %}
-          {%- if sourcename %}
+          {%- block sidebarsourcelink %}
+          {%- if show_source and has_source and sourcename %}
             <h3>{{ _('This Page') }}</h3>
             <ul class="this-page-menu">
-            {%- if builder == 'web' %}
-              <li><a href="#comments">Comments ({{ comments|length }} so far)</a></li>
-              <li><a href="{{ pathto('@edit/' + sourcename)|e }}">{{ _('Suggest Change') }}</a></li>
-              <li><a href="{{ pathto('@source/' + sourcename)|e }}">{{ _('Show Source') }}</a></li>
-            {%- elif builder == 'html' %}
-              <li><a href="{{ pathto('_sources/' + sourcename, true)|e }}">{{ _('Show Source') }}</a></li>
-            {%- endif %}
+              <li><a href="{{ pathto('_sources/' + sourcename, true)|e }}" rel="nofollow">{{ _('Show Source') }}</a></li>
             </ul>
           {%- endif %}
+          {%- endblock %}
           {%- if customsidebar %}
-          {{ rendertemplate(customsidebar) }}
+          {% include customsidebar %}
           {%- endif %}
           {%- block sidebarsearch %}
           {%- if pagename != "search" %}
-          <h3>{% if builder == 'web' %}{{ _('Keyword search')}}{% else %}{{ _('Quick search') }}{% endif %}</h3>
+          <h3>{{ _('Quick search') }}</h3>
             <form class="search" action="{{ pathto('search') }}" method="get">
               <input type="text" name="q" size="18" /> <input type="submit" value="{{ _('Go') }}" />
               <input type="hidden" name="check_keywords" value="yes" />
               <input type="hidden" name="area" value="default" />
             </form>
-            {%- if builder == 'web' %}
-            <p style="font-size: 90%">{{ _('Enter a module, class or function name.') }}</p>
-            {%- endif %}
+            <p style="font-size: 90%">{{ _('Enter search terms or a module, class or function name.') }}</p>
           {%- endif %}
           {%- endblock %}
         </div>
       </div>
       {%- endif %}
-{%- endmacro -%}
+{%- endmacro %}
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     {{ metatags }}
-    {%- if builder != 'htmlhelp' %}
-      {%- set titlesuffix = " &mdash; " + docstitle|e %}
+    {%- if not embedded %}
+      {%- set titlesuffix = " &mdash; "|safe + docstitle|e %}
+    {%- else %}
+      {%- set titlesuffix = "" %}
     {%- endif %}
     <title>{{ title|striptags }}{{ titlesuffix }}</title>
-    {%- if builder == 'web' %}
-    <link rel="stylesheet" href="{{ pathto('index') }}?do=stylesheet{%
-      if in_admin_panel %}&admin=yes{% endif %}" type="text/css" />
-    {%- for link, type, title in page_links %}
-    <link rel="alternate" type="{{ type|e(true) }}" title="{{ title|e(true) }}" href="{{ link|e(true) }}" />
-    {%- endfor %}
-    {%- else %}
     <link rel="stylesheet" href="{{ pathto('_static/' + style, 1) }}" type="text/css" />
     <link rel="stylesheet" href="{{ pathto('_static/pygments.css', 1) }}" type="text/css" />
-    {%- endif %}
-    {%- if builder != 'htmlhelp' %}
+    {%- if not embedded %}
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '{{ pathto("", 1) }}',
@@ -155,13 +143,13 @@
 {%- block document %}
     <div class="document">
       <div class="documentwrapper">
-      {%- if builder != 'htmlhelp' %}
+      {%- if not embedded %}
         <div class="bodywrapper">
       {%- endif %}
           <div class="body">
             {% block body %} {% endblock %}
           </div>
-      {%- if builder != 'htmlhelp' %}
+      {%- if not embedded %}
         </div>
       {%- endif %}
       </div>

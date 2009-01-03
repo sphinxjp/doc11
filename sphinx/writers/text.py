@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-    sphinx.textwriter
-    ~~~~~~~~~~~~~~~~~
+    sphinx.writers.text
+    ~~~~~~~~~~~~~~~~~~~
 
     Custom docutils writer for plain text.
 
@@ -193,6 +193,11 @@ class TextTranslator(nodes.NodeVisitor):
     def visit_desc_type(self, node):
         pass
     def depart_desc_type(self, node):
+        pass
+
+    def visit_desc_returns(self, node):
+        self.add_text(' -> ')
+    def depart_desc_returns(self, node):
         pass
 
     def visit_desc_parameterlist(self, node):
@@ -607,6 +612,11 @@ class TextTranslator(nodes.NodeVisitor):
     def visit_reference(self, node):
         pass
     def depart_reference(self, node):
+        pass
+
+    def visit_download_reference(self, node):
+        pass
+    def depart_download_reference(self, node):
         pass
 
     def visit_emphasis(self, node):
