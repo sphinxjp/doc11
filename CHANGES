@@ -1,3 +1,102 @@
+Release 0.6 (in development)
+============================
+
+New features added
+------------------
+
+* Incompatible changes:
+
+  - Templating now requires the Jinja2 library, which is an enhanced
+    version of the old Jinja1 engine.  Since the syntax and semantic
+    is largely the same, very few fixes should be necessary in
+    custom templates.
+
+  - The ``autodoc_skip_member`` event now also gets to decide
+    whether to skip members whose name starts with underscores.
+    Previously, these members were always automatically skipped.
+    Therefore, if you handle this event, add something like this
+    to your event handler to restore the old behavior::
+
+       if name.startswith('_'):
+           return True
+
+* Markup:
+
+  - Due to popular demand, added a ``:doc:`` role which directly
+    links to another document without the need of creating a
+    label to which a ``:ref:`` could link to.
+
+  - #4: Added a ``:download:`` role that marks a non-document file
+    for inclusion into the HTML output and links to it.
+
+  - The ``literalinclude`` directive now supports several more
+    options, to include only parts of a file.
+
+  - The ``toctree`` directive now supports a ``:hidden:`` flag,
+    which will prevent links from being generated in place of
+    the directive -- this allows you to define your document
+    structure, but place the links yourself.
+
+  - #52: There is now a ``hlist`` directive, creating a compact
+    list by placing distributing items into multiple columns.
+
+  - #77: If a description environment with info field list only
+    contains one ``:param:`` entry, no bullet list is generated.
+
+  - #6: Don't generate redundant ``<ul>`` for top-level TOC tree
+    items, which leads to a visual separation of TOC entries.
+
+  - #23: Added a ``classmethod`` directive along with ``method``
+    and ``staticmethod``.
+
+* Configuration:
+
+  - The new ``html_add_permalinks`` config value can be used to
+    switch off the generated "paragraph sign" permalinks for each
+    heading and definition environment.
+
+  - The new ``html_show_sourcelink`` config value can be used to
+    switch off the links to the reST sources in the sidebar.
+
+  - The default value for ``htmlhelp_basename`` is now the project
+    title, cleaned up as a filename.
+
+  - The new ``modindex_common_prefix`` config value can be used to
+    ignore certain package names for module index sorting.
+
+* Builders:
+
+  - New builder for Qt help collections, by Antonio Valentino.
+
+  - The new ``html_link_suffix`` config value can be used to select
+    the suffix of generated links between HTML files.
+
+* New translations:
+  
+  - Italian by Sandro Dentella.
+
+* Extensions and API:
+
+  - Autodoc now handles documented attributes.
+
+  - Autodoc now handles inner classes and their methods.
+
+  - There is now a ``Sphinx.add_lexer()`` method to be able to use
+    custom Pygments lexers easily.
+
+* Other changes:
+
+  - Config overrides for single dict keys can now be given on the
+    command line.
+
+  - There is now a ``doctest_global_setup`` config value that can
+    be used to give setup code for all doctests in the documentation.
+
+  - Source links in HTML are now generated with ``rel="nofollow"``.
+
+  - Quickstart can now generate a Windows ``make.bat`` file.
+
+
 Release 0.5.2 (in development)
 ==============================
 

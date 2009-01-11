@@ -19,7 +19,7 @@ except ImportError:
     # functools is new in 2.4
     wraps = lambda f: (lambda w: w)
 
-from sphinx import application, builder
+from sphinx import application
 
 from path import path
 
@@ -97,7 +97,8 @@ class TestApp(application.Sphinx):
     """
 
     def __init__(self, srcdir=None, confdir=None, outdir=None, doctreedir=None,
-                 buildername='html', confoverrides=None, status=None, warning=None,
+                 buildername='html', confoverrides=None,
+                 status=None, warning=None,
                  freshenv=None, confname='conf.py', cleanenv=False):
 
         application.CONFIG_FILENAME = confname

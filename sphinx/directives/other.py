@@ -8,28 +8,25 @@
 """
 
 import re
-import posixpath
 
 from docutils import nodes
 from docutils.parsers.rst import directives
 
 from sphinx import addnodes
 from sphinx.locale import pairindextypes
-from sphinx.util import patfilter, ws_re, caption_ref_re
+from sphinx.util import patfilter, ws_re, caption_ref_re, docname_join
 from sphinx.util.compat import make_admonition
 
 
-# ------ the TOC tree ---------------------------------------------------------------
+# ------ the TOC tree ----------------------------------------------------------
 
 def toctree_directive(name, arguments, options, content, lineno,
                       content_offset, block_text, state, state_machine):
     env = state.document.settings.env
     suffix = env.config.source_suffix
-    dirname = posixpath.dirname(env.docname)
     glob = 'glob' in options
 
     ret = []
-    subnode = addnodes.toctree()
     includefiles = []
     includetitles = {}
     all_docnames = env.found_docs.copy()
@@ -50,35 +47,39 @@ def toctree_directive(name, arguments, options, content, lineno,
             if docname.endswith(suffix):
                 docname = docname[:-len(suffix)]
             # absolutize filenames
-            docname = posixpath.normpath(posixpath.join(dirname, docname))
+            docname = docname_join(env.docname, docname)
             if docname not in env.found_docs:
                 ret.append(state.document.reporter.warning(
-                    'toctree references unknown document %r' % docname, line=lineno))
+                    'toctree references unknown document %r' % docname,
+                    line=lineno))
             else:
                 includefiles.append(docname)
         else:
-            patname = posixpath.normpath(posixpath.join(dirname, entry))
+            patname = docname_join(env.docname, entry)
             docnames = sorted(patfilter(all_docnames, patname))
             for docname in docnames:
                 all_docnames.remove(docname) # don't include it again
                 includefiles.append(docname)
             if not docnames:
                 ret.append(state.document.reporter.warning(
-                    'toctree glob pattern %r didn\'t match any documents' % entry,
-                    line=lineno))
+                    'toctree glob pattern %r didn\'t match any documents'
+                    % entry, line=lineno))
+    subnode = addnodes.toctree()
     subnode['includefiles'] = includefiles
     subnode['includetitles'] = includetitles
     subnode['maxdepth'] = options.get('maxdepth', -1)
     subnode['glob'] = glob
+    subnode['hidden'] = 'hidden' in options
     ret.append(subnode)
     return ret
 
 toctree_directive.content = 1
-toctree_directive.options = {'maxdepth': int, 'glob': directives.flag}
+toctree_directive.options = {'maxdepth': int, 'glob': directives.flag,
+                             'hidden': directives.flag}
 directives.register_directive('toctree', toctree_directive)
 
 
-# ------ section metadata ----------------------------------------------------------
+# ------ section metadata ------------------------------------------------------
 
 def module_directive(name, arguments, options, content, lineno,
                      content_offset, block_text, state, state_machine):
@@ -101,7 +102,8 @@ def module_directive(name, arguments, options, content, lineno,
         node += nodes.emphasis('', _('Platforms: '))
         node += nodes.Text(options['platform'], options['platform'])
         ret.append(node)
-    # the synopsis isn't printed; in fact, it is only used in the modindex currently
+    # the synopsis isn't printed; in fact, it is only used in the
+    # modindex currently
     if not noindex:
         indextext = _('%s (module)') % modname
         inode = addnodes.index(entries=[('single', indextext,
@@ -172,7 +174,7 @@ program_directive.arguments = (1, 0, 1)
 directives.register_directive('program', program_directive)
 
 
-# ------ index markup --------------------------------------------------------------
+# ------ index markup ----------------------------------------------------------
 
 indextypes = [
     'single', 'pair', 'triple',
@@ -214,7 +216,7 @@ def index_directive(name, arguments, options, content, lineno,
 index_directive.arguments = (1, 0, 1)
 directives.register_directive('index', index_directive)
 
-# ------ versionadded/versionchanged -----------------------------------------------
+# ------ versionadded/versionchanged -------------------------------------------
 
 def version_directive(name, arguments, options, content, lineno,
                       content_offset, block_text, state, state_machine):
@@ -241,7 +243,7 @@ directives.register_directive('versionadded', version_directive)
 directives.register_directive('versionchanged', version_directive)
 
 
-# ------ see also ------------------------------------------------------------------
+# ------ see also --------------------------------------------------------------
 
 def seealso_directive(name, arguments, options, content, lineno,
                       content_offset, block_text, state, state_machine):
@@ -261,7 +263,7 @@ seealso_directive.arguments = (0, 1, 1)
 directives.register_directive('seealso', seealso_directive)
 
 
-# ------ production list (for the reference) ---------------------------------------
+# ------ production list (for the reference) -----------------------------------
 
 token_re = re.compile('`([a-z_]+)`')
 
@@ -317,7 +319,7 @@ productionlist_directive.arguments = (1, 0, 1)
 directives.register_directive('productionlist', productionlist_directive)
 
 
-# ------ glossary directive ---------------------------------------------------------
+# ------ glossary directive ----------------------------------------------------
 
 def glossary_directive(name, arguments, options, content, lineno,
                        content_offset, block_text, state, state_machine):
@@ -354,7 +356,7 @@ glossary_directive.arguments = (0, 0, 0)
 directives.register_directive('glossary', glossary_directive)
 
 
-# ------ miscellaneous markup -------------------------------------------------------
+# ------ miscellaneous markup --------------------------------------------------
 
 def centered_directive(name, arguments, options, content, lineno,
                        content_offset, block_text, state, state_machine):
@@ -373,7 +375,8 @@ def acks_directive(name, arguments, options, content, lineno,
                    content_offset, block_text, state, state_machine):
     node = addnodes.acks()
     state.nested_parse(content, content_offset, node)
-    if len(node.children) != 1 or not isinstance(node.children[0], nodes.bullet_list):
+    if len(node.children) != 1 or not isinstance(node.children[0],
+                                                 nodes.bullet_list):
         return [state.document.reporter.warning('.. acks content is not a list',
                                                 line=lineno)]
     return [node]
@@ -381,6 +384,35 @@ def acks_directive(name, arguments, options, content, lineno,
 acks_directive.content = 1
 acks_directive.arguments = (0, 0, 0)
 directives.register_directive('acks', acks_directive)
+
+
+def hlist_directive(name, arguments, options, content, lineno,
+                    content_offset, block_text, state, state_machine):
+    ncolumns = options.get('columns', 2)
+    node = nodes.paragraph()
+    state.nested_parse(content, content_offset, node)
+    if len(node.children) != 1 or not isinstance(node.children[0],
+                                                 nodes.bullet_list):
+        return [state.document.reporter.warning(
+            '.. hlist content is not a list', line=lineno)]
+    fulllist = node.children[0]
+    # create a hlist node where the items are distributed
+    npercol, nmore = divmod(len(fulllist), ncolumns)
+    index = 0
+    newnode = addnodes.hlist()
+    for column in range(ncolumns):
+        endindex = index + (column < nmore and (npercol+1) or npercol)
+        col = addnodes.hlistcol()
+        col += nodes.bullet_list()
+        col[0] += fulllist.children[index:endindex]
+        index = endindex
+        newnode += col
+    return [newnode]
+
+hlist_directive.content = 1
+hlist_directive.arguments = (0, 0, 0)
+hlist_directive.options = {'columns': int}
+directives.register_directive('hlist', hlist_directive)
 
 
 def tabularcolumns_directive(name, arguments, options, content, lineno,

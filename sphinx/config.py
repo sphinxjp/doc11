@@ -6,11 +6,13 @@
     Build configuration file handling.
 
     :copyright: Copyright 2007-2009 by the Sphinx team, see AUTHORS.
-    :license: BSD license.
+    :license: BSD, see LICENSE for details.
 """
 
 import os
 from os import path
+
+from sphinx.util import make_filename
 
 
 class Config(object):
@@ -44,37 +46,47 @@ class Config(object):
         add_function_parentheses = (True, True),
         add_module_names = (True, True),
         show_authors = (False, True),
-        pygments_style = ('sphinx', False),
+        pygments_style = (None, False),
         highlight_language = ('python', False),
         templates_path = ([], False),
         template_bridge = (None, False),
         keep_warnings = (False, True),
+        modindex_common_prefix = ([], False),
 
         # HTML options
+        html_theme = ('default', False),
+        html_theme_path = ([], False),
         html_title = (lambda self: '%s v%s documentation' %
                                    (self.project, self.release),
                       False),
         html_short_title = (lambda self: self.html_title, False),
-        html_style = ('default.css', False),
+        html_style = (None, False),
         html_logo = (None, False),
         html_favicon = (None, False),
         html_static_path = ([], False),
-        html_last_updated_fmt = (None, False),  # the real default is locale-dependent
+        # the real default is locale-dependent
+        html_last_updated_fmt = (None, False),
         html_use_smartypants = (True, False),
         html_translator_class = (None, False),
         html_sidebars = ({}, False),
         html_additional_pages = ({}, False),
         html_use_modindex = (True, False),
+        html_add_permalinks = (True, False),
         html_use_index = (True, False),
         html_split_index = (False, False),
         html_copy_source = (True, False),
+        html_show_sourcelink = (True, False),
         html_use_opensearch = ('', False),
         html_file_suffix = (None, False),
+        html_link_suffix = (None, False),
         html_show_sphinx = (True, False),
         html_context = ({}, False),
 
         # HTML help only options
-        htmlhelp_basename = ('pydoc', False),
+        htmlhelp_basename = (lambda self: make_filename(self.project), False),
+
+        # Qt help only options
+        qthelp_basename = (lambda self: make_filename(self.project), False),
 
         # LaTeX options
         latex_documents = ([], False),
@@ -111,6 +123,12 @@ class Config(object):
 
     def init_values(self):
         config = self._raw_config
+        for valname, value in self.overrides.iteritems():
+            if '.' in valname:
+                realvalname, key = valname.split('.', 1)
+                config.setdefault(realvalname, {})[key] = value
+            else:
+                config[valname] = value
         config.update(self.overrides)
         for name in config:
             if name in self.values:
@@ -123,7 +141,7 @@ class Config(object):
         if name not in self.values:
             raise AttributeError('No such config value: %s' % name)
         default = self.values[name][0]
-        if callable(default):
+        if hasattr(default, '__call__'):
             return default(self)
         return default
 
