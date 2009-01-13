@@ -46,22 +46,26 @@ class Config(object):
         add_function_parentheses = (True, True),
         add_module_names = (True, True),
         show_authors = (False, True),
-        pygments_style = ('sphinx', False),
+        pygments_style = (None, False),
         highlight_language = ('python', False),
         templates_path = ([], False),
         template_bridge = (None, False),
         keep_warnings = (False, True),
+        modindex_common_prefix = ([], False),
 
         # HTML options
+        html_theme = ('default', False),
+        html_theme_path = ([], False),
         html_title = (lambda self: '%s v%s documentation' %
                                    (self.project, self.release),
                       False),
         html_short_title = (lambda self: self.html_title, False),
-        html_style = ('default.css', False),
+        html_style = (None, False),
         html_logo = (None, False),
         html_favicon = (None, False),
         html_static_path = ([], False),
-        html_last_updated_fmt = (None, False),  # the real default is locale-dependent
+        # the real default is locale-dependent
+        html_last_updated_fmt = (None, False),
         html_use_smartypants = (True, False),
         html_translator_class = (None, False),
         html_sidebars = ({}, False),
