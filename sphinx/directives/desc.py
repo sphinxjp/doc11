@@ -58,6 +58,18 @@ def desc_index_text(desctype, module, name, add_modules):
             return _('%s() (%s.%s static method)') % (methname, module, clsname)
         else:
             return _('%s() (%s static method)') % (methname, clsname)
+    elif desctype == 'classmethod':
+        try:
+            clsname, methname = name.rsplit('.', 1)
+        except ValueError:
+            if module:
+                return '%s() (in module %s)' % (name, module)
+            else:
+                return '%s()' % name
+        if module:
+            return '%s() (%s.%s class method)' % (methname, module, clsname)
+        else:
+            return '%s() (%s class method)' % (methname, clsname)
     elif desctype == 'attribute':
         try:
             clsname, attrname = name.rsplit('.', 1)
@@ -137,7 +149,8 @@ def handle_doc_fields(node, env):
     for child in node.children:
         if not isinstance(child, nodes.field_list):
             continue
-        params = None
+        params = []
+        pfield = None
         param_nodes = {}
         param_types = {}
         new_list = nodes.field_list()
@@ -152,11 +165,8 @@ def handle_doc_fields(node, env):
                     children = fbody.children
                 if typdesc == '%param':
                     if not params:
+                        # add the field that later gets all the parameters
                         pfield = nodes.field()
-                        pfield += nodes.field_name('', _('Parameters'))
-                        pfield += nodes.field_body()
-                        params = nodes.bullet_list()
-                        pfield[1] += params
                         new_list += pfield
                     dlitem = nodes.list_item()
                     dlpar = nodes.paragraph()
@@ -165,7 +175,7 @@ def handle_doc_fields(node, env):
                     dlpar += children
                     param_nodes[obj] = dlpar
                     dlitem += dlpar
-                    params += dlitem
+                    params.append(dlitem)
                 elif typdesc == '%type':
                     typenodes = fbody.children
                     if _is_only_paragraph(fbody):
@@ -198,6 +208,17 @@ def handle_doc_fields(node, env):
                     typ = fnametext.capitalize()
                 fname[0] = nodes.Text(typ)
                 new_list += field
+        if params:
+            if len(params) == 1:
+                pfield += nodes.field_name('', _('Parameter'))
+                pfield += nodes.field_body()
+                pfield[1] += params[0][0]
+            else:
+                pfield += nodes.field_name('', _('Parameters'))
+                pfield += nodes.field_body()
+                pfield[1] += nodes.bullet_list()
+                pfield[1][0].extend(params)
+
         for param, type in param_types.iteritems():
             if param in param_nodes:
                 param_nodes[param][1:1] = type
@@ -209,8 +230,9 @@ def handle_doc_fields(node, env):
 py_sig_re = re.compile(
     r'''^ ([\w.]*\.)?            # class name(s)
           (\w+)  \s*             # thing name
-          (?: \((.*)\)           # optional arguments
-          (\s* -> \s* .*)? )? $  # optional return annotation
+          (?: \((.*)\)           # optional: arguments
+           (?:\s* -> \s* (.*))?  #           return annotation
+          )? $                   # and nothing more
           ''', re.VERBOSE)
 
 py_paramlist_re = re.compile(r'([\[\],])')  # split at '[', ']' and ','
@@ -228,9 +250,6 @@ def parse_py_signature(signode, sig, desctype, module, env):
     if m is None:
         raise ValueError
     classname, name, arglist, retann = m.groups()
-
-    if retann:
-        retann = u' \N{RIGHTWARDS ARROW} ' + retann.strip()[2:]
 
     if env.currclass:
         add_module = False
@@ -251,6 +270,8 @@ def parse_py_signature(signode, sig, desctype, module, env):
 
     if desctype == 'staticmethod':
         signode += addnodes.desc_annotation('static ', 'static ')
+    elif desctype == 'classmethod':
+        signode += addnodes.desc_annotation('classmethod ', 'classmethod ')
 
     if classname:
         signode += addnodes.desc_addname(classname, classname)
@@ -263,11 +284,11 @@ def parse_py_signature(signode, sig, desctype, module, env):
 
     signode += addnodes.desc_name(name, name)
     if not arglist:
-        if desctype in ('function', 'method', 'staticmethod'):
+        if desctype in ('function', 'method', 'staticmethod', 'classmethod'):
             # for callables, add an empty parameter list
             signode += addnodes.desc_parameterlist()
         if retann:
-            signode += addnodes.desc_type(retann, retann)
+            signode += addnodes.desc_returns(retann, retann)
         return fullname, classname
     signode += addnodes.desc_parameterlist()
 
@@ -290,7 +311,7 @@ def parse_py_signature(signode, sig, desctype, module, env):
     if len(stack) != 1:
         raise ValueError
     if retann:
-        signode += addnodes.desc_type(retann, retann)
+        signode += addnodes.desc_returns(retann, retann)
     return fullname, classname
 
 
@@ -426,7 +447,8 @@ def desc_directive(desctype, arguments, options, content, lineno,
         node.append(signode)
         try:
             if desctype in ('function', 'data', 'class', 'exception',
-                            'method', 'staticmethod', 'attribute'):
+                            'method', 'staticmethod', 'classmethod',
+                            'attribute'):
                 name, clsname = parse_py_signature(signode, sig, desctype, module, env)
             elif desctype in ('cfunction', 'cmember', 'cmacro', 'ctype', 'cvar'):
                 name = parse_c_signature(signode, sig, desctype)
@@ -503,8 +525,8 @@ def desc_directive(desctype, arguments, options, content, lineno,
     if desctype in ('class', 'exception') and names:
         env.currclass = names[0]
         clsname_set = True
-    elif desctype in ('method', 'staticmethod', 'attribute') and \
-             clsname and not env.currclass:
+    elif desctype in ('method', 'staticmethod', 'classmethod',
+                      'attribute') and clsname and not env.currclass:
         env.currclass = clsname.strip('.')
         clsname_set = True
     # needed for association of version{added,changed} directives
@@ -529,6 +551,7 @@ desctypes = [
     'data',
     'class',
     'method',
+    'classmethod',
     'staticmethod',
     'attribute',
     'exception',
