@@ -13,40 +13,51 @@
 
 import re
 import sys
-import types
 import inspect
 import linecache
-from types import FunctionType, BuiltinMethodType, MethodType
+from types import FunctionType, BuiltinFunctionType, MethodType, ClassType
 
 from docutils import nodes
 from docutils.parsers.rst import directives
 from docutils.statemachine import ViewList
 
-from sphinx.util import rpartition, nested_parse_with_titles
-from sphinx.directives.desc import py_sig_re
+from sphinx.util import rpartition, nested_parse_with_titles, force_decode
+from sphinx.pycode import ModuleAnalyzer, PycodeError
+from sphinx.util.docstrings import prepare_docstring
 
+clstypes = (type, ClassType)
 try:
     base_exception = BaseException
 except NameError:
     base_exception = Exception
 
-_charset_re = re.compile(r'coding[:=]\s*([-\w.]+)')
-_module_charsets = {}
+
+py_ext_sig_re = re.compile(
+    r'''^ ([\w.]+::)?            # explicit module name
+          ([\w.]+\.)?            # module and/or class name(s)
+          (\w+)  \s*             # thing name
+          (?: \((.*)\)           # optional: arguments
+           (?:\s* -> \s* (.*))?  #           return annotation
+          )? $                   # and nothing more
+          ''', re.VERBOSE)
 
 
 class Options(object):
     pass
 
 
-def is_static_method(obj):
-    """Check if the object given is a static method."""
-    if isinstance(obj, (FunctionType, classmethod)):
-        return True
-    elif isinstance(obj, BuiltinMethodType):
-        return obj.__self__ is not None
-    elif isinstance(obj, MethodType):
-        return obj.im_self is not None
-    return False
+def get_method_type(obj):
+    """
+    Return the method type for an object: method, staticmethod or classmethod.
+    """
+    if isinstance(obj, classmethod) or \
+           (isinstance(obj, MethodType) and obj.im_self is not None):
+        return 'classmethod'
+    elif isinstance(obj, FunctionType) or \
+             (isinstance(obj, BuiltinFunctionType) and obj.__self__ is not None):
+        return 'staticmethod'
+    else:
+        return 'method'
 
 
 class AutodocReporter(object):
@@ -155,59 +166,9 @@ def between(marker, what=None, keepempty=False):
 def isdescriptor(x):
     """Check if the object is some kind of descriptor."""
     for item in '__get__', '__set__', '__delete__':
-        if callable(getattr(x, item, None)):
+        if hasattr(getattr(x, item, None), '__call__'):
             return True
     return False
-
-
-def prepare_docstring(s):
-    """
-    Convert a docstring into lines of parseable reST.  Return it as a list of
-    lines usable for inserting into a docutils ViewList (used as argument
-    of nested_parse().)  An empty line is added to act as a separator between
-    this docstring and following content.
-    """
-    lines = s.expandtabs().splitlines()
-    # Find minimum indentation of any non-blank lines after first line.
-    margin = sys.maxint
-    for line in lines[1:]:
-        content = len(line.lstrip())
-        if content:
-            indent = len(line) - content
-            margin = min(margin, indent)
-    # Remove indentation.
-    if lines:
-        lines[0] = lines[0].lstrip()
-    if margin < sys.maxint:
-        for i in range(1, len(lines)): lines[i] = lines[i][margin:]
-    # Remove any leading blank lines.
-    while lines and not lines[0]:
-        lines.pop(0)
-    # make sure there is an empty line at the end
-    if lines and lines[-1]:
-        lines.append('')
-    return lines
-
-
-def get_module_charset(module):
-    """Return the charset of the given module (cached in _module_charsets)."""
-    if module in _module_charsets:
-        return _module_charsets[module]
-    try:
-        filename = __import__(module, None, None, ['foo']).__file__
-    except (ImportError, AttributeError):
-        return None
-    if filename[-4:].lower() in ('.pyc', '.pyo'):
-        filename = filename[:-1]
-    for line in [linecache.getline(filename, x) for x in (1, 2)]:
-        match = _charset_re.search(line)
-        if match is not None:
-            charset = match.group(1)
-            break
-    else:
-        charset = 'ascii'
-    _module_charsets[module] = charset
-    return charset
 
 
 class RstGenerator(object):
@@ -223,15 +184,19 @@ class RstGenerator(object):
     def warn(self, msg):
         self.warnings.append(self.reporter.warning(msg, line=self.lineno))
 
-    def get_doc(self, what, name, obj):
-        """Format and yield lines of the docstring(s) for the object."""
+    def get_doc(self, what, obj, encoding=None):
+        """Decode and return lines of the docstring(s) for the object."""
         docstrings = []
+
+        # add the regular docstring if present
         if getattr(obj, '__doc__', None):
             docstrings.append(obj.__doc__)
-        # skip some lines in module docstrings if configured
+
+        # skip some lines in module docstrings if configured (deprecated!)
         if what == 'module' and self.env.config.automodule_skip_lines and docstrings:
             docstrings[0] = '\n'.join(docstrings[0].splitlines()
                                       [self.env.config.automodule_skip_lines:])
+
         # for classes, what the "docstring" is can be controlled via an option
         if what in ('class', 'exception'):
             content = self.env.config.autoclass_content
@@ -247,24 +212,13 @@ class RstGenerator(object):
                         docstrings.append(initdocstring)
             # the default is only the class docstring
 
-        # decode the docstrings using the module's source encoding
-        charset = None
-        module = getattr(obj, '__module__', None)
-        if module is not None:
-            charset = get_module_charset(module)
+        # make sure we have Unicode docstrings, then sanitize and split into lines
+        return [prepare_docstring(force_decode(docstring, encoding))
+                for docstring in docstrings]
 
-        for docstring in docstrings:
-            if isinstance(docstring, str):
-                if charset:
-                    docstring = docstring.decode(charset)
-                else:
-                    try:
-                        # try decoding with utf-8, should only work for real UTF-8
-                        docstring = docstring.decode('utf-8')
-                    except UnicodeError:
-                        # last resort -- can't fail
-                        docstring = docstring.decode('latin1')
-            docstringlines = prepare_docstring(docstring)
+    def process_doc(self, docstrings, what, name, obj):
+        """Let the user process the docstrings."""
+        for docstringlines in docstrings:
             if self.env.app:
                 # let extensions preprocess docstrings
                 self.env.app.emit('autodoc-process-docstring',
@@ -282,61 +236,71 @@ class RstGenerator(object):
         # first, parse the definition -- auto directives for classes and functions
         # can contain a signature which is then used instead of an autogenerated one
         try:
-            path, base, args, retann = py_sig_re.match(name).groups()
+            mod, path, base, args, retann = py_ext_sig_re.match(name).groups()
         except:
             self.warn('invalid signature for auto%s (%r)' % (what, name))
-            return
-        # fullname is the fully qualified name, base the name after the last dot
-        fullname = (path or '') + base
+            return None, [], None, None
+
+        # support explicit module and class name separation via ::
+        if mod is not None:
+            mod = mod[:-2]
+            parents = path and path.rstrip('.').split('.') or []
+        else:
+            parents = []
 
         if what == 'module':
+            if mod is not None:
+                self.warn('"::" in automodule name doesn\'t make sense')
             if args or retann:
                 self.warn('ignoring signature arguments and return annotation '
-                          'for automodule %s' % fullname)
-            return fullname, fullname, [], None, None
+                          'for automodule %s' % name)
+            return (path or '') + base, [], None, None
 
-        elif what in ('class', 'exception', 'function'):
-            if path:
-                mod = path.rstrip('.')
-            else:
-                mod = None
-                # if documenting a toplevel object without explicit module, it can
-                # be contained in another auto directive ...
-                if hasattr(self.env, 'autodoc_current_module'):
-                    mod = self.env.autodoc_current_module
-                # ... or in the scope of a module directive
-                if not mod:
-                    mod = self.env.currmodule
-            return fullname, mod, [base], args, retann
+        elif what in ('exception', 'function', 'class', 'data'):
+            if mod is None:
+                if path:
+                    mod = path.rstrip('.')
+                else:
+                    # if documenting a toplevel object without explicit module, it can
+                    # be contained in another auto directive ...
+                    if hasattr(self.env, 'autodoc_current_module'):
+                        mod = self.env.autodoc_current_module
+                    # ... or in the scope of a module directive
+                    if not mod:
+                        mod = self.env.currmodule
+            return mod, parents + [base], args, retann
 
         else:
-            if path:
-                mod_cls = path.rstrip('.')
-            else:
-                mod_cls = None
-                # if documenting a class-level object without path, there must be a
-                # current class, either from a parent auto directive ...
-                if hasattr(self.env, 'autodoc_current_class'):
-                    mod_cls = self.env.autodoc_current_class
-                # ... or from a class directive
-                if mod_cls is None:
-                    mod_cls = self.env.currclass
-                # ... if still None, there's no way to know
-                if mod_cls is None:
-                    return fullname, None, [], args, retann
-            mod, cls = rpartition(mod_cls, '.')
-            # if the module name is still missing, get it like above
-            if not mod and hasattr(self.env, 'autodoc_current_module'):
-                mod = self.env.autodoc_current_module
-            if not mod:
-                mod = self.env.currmodule
-            return fullname, mod, [cls, base], args, retann
+            if mod is None:
+                if path:
+                    mod_cls = path.rstrip('.')
+                else:
+                    mod_cls = None
+                    # if documenting a class-level object without path, there must be a
+                    # current class, either from a parent auto directive ...
+                    if hasattr(self.env, 'autodoc_current_class'):
+                        mod_cls = self.env.autodoc_current_class
+                    # ... or from a class directive
+                    if mod_cls is None:
+                        mod_cls = self.env.currclass
+                    # ... if still None, there's no way to know
+                    if mod_cls is None:
+                        return None, [], None, None
+                mod, cls = rpartition(mod_cls, '.')
+                parents = [cls]
+                # if the module name is still missing, get it like above
+                if not mod and hasattr(self.env, 'autodoc_current_module'):
+                    mod = self.env.autodoc_current_module
+                if not mod:
+                    mod = self.env.currmodule
+            return mod, parents + [base], args, retann
 
     def format_signature(self, what, name, obj, args, retann):
         """
         Return the signature of the object, formatted for display.
         """
-        if what not in ('class', 'method', 'function'):
+        if what not in ('class', 'method', 'staticmethod', 'classmethod',
+                        'function'):
             return ''
 
         err = None
@@ -361,7 +325,8 @@ class RstGenerator(object):
                     getargs = False
                 if getargs:
                     argspec = inspect.getargspec(obj)
-                    if what in ('class', 'method') and argspec[0] and \
+                    if what in ('class', 'method', 'staticmethod',
+                                'classmethod') and argspec[0] and \
                            argspec[0][0] in ('cls', 'self'):
                         del argspec[0][0]
                     args = inspect.formatargspec(*argspec)
@@ -375,38 +340,35 @@ class RstGenerator(object):
             args, retann = result
 
         if args is not None:
-            return '%s%s' % (args, retann or '')
+            return '%s%s' % (args, retann and (' -> %s' % retann) or '')
         elif err:
             # re-raise the error for perusal of the handler in generate()
             raise RuntimeError(err)
         else:
             return ''
 
-    def generate(self, what, name, members, add_content, indent=u'', check_module=False):
+    def generate(self, what, name, members, add_content, indent=u'', check_module=False,
+                 no_docstring=False):
         """
         Generate reST for the object in self.result.
         """
-        fullname, mod, objpath, args, retann = self.resolve_name(what, name)
+        mod, objpath, args, retann = self.resolve_name(what, name)
         if not mod:
             # need a module to import
             self.warn('don\'t know which module to import for autodocumenting %r '
                       '(try placing a "module" or "currentmodule" directive in the '
-                      'document, or giving an explicit module name)' % fullname)
+                      'document, or giving an explicit module name)' % name)
             return
+        # fully-qualified name
+        fullname = mod + (objpath and '.' + '.'.join(objpath) or '')
 
         # the name to put into the generated directive -- doesn't contain the module
         name_in_directive = '.'.join(objpath) or mod
 
         # now, import the module and get object to document
         try:
-            todoc = module = __import__(mod, None, None, ['foo'])
-            if hasattr(module, '__file__') and module.__file__:
-                modfile = module.__file__
-                if modfile[-4:].lower() in ('.pyc', '.pyo'):
-                    modfile = modfile[:-1]
-                self.filename_set.add(modfile)
-            else:
-                modfile = None  # e.g. for builtin and C modules
+            __import__(mod)
+            todoc = module = sys.modules[mod]
             for part in objpath:
                 todoc = getattr(todoc, part)
         except (ImportError, AttributeError), err:
@@ -415,28 +377,41 @@ class RstGenerator(object):
                       (what, str(fullname), err))
             return
 
+        # try to also get a source code analyzer for attribute docs
+        try:
+            analyzer = ModuleAnalyzer.for_module(mod)
+            # parse right now, to get PycodeErrors on parsing
+            analyzer.parse()
+        except PycodeError, err:
+            # no source file -- e.g. for builtin and C modules
+            analyzer = None
+        else:
+            self.filename_set.add(analyzer.srcname)
+
         # check __module__ of object if wanted (for members not given explicitly)
         if check_module:
             if hasattr(todoc, '__module__'):
                 if todoc.__module__ != mod:
                     return
 
-        # format the object's signature, if any
-        try:
-            sig = self.format_signature(what, name, todoc, args, retann)
-        except Exception, err:
-            self.warn('error while formatting signature for %s: %s' %
-                      (fullname, err))
-            sig = ''
-
         # make sure that the result starts with an empty line.  This is
         # necessary for some situations where another directive preprocesses
         # reST and no starting newline is present
         self.result.append(u'', '')
 
+        # format the object's signature, if any
+        try:
+            sig = self.format_signature(what, fullname, todoc, args, retann)
+        except Exception, err:
+            self.warn('error while formatting signature for %s: %s' %
+                      (fullname, err))
+            sig = ''
+
         # now, create the directive header
-        directive = (what == 'method' and is_static_method(todoc)) \
-                    and 'staticmethod' or what
+        if what == 'method':
+            directive = get_method_type(todoc)
+        else:
+            directive = what
         self.result.append(indent + u'.. %s:: %s%s' %
                            (directive, name_in_directive, sig), '<autodoc>')
         if what == 'module':
@@ -457,13 +432,14 @@ class RstGenerator(object):
             self.result.append(indent + u'   :noindex:', '<autodoc>')
         self.result.append(u'', '<autodoc>')
 
+        # add inheritance info, if wanted
         if self.options.show_inheritance and what in ('class', 'exception'):
             if len(todoc.__bases__):
                 bases = [b.__module__ == '__builtin__' and
                          u':class:`%s`' % b.__name__ or
                          u':class:`%s.%s`' % (b.__module__, b.__name__)
                          for b in todoc.__bases__]
-                self.result.append(indent + u'   Bases: %s' % ', '.join(bases),
+                self.result.append(indent + _(u'   Bases: %s') % ', '.join(bases),
                                    '<autodoc>')
                 self.result.append(u'', '<autodoc>')
 
@@ -471,22 +447,41 @@ class RstGenerator(object):
         if what != 'module':
             indent += u'   '
 
-        if modfile:
-            sourcename = '%s:docstring of %s' % (modfile, fullname)
+        # add content from attribute documentation
+        if analyzer:
+            # prevent encoding errors when the file name is non-ASCII
+            srcname = unicode(analyzer.srcname,
+                              sys.getfilesystemencoding(), 'replace')
+            sourcename = u'%s:docstring of %s' % (srcname, fullname)
+            attr_docs = analyzer.find_attr_docs()
+            if what in ('data', 'attribute'):
+                key = ('.'.join(objpath[:-1]), objpath[-1])
+                if key in attr_docs:
+                    no_docstring = True
+                    docstrings = [attr_docs[key]]
+                    for i, line in enumerate(self.process_doc(docstrings, what,
+                                                              fullname, todoc)):
+                        self.result.append(indent + line, sourcename, i)
         else:
-            sourcename = 'docstring of %s' % fullname
+            sourcename = u'docstring of %s' % fullname
+            attr_docs = {}
 
         # add content from docstrings
-        for i, line in enumerate(self.get_doc(what, fullname, todoc)):
-            self.result.append(indent + line, sourcename, i)
+        if not no_docstring:
+            encoding = analyzer and analyzer.encoding
+            docstrings = self.get_doc(what, todoc, encoding)
+            for i, line in enumerate(self.process_doc(docstrings, what,
+                                                      fullname, todoc)):
+                self.result.append(indent + line, sourcename, i)
 
-        # add source content, if present
+        # add additional content (e.g. from document), if present
         if add_content:
             for line, src in zip(add_content.data, add_content.items):
                 self.result.append(indent + line, src[0], src[1])
 
         # document members?
-        if not members or what in ('function', 'method', 'attribute'):
+        if not members or what in ('function', 'method', 'staticmethod',
+                                   'classmethod', 'data', 'attribute'):
             return
 
         # set current namespace for finding members
@@ -494,10 +489,10 @@ class RstGenerator(object):
         if objpath:
             self.env.autodoc_current_class = objpath[0]
 
-        # add members, if possible
-        _all = members == ['__all__']
+        # look for members to include
+        want_all_members = members == ['__all__']
         members_check_module = False
-        if _all:
+        if want_all_members:
             # unqualified :members: given
             if what == 'module':
                 if hasattr(todoc, '__all__'):
@@ -525,14 +520,29 @@ class RstGenerator(object):
                     all_members = sorted(todoc.__dict__.iteritems())
         else:
             all_members = [(mname, getattr(todoc, mname)) for mname in members]
-        for (membername, member) in all_members:
-            # ignore members whose name starts with _ by default
-            if _all and membername.startswith('_'):
-                continue
 
-            # ignore undocumented members if :undoc-members: is not given
-            doc = getattr(member, '__doc__', None)
-            skip = not self.options.undoc_members and not doc
+        # search for members in source code too
+        namespace = '.'.join(objpath)  # will be empty for modules
+
+        for (membername, member) in all_members:
+            # if isattr is True, the member is documented as an attribute
+            isattr = False
+            # if content is not None, no extra content from docstrings will be added
+            content = None
+
+            if want_all_members and membername.startswith('_'):
+                # ignore members whose name starts with _ by default
+                skip = True
+            else:
+                if (namespace, membername) in attr_docs:
+                    # keep documented attributes
+                    skip = False
+                    isattr = True
+                else:
+                    # ignore undocumented members if :undoc-members: is not given
+                    doc = getattr(member, '__doc__', None)
+                    skip = not self.options.undoc_members and not doc
+
             # give the user a chance to decide whether this member should be skipped
             if self.env.app:
                 # let extensions preprocess docstrings
@@ -543,30 +553,48 @@ class RstGenerator(object):
             if skip:
                 continue
 
+            # determine member type
             if what == 'module':
-                if isinstance(member, (types.FunctionType,
-                                       types.BuiltinFunctionType)):
+                if isinstance(member, (FunctionType, BuiltinFunctionType)):
                     memberwhat = 'function'
-                elif isinstance(member, types.ClassType) or \
-                     isinstance(member, type):
-                    if issubclass(member, base_exception):
+                elif isattr:
+                    memberwhat = 'attribute'
+                elif isinstance(member, clstypes):
+                    if member.__name__ != membername:
+                        # assume it's aliased
+                        memberwhat = 'data'
+                        content = ViewList([_('alias of :class:`%s`') % member.__name__],
+                                           source='')
+                    elif issubclass(member, base_exception):
                         memberwhat = 'exception'
                     else:
                         memberwhat = 'class'
                 else:
-                    # XXX: todo -- attribute docs
                     continue
             else:
-                if callable(member):
+                if inspect.isroutine(member):
                     memberwhat = 'method'
+                elif isattr:
+                    memberwhat = 'attribute'
+                elif isinstance(member, clstypes):
+                    if member.__name__ != membername:
+                        # assume it's aliased
+                        memberwhat = 'attribute'
+                        content = ViewList([_('alias of :class:`%s`') % member.__name__],
+                                           source='')
+                    else:
+                        memberwhat = 'class'
                 elif isdescriptor(member):
                     memberwhat = 'attribute'
                 else:
-                    # XXX: todo -- attribute docs
                     continue
-            full_membername = fullname + '.' + membername
-            self.generate(memberwhat, full_membername, ['__all__'], None, indent,
-                          check_module=members_check_module)
+
+            # give explicitly separated module name, so that members of inner classes
+            # can be documented
+            full_membername = mod + '::' + '.'.join(objpath + [membername])
+            self.generate(memberwhat, full_membername, ['__all__'],
+                          add_content=content, no_docstring=bool(content),
+                          indent=indent, check_module=members_check_module)
 
         self.env.autodoc_current_module = None
         self.env.autodoc_current_class = None
@@ -641,6 +669,8 @@ def setup(app):
                       1, (1, 0, 1), **cls_options)
     app.add_directive('autoexception', autoclass_directive,
                       1, (1, 0, 1), **cls_options)
+    app.add_directive('autodata', auto_directive, 1, (1, 0, 1),
+                      noindex=directives.flag)
     app.add_directive('autofunction', auto_directive, 1, (1, 0, 1),
                       noindex=directives.flag)
     app.add_directive('automethod', auto_directive, 1, (1, 0, 1),

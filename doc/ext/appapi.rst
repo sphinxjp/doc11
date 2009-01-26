@@ -13,7 +13,7 @@ the following public API:
 .. method:: Sphinx.add_builder(builder)
 
    Register a new builder.  *builder* must be a class that inherits from
-   :class:`~sphinx.builder.Builder`.
+   :class:`~sphinx.builders.Builder`.
 
 .. method:: Sphinx.add_config_value(name, default, rebuild_env)
 
@@ -85,6 +85,13 @@ the following public API:
    Register a Docutils role.  *name* must be the role name that occurs in the
    source, *role* the role function (see the `Docutils documentation
    <http://docutils.sourceforge.net/docs/howto/rst-roles.html>`_ on details).
+
+.. method:: Sphinx.add_generic_role(name, nodeclass)
+
+   Register a Docutils role that does nothing but wrap its contents in the
+   node given by *nodeclass*.
+
+   .. versionadded:: 0.6
 
 .. method:: Sphinx.add_description_unit(directivename, rolename, indextemplate='', parse_node=None, ref_nodeclass=None)
 
@@ -167,6 +174,13 @@ the following public API:
    :confval:`the docs for the config value <html_static_path>`.
 
    .. versionadded:: 0.5
+
+.. method:: Sphinx.add_lexer(alias, lexer)
+
+   Use *lexer*, which must be an instance of a Pygments lexer class, to
+   highlight code blocks with the given language *alias*.
+
+   .. versionadded:: 0.6
    
 .. method:: Sphinx.connect(event, callback)
 

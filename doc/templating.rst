@@ -19,10 +19,10 @@ No.  You have several other options:
   configuration value accordingly.
 
 * You can :ref:`write a custom builder <writing-builders>` that derives from
-  :class:`~sphinx.builder.StandaloneHTMLBuilder` and calls your template engine
+  :class:`~sphinx.builders.StandaloneHTMLBuilder` and calls your template engine
   of choice.
 
-* You can use the :class:`~sphinx.builder.PickleHTMLBuilder` that produces
+* You can use the :class:`~sphinx.builders.PickleHTMLBuilder` that produces
   pickle files with the page contents, and postprocess them using a custom tool,
   or use them in your Web application.
 
@@ -135,6 +135,10 @@ The following blocks exist in the ``layout`` template:
 `sidebarrel`
     The relation links (previous, next document) within the sidebar.
 
+`sidebarsourcelink`
+    The "Show source" link within the sidebar (normally only shown if this is
+    enabled by :confval:`html_show_sourcelink`).
+
 `sidebarsearch`
     The search box within the sidebar.  Override this if you want to place some
     content at the bottom of the sidebar.
@@ -217,8 +221,12 @@ in the future.
 
 .. data:: builder
 
-   The name of the builder (for builtin builders, ``html``, ``htmlhelp``, or
-   ``web``).
+   The name of the builder (e.g. ``html`` or ``htmlhelp``).
+
+.. data:: embedded
+
+   True if the built HTML is supposed to be embedded in some application that
+   handles navigation, e.g. HTML Help or Qt Help.
 
 .. data:: next
 
@@ -235,3 +243,18 @@ in the future.
 .. data:: prev
 
    Like :data:`next`, but for the previous page.
+
+
+In documents that are created from source files (as opposed to
+automatically-generated files like the module index, or documents that already
+are in HTML form), these variables are also available:
+
+.. data:: toc
+
+   The local table of contents for the current page, rendered as HTML bullet
+   lists.
+
+.. data:: toctree
+
+   The global TOC tree containing the current page, rendered as HTML bullet
+   lists.

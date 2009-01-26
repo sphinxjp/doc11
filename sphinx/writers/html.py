@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-    sphinx.htmlwriter
-    ~~~~~~~~~~~~~~~~~
+    sphinx.writers.html
+    ~~~~~~~~~~~~~~~~~~~
 
     docutils writers handling Sphinx' custom nodes.
 
@@ -58,6 +58,7 @@ class HTMLTranslator(BaseTranslator):
         self.highlightlang = builder.config.highlight_language
         self.highlightlinenothreshold = sys.maxint
         self.protect_literal_text = 0
+        self.add_permalinks = builder.config.html_add_permalinks
 
     def visit_desc(self, node):
         self.body.append(self.starttag(node, 'dl', CLASS=node['desctype']))
@@ -73,7 +74,7 @@ class HTMLTranslator(BaseTranslator):
         if node.parent['desctype'] in ('class', 'exception'):
             self.body.append('%s ' % node.parent['desctype'])
     def depart_desc_signature(self, node):
-        if node['ids'] and self.builder.add_definition_links:
+        if node['ids'] and self.add_permalinks and self.builder.add_permalinks:
             self.body.append(u'<a class="headerlink" href="#%s" ' % node['ids'][0] +
                              u'title="%s">\u00B6</a>' %
                              _('Permalink to this definition'))
@@ -87,6 +88,11 @@ class HTMLTranslator(BaseTranslator):
     def visit_desc_type(self, node):
         pass
     def depart_desc_type(self, node):
+        pass
+
+    def visit_desc_returns(self, node):
+        self.body.append(' &rarr; ')
+    def depart_desc_returns(self, node):
         pass
 
     def visit_desc_name(self, node):
@@ -253,6 +259,16 @@ class HTMLTranslator(BaseTranslator):
     def depart_highlightlang(self, node):
         pass
 
+    def visit_download_reference(self, node):
+        if node.hasattr('filename'):
+            self.body.append('<a href="%s">' % posixpath.join(
+                self.builder.dlpath, node['filename']))
+            self.context.append('</a>')
+        else:
+            self.context.append('')
+    def depart_download_reference(self, node):
+        self.body.append(self.context.pop())
+
     # overwritten
     def visit_image(self, node):
         olduri = node['uri']
@@ -304,6 +320,16 @@ class HTMLTranslator(BaseTranslator):
         pass
     def depart_module(self, node):
         pass
+
+    def visit_hlist(self, node):
+        self.body.append('<table class="hlist"><tr>')
+    def depart_hlist(self, node):
+        self.body.append('</tr></table>\n')
+
+    def visit_hlistcol(self, node):
+        self.body.append('<td>')
+    def depart_hlistcol(self, node):
+        self.body.append('</td>')
 
     def bulk_text_processor(self, text):
         return text
@@ -388,7 +414,7 @@ class HTMLTranslator(BaseTranslator):
 
     def depart_title(self, node):
         close_tag = self.context[-1]
-        if self.builder.add_header_links and \
+        if self.add_permalinks and self.builder.add_permalinks and \
                (close_tag.startswith('</h') or
                 close_tag.startswith('</a></h')) and \
                node.parent.hasattr('ids') and node.parent['ids']:
