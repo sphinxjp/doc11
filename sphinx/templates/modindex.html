@@ -2,7 +2,7 @@
 {% set title = _('Global Module Index') %}
 {% block extrahead %}
 {{ super() }}
-{% if builder != 'htmlhelp' and collapse_modindex %}
+{% if not embedded and collapse_modindex %}
     <script type="text/javascript">
       DOCUMENTATION_OPTIONS.COLLAPSE_MODINDEX = true;
     </script>
@@ -11,26 +11,6 @@
 {% block body %}
 
    <h1 id="global-module-index">{{ _('Global Module Index') }}</h1>
-{% if builder == 'web' and freqentries %}
-   <p>{{ _('Most popular modules:') }}</p>
-   <div class="modulecloud">
-   {%- for module in freqentries %}
-     <a href="../q/{{ module.name|e }}/" style="font-size: {{ module.size }}%">{{ module.name|e }}</a>
-   {%- endfor %}
-   </div>
-{% endif %}
-{% if builder == 'web' %}
-   <form class="pfform" action="" method="get">
-     {{ _('Show modules only available on these platforms') }}:<br>
-     {% for pl in platforms -%}
-     <input type="checkbox" name="pf" value="{{ pl }}" id="pl-{{ pl }}"
-            {%- if pl in showpf %} checked="checked"{% endif %}>
-     <label for="pl-{{ pl }}">{{ pl }}</label>
-     {% endfor %}
-     <input type="hidden" name="newpf" value="true">
-     <input type="submit" value="Apply">
-   </form>
-{% endif %}
 
    {%- for letter in letters %}
    <a href="#cap-{{ letter }}"><strong>{{ letter }}</strong></a> {% if not loop.last %}| {% endif %}
@@ -52,7 +32,7 @@
      {% if fname %}<a href="{{ fname }}">{% endif -%}
      <tt class="xref">{{ modname|e }}</tt>
      {%- if fname %}</a>{% endif %}
-   {%- if pform[0] %} <em>({{ pform|join(', ') }})</em>{% endif -%}
+   {%- if pform and pform[0] %} <em>({{ pform|join(', ') }})</em>{% endif -%}
    </td><td>{% if dep %}<strong>{{ _('Deprecated')}}:</strong>{% endif %}
      <em>{{ synops|e }}</em></td></tr>
    {%- endif -%}
