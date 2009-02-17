@@ -24,6 +24,7 @@ def setup_module():
     app.builder.env.app = app
     app.connect('autodoc-process-docstring', process_docstring)
     app.connect('autodoc-process-signature', process_signature)
+    app.connect('autodoc-skip-member', skip_member)
 
     options = Struct(
         inherited_members = False,
@@ -71,44 +72,51 @@ def process_signature(app, what, name, obj, options, args, retann):
         return '42', None
 
 
+def skip_member(app, what, name, obj, skip, options):
+    if name.startswith('_'):
+        return True
+    if name == 'skipmeth':
+        return True
+
+
 def test_resolve_name():
     # for modules
     assert gen.resolve_name('module', 'test_autodoc') == \
-           ('test_autodoc', 'test_autodoc', [], None, None)
+           ('test_autodoc', [], None, None)
     assert gen.resolve_name('module', 'test.test_autodoc') == \
-           ('test.test_autodoc', 'test.test_autodoc', [], None, None)
+           ('test.test_autodoc', [], None, None)
 
     assert gen.resolve_name('module', 'test(arg)') == \
-           ('test', 'test', [], None, None)
+           ('test', [], None, None)
     assert 'ignoring signature arguments' in gen.warnings[0]
     del gen.warnings[:]
 
     # for functions/classes
     assert gen.resolve_name('function', 'util.raises') == \
-           ('util.raises', 'util', ['raises'], None, None)
+           ('util', ['raises'], None, None)
     assert gen.resolve_name('function', 'util.raises(exc) -> None') == \
-           ('util.raises', 'util', ['raises'], 'exc', ' -> None')
+           ('util', ['raises'], 'exc', 'None')
     gen.env.autodoc_current_module = 'util'
     assert gen.resolve_name('function', 'raises') == \
-           ('raises', 'util', ['raises'], None, None)
+           ('util', ['raises'], None, None)
     gen.env.autodoc_current_module = None
     gen.env.currmodule = 'util'
     assert gen.resolve_name('function', 'raises') == \
-           ('raises', 'util', ['raises'], None, None)
+           ('util', ['raises'], None, None)
     assert gen.resolve_name('class', 'TestApp') == \
-           ('TestApp', 'util', ['TestApp'], None, None)
+           ('util', ['TestApp'], None, None)
 
     # for members
     gen.env.currmodule = 'foo'
     assert gen.resolve_name('method', 'util.TestApp.cleanup') == \
-           ('util.TestApp.cleanup', 'util', ['TestApp', 'cleanup'], None, None)
+           ('util', ['TestApp', 'cleanup'], None, None)
     gen.env.currmodule = 'util'
     gen.env.currclass = 'Foo'
     gen.env.autodoc_current_class = 'TestApp'
     assert gen.resolve_name('method', 'cleanup') == \
-           ('cleanup', 'util', ['TestApp', 'cleanup'], None, None)
+           ('util', ['TestApp', 'cleanup'], None, None)
     assert gen.resolve_name('method', 'TestApp.cleanup') == \
-           ('TestApp.cleanup', 'util', ['TestApp', 'cleanup'], None, None)
+           ('util', ['TestApp', 'cleanup'], None, None)
 
     # and clean up
     gen.env.currmodule = None
@@ -123,10 +131,11 @@ def test_format_signature():
     # test for functions
     def f(a, b, c=1, **d):
         pass
-    assert gen.format_signature('function', 'f', f, None, None) == '(a, b, c=1, **d)'
+    assert gen.format_signature('function', 'f', f, None, None) == \
+           '(a, b, c=1, **d)'
     assert gen.format_signature('function', 'f', f, 'a, b, c, d', None) == \
            '(a, b, c, d)'
-    assert gen.format_signature('function', 'f', f, None, ' -> None') == \
+    assert gen.format_signature('function', 'f', f, None, 'None') == \
            '(a, b, c=1, **d) -> None'
 
     # test for classes
@@ -143,8 +152,9 @@ def test_format_signature():
     class G(F, object):
         pass
     for C in (F, G):
-        assert gen.format_signature('class', 'C', C, None, None) == '(a, b=None)'
-    assert gen.format_signature('class', 'C', D, 'a, b', ' -> X') == '(a, b) -> X'
+        assert gen.format_signature('class', 'C', C, None, None) == \
+               '(a, b=None)'
+    assert gen.format_signature('class', 'C', D, 'a, b', 'X') == '(a, b) -> X'
 
     # test for methods
     class H:
@@ -152,12 +162,16 @@ def test_format_signature():
             pass
         def foo2(b, *c):
             pass
-    assert gen.format_signature('method', 'H.foo', H.foo1, None, None) == '(b, *c)'
-    assert gen.format_signature('method', 'H.foo', H.foo1, 'a', None) == '(a)'
-    assert gen.format_signature('method', 'H.foo', H.foo2, None, None) == '(b, *c)'
+    assert gen.format_signature('method', 'H.foo', H.foo1, None, None) == \
+           '(b, *c)'
+    assert gen.format_signature('method', 'H.foo', H.foo1, 'a', None) == \
+           '(a)'
+    assert gen.format_signature('method', 'H.foo', H.foo2, None, None) == \
+           '(b, *c)'
 
     # test exception handling
-    raises(RuntimeError, gen.format_signature, 'function', 'int', int, None, None)
+    raises(RuntimeError, gen.format_signature,
+           'function', 'int', int, None, None)
 
     # test processing by event handler
     assert gen.format_signature('method', 'bar', H.foo1, None, None) == '42'
@@ -165,13 +179,14 @@ def test_format_signature():
 
 def test_get_doc():
     def getdocl(*args):
-        # strip the empty line at the end
-        return list(gen.get_doc(*args))[:-1]
+        ds = gen.get_doc(*args)
+        # for testing purposes, concat them and strip the empty line at the end
+        return sum(ds, [])[:-1]
 
     # objects without docstring
     def f():
         pass
-    assert getdocl('function', 'f', f) == []
+    assert getdocl('function', f) == []
 
     # standard function, diverse docstring styles...
     def f():
@@ -181,7 +196,7 @@ def test_get_doc():
         Docstring
         """
     for func in (f, g):
-        assert getdocl('function', 'f', func) == ['Docstring']
+        assert getdocl('function', func) == ['Docstring']
 
     # first line vs. other lines indentation
     def f():
@@ -190,17 +205,17 @@ def test_get_doc():
         Other
           lines
         """
-    assert getdocl('function', 'f', f) == ['First line', '', 'Other', '  lines']
+    assert getdocl('function', f) == ['First line', '', 'Other', '  lines']
 
     # charset guessing (this module is encoded in utf-8)
     def f():
         """Döcstring"""
-    assert getdocl('function', 'f', f) == [u'Döcstring']
+    assert getdocl('function', f) == [u'Döcstring']
 
     # already-unicode docstrings must be taken literally
     def f():
         u"""Döcstring"""
-    assert getdocl('function', 'f', f) == [u'Döcstring']
+    assert getdocl('function', f) == [u'Döcstring']
 
     # class docstring: depends on config value which one is taken
     class C:
@@ -208,11 +223,11 @@ def test_get_doc():
         def __init__(self):
             """Init docstring"""
     gen.env.config.autoclass_content = 'class'
-    assert getdocl('class', 'C', C) == ['Class docstring']
+    assert getdocl('class', C) == ['Class docstring']
     gen.env.config.autoclass_content = 'init'
-    assert getdocl('class', 'C', C) == ['Init docstring']
+    assert getdocl('class', C) == ['Init docstring']
     gen.env.config.autoclass_content = 'both'
-    assert getdocl('class', 'C', C) == ['Class docstring', '', 'Init docstring']
+    assert getdocl('class', C) == ['Class docstring', '', 'Init docstring']
 
     class D:
         """Class docstring"""
@@ -224,26 +239,30 @@ def test_get_doc():
             """
 
     # Indentation is normalized for 'both'
-    assert getdocl('class', 'D', D) == ['Class docstring', '', 'Init docstring',
-                                        '', 'Other', ' lines']
+    assert getdocl('class', D) == ['Class docstring', '', 'Init docstring',
+                                   '', 'Other', ' lines']
+
+
+def test_docstring_processing():
+    def process(what, name, obj):
+        return list(gen.process_doc(gen.get_doc(what, obj), what, name, obj))
 
     class E:
         def __init__(self):
             """Init docstring"""
 
     # docstring processing by event handler
-    assert getdocl('class', 'bar', E) == ['Init docstring', '', '42']
+    assert process('class', 'bar', E) == ['Init docstring', '', '42', '']
 
-
-def test_docstring_processing_functions():
-    lid = app.connect('autodoc-process-docstring', cut_lines(1, 1, ['function']))
+    lid = app.connect('autodoc-process-docstring',
+                      cut_lines(1, 1, ['function']))
     def f():
         """
         first line
         second line
         third line
         """
-    assert list(gen.get_doc('function', 'f', f)) == ['second line', '']
+    assert process('function', 'f', f) == ['second line', '']
     app.disconnect(lid)
 
     lid = app.connect('autodoc-process-docstring', between('---', ['function']))
@@ -255,7 +274,7 @@ def test_docstring_processing_functions():
         ---
         third line
         """
-    assert list(gen.get_doc('function', 'f', f)) == ['second line', '']
+    assert process('function', 'f', f) == ['second line', '']
     app.disconnect(lid)
 
 
@@ -277,11 +296,12 @@ def test_generate():
         del processed_docstrings[:]
         del processed_signatures[:]
         assert_works(*args)
-        assert set(processed_docstrings) | set(processed_signatures) == set(items)
+        assert set(processed_docstrings) | set(processed_signatures) == \
+               set(items)
 
     def assert_result_contains(item, *args):
         gen.generate(*args)
-        print '\n'.join(gen.result)
+        #print '\n'.join(gen.result)
         assert len(gen.warnings) == 0, gen.warnings
         assert item in gen.result
         del gen.result[:]
@@ -301,8 +321,10 @@ def test_generate():
     assert_result_contains('   Function.', 'method', 'Class.meth', [], None)
     add_content = ViewList()
     add_content.append('Content.', '', 0)
-    assert_result_contains('   Function.', 'method', 'Class.meth', [], add_content)
-    assert_result_contains('   Content.', 'method', 'Class.meth', [], add_content)
+    assert_result_contains('   Function.', 'method',
+                           'Class.meth', [], add_content)
+    assert_result_contains('   Content.', 'method',
+                           'Class.meth', [], add_content)
 
     # test check_module
     gen.generate('function', 'raises', None, None, check_module=True)
@@ -313,34 +335,40 @@ def test_generate():
     assert_works('exception', 'test_autodoc.CustomEx', [], None)
 
     # test diverse inclusion settings for members
-    should = [('class', 'Class')]
+    should = [('class', 'test_autodoc.Class')]
     assert_processes(should, 'class', 'Class', [], None)
-    should.extend([('method', 'Class.meth')])
+    should.extend([('method', 'test_autodoc.Class.meth')])
     assert_processes(should, 'class', 'Class', ['meth'], None)
-    should.extend([('attribute', 'Class.prop')])
+    should.extend([('attribute', 'test_autodoc.Class.prop'),
+                   ('attribute', 'test_autodoc.Class.attr'),
+                   ('attribute', 'test_autodoc.Class.docattr'),
+                   ('attribute', 'test_autodoc.Class.udocattr')])
     assert_processes(should, 'class', 'Class', ['__all__'], None)
     options.undoc_members = True
-    should.append(('method', 'Class.undocmeth'))
+    should.append(('method', 'test_autodoc.Class.undocmeth'))
     assert_processes(should, 'class', 'Class', ['__all__'], None)
     options.inherited_members = True
-    should.append(('method', 'Class.inheritedmeth'))
+    should.append(('method', 'test_autodoc.Class.inheritedmeth'))
     assert_processes(should, 'class', 'Class', ['__all__'], None)
 
     # test module flags
-    assert_result_contains('.. module:: test_autodoc', 'module',
-                           'test_autodoc', [], None)
+    assert_result_contains('.. module:: test_autodoc',
+                           'module', 'test_autodoc', [], None)
     options.synopsis = 'Synopsis'
-    assert_result_contains('   :synopsis: Synopsis', 'module', 'test_autodoc', [], None)
+    assert_result_contains('   :synopsis: Synopsis',
+                           'module', 'test_autodoc', [], None)
     options.deprecated = True
-    assert_result_contains('   :deprecated:', 'module', 'test_autodoc', [], None)
+    assert_result_contains('   :deprecated:',
+                           'module', 'test_autodoc', [], None)
     options.platform = 'Platform'
-    assert_result_contains('   :platform: Platform', 'module', 'test_autodoc', [], None)
+    assert_result_contains('   :platform: Platform',
+                           'module', 'test_autodoc', [], None)
     # test if __all__ is respected for modules
-    assert_result_contains('.. class:: Class', 'module', 'test_autodoc',
-                           ['__all__'], None)
+    assert_result_contains('.. class:: Class',
+                           'module', 'test_autodoc', ['__all__'], None)
     try:
-        assert_result_contains('.. exception:: CustomEx', 'module', 'test_autodoc',
-                               ['__all__'], None)
+        assert_result_contains('.. exception:: CustomEx',
+                               'module', 'test_autodoc', ['__all__'], None)
     except AssertionError:
         pass
     else:
@@ -354,6 +382,19 @@ def test_generate():
     # okay, now let's get serious about mixing Python and C signature stuff
     assert_result_contains('.. class:: CustomDict', 'class', 'CustomDict',
                            ['__all__'], None)
+
+    # test inner class handling
+    assert_processes([('class', 'test_autodoc.Outer'),
+                      ('class', 'test_autodoc.Outer.Inner'),
+                      ('method', 'test_autodoc.Outer.Inner.meth')],
+                     'class', 'Outer', ['__all__'], None)
+
+    # test generation for C modules (which have no source file)
+    gen.env.currmodule = 'time'
+    assert_processes([('function', 'time.asctime')],
+                     'function', 'asctime', [], None)
+    assert_processes([('function', 'time.asctime')],
+                     'function', 'asctime', [], None)
 
 
 # --- generate fodder ------------
@@ -380,9 +421,25 @@ class Class(Base):
     def undocmeth(self):
         pass
 
+    def skipmeth(self):
+        """Method that should be skipped."""
+        pass
+
+    # should not be documented
+    skipattr = 'foo'
+
+    #: should be documented -- süß
+    attr = 'bar'
+
     @property
     def prop(self):
         """Property."""
+
+    docattr = 'baz'
+    """should likewise be documented -- süß"""
+
+    udocattr = 'quux'
+    u"""should be documented as well - süß"""
 
 class CustomDict(dict):
     """Docstring."""
@@ -392,3 +449,16 @@ def function(foo, *args, **kwds):
     Return spam.
     """
     pass
+
+
+class Outer(object):
+    """Foo"""
+
+    class Inner(object):
+        """Foo"""
+
+        def meth(self):
+            """Foo"""
+
+    # should be documented as an alias
+    factory = dict

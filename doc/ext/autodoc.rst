@@ -68,7 +68,7 @@ directive.
             Boil the noodle *time* minutes.
 
    **Options and advanced usage**
-         
+
    * If you want to automatically document members, there's a ``members``
      option::
 
@@ -115,9 +115,11 @@ directive.
 
      .. versionadded:: 0.4
 
-   * The :dir:`autoclass` and :dir:`autoexception` directives also support a
-     flag option called ``show-inheritance``.  When given, a list of base
-     classes will be inserted just below the class signature.
+   * The :dir:`automodule`, :dir:`autoclass` and :dir:`autoexception` directives
+     also support a flag option called ``show-inheritance``.  When given, a list
+     of base classes will be inserted just below the class signature (when used
+     with :dir:`automodule`, this will be inserted for every class that is
+     documented in the module).
 
      .. versionadded:: 0.4
 
@@ -142,11 +144,29 @@ directive.
 
 
 .. directive:: autofunction
+               autodata
                automethod
                autoattribute
 
    These work exactly like :dir:`autoclass` etc., but do not offer the options
    used for automatic member documentation.
+
+   For module data members and class attributes, documentation can either be put
+   into a special-formatted comment *before* the attribute definition, or in a
+   docstring *after* the definition.  This means that in the following class
+   definition, both attributes can be autodocumented::
+
+      class Foo:
+          """Docstring for class Foo."""
+
+          #: Doc comment for attribute Foo.bar.
+          bar = 1
+
+          baz = 2
+          """Docstring for attribute Foo.baz."""
+
+   .. versionchanged:: 0.6
+      :dir:`autodata` and :dir:`autoattribute` can now extract docstrings.
 
    .. note::
 

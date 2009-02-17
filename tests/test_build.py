@@ -10,6 +10,7 @@
 """
 
 import os
+import re
 import sys
 import difflib
 import htmlentitydefs
@@ -19,8 +20,14 @@ from subprocess import Popen, PIPE
 from util import *
 from etree13 import ElementTree as ET
 
-from sphinx.builder import StandaloneHTMLBuilder, LaTeXBuilder
-from sphinx.latexwriter import LaTeXTranslator
+try:
+    import pygments
+except ImportError:
+    pygments = None
+
+from sphinx.builders.html import StandaloneHTMLBuilder
+from sphinx.builders.latex import LaTeXBuilder
+from sphinx.writers.latex import LaTeXTranslator
 
 
 html_warnfile = StringIO()
@@ -28,9 +35,11 @@ latex_warnfile = StringIO()
 
 ENV_WARNINGS = """\
 WARNING: %(root)s/images.txt:9: Image file not readable: foo.png
-WARNING: %(root)s/images.txt:23: Nonlocal image URI found: http://www.python.org/logo.png
-WARNING: %(root)s/includes.txt:: (WARNING/2) Encoding 'utf-8' used for reading included \
-file u'wrongenc.inc' seems to be wrong, try giving an :encoding: option
+WARNING: %(root)s/images.txt:23: Nonlocal image URI found: \
+http://www.python.org/logo.png
+WARNING: %(root)s/includes.txt:: (WARNING/2) Encoding 'utf-8' used for reading \
+included file u'wrongenc.inc' seems to be wrong, try giving an :encoding: option
+WARNING: %(root)s/includes.txt:56: Download file not readable: nonexisting.png
 """
 
 HTML_WARNINGS = ENV_WARNINGS + """\
@@ -53,15 +62,17 @@ HTML_XPATH = {
     },
     'subdir/images.html': {
         ".//img[@src='../_images/img1.png']": '',
+        ".//img[@src='../_images/rimg.png']": '',
     },
     'includes.html': {
-        ".//pre/span[@class='s']": u'üöä',
         ".//pre": u'Max Strauß',
+        ".//a[@href='_downloads/img.png']": '',
+        ".//a[@href='_downloads/img1.png']": '',
     },
     'autodoc.html': {
         ".//dt[@id='test_autodoc.Class']": '',
-        ".//dt[@id='test_autodoc.function']/em": '**kwds',
-        ".//dd": 'Return spam.',
+        ".//dt[@id='test_autodoc.function']/em": r'\*\*kwds',
+        ".//dd": r'Return spam\.',
     },
     'markup.html': {
         ".//meta[@name='author'][@content='Me']": '',
@@ -69,6 +80,7 @@ HTML_XPATH = {
         ".//a[@href='contents.html#ref1']": '',
         ".//div[@id='label']": '',
         ".//span[@class='option']": '--help',
+        ".//p": 'A global substitution.',
     },
     'desc.html': {
         ".//dt[@id='mod.Cls.meth1']": '',
@@ -77,13 +89,31 @@ HTML_XPATH = {
     },
     'contents.html': {
         ".//meta[@name='hc'][@content='hcval']": '',
-        ".//td[@class='label']": '[Ref1]',
+        ".//meta[@name='testopt'][@content='testoverride']": '',
+        ".//td[@class='label']": r'\[Ref1\]',
         ".//li[@class='toctree-l1']/a": 'Testing various markup',
         ".//li[@class='toctree-l2']/a": 'Admonitions',
         ".//title": 'Sphinx <Tests>',
         ".//div[@class='footer']": 'Georg Brandl & Team',
+        ".//a[@href='http://python.org/']": '',
+    },
+    '_static/statictmpl.html': {
+        ".//project": 'Sphinx <Tests>',
     },
 }
+
+if pygments:
+    HTML_XPATH['includes.html'].update({
+        ".//pre/span[@class='s']": u'üöä',
+        ".//div[@class='inc-pyobj1 highlight-text']/div/pre":
+            r'^class Foo:\n    pass\n\s*$',
+        ".//div[@class='inc-pyobj2 highlight-text']/div/pre":
+            r'^    def baz\(\):\n        pass\n\s*$',
+        ".//div[@class='inc-lines highlight-text']/div/pre":
+            r'^class Foo:\n    pass\nclass Bar:\n$',
+        ".//div[@class='inc-startend highlight-text']/div/pre":
+            ur'^foo = u"Including Unicode characters: üöä"\n$',
+    })
 
 class NslessParser(ET.XMLParser):
     """XMLParser that throws away namespaces in tag names."""
@@ -113,18 +143,25 @@ def test_html(app):
         parser = NslessParser()
         parser.entity.update(htmlentitydefs.entitydefs)
         etree = ET.parse(os.path.join(app.outdir, fname), parser)
-        for path, text in paths.iteritems():
+        for path, check in paths.iteritems():
             nodes = list(etree.findall(path))
+            if not nodes:
+                import pdb; pdb.set_trace()
             assert nodes != []
-            if not text:
+            if hasattr(check, '__call__'):
+                check(nodes)
+            elif not check:
                 # only check for node presence
                 continue
-            for node in nodes:
-                if node.text and text in node.text:
-                    break
             else:
-                assert False, ('%r not found in any node matching '
-                               'path %s in %s' % (text, path, fname))
+                rex = re.compile(check)
+                for node in nodes:
+                    if node.text and rex.search(node.text):
+                        break
+                else:
+                    assert False, ('%r not found in any node matching '
+                                   'path %s in %s: %r' % (check, path, fname,
+                                   [node.text for node in nodes]))
 
 
 @with_app(buildername='latex', warning=latex_warnfile)
@@ -154,12 +191,15 @@ def test_latex(app):
             return True
 
     if kpsetest('article.sty') is None:
-        print >>sys.stderr, 'info: not running latex, it doesn\'t seem to be installed'
+        print >>sys.stderr, \
+              'info: not running latex, it doesn\'t seem to be installed'
         return
-    for filename in ['fancyhdr.sty', 'fancybox.sty', 'titlesec.sty', 'amsmath.sty',
-                     'framed.sty', 'color.sty', 'fancyvrb.sty', 'threeparttable.sty']:
+    for filename in ['fancyhdr.sty', 'fancybox.sty', 'titlesec.sty',
+                     'amsmath.sty', 'framed.sty', 'color.sty', 'fancyvrb.sty',
+                     'threeparttable.sty']:
         if not kpsetest(filename):
-            print >>sys.stderr, 'info: not running latex, the %s package doesn\'t ' \
+            print >>sys.stderr, \
+                  'info: not running latex, the %s package doesn\'t ' \
                   'seem to be installed' % filename
             return
 
@@ -168,8 +208,8 @@ def test_latex(app):
     os.chdir(app.outdir)
     try:
         try:
-            p = Popen(['pdflatex', '--interaction=nonstopmode', 'SphinxTests.tex'],
-                      stdout=PIPE, stderr=PIPE)
+            p = Popen(['pdflatex', '--interaction=nonstopmode',
+                       'SphinxTests.tex'], stdout=PIPE, stderr=PIPE)
         except OSError, err:
             pass  # most likely pdflatex was not found
         else:

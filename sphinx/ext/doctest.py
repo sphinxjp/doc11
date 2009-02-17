@@ -22,7 +22,7 @@ doctest = __import__('doctest')
 from docutils import nodes
 from docutils.parsers.rst import directives
 
-from sphinx.builder import Builder
+from sphinx.builders import Builder
 from sphinx.util.console import bold
 
 blankline_re = re.compile(r'^\s*<BLANKLINE>', re.MULTILINE)
@@ -99,9 +99,12 @@ class TestGroup(object):
         self.setup = []
         self.tests = []
 
-    def add_code(self, code):
+    def add_code(self, code, prepend=False):
         if code.type == 'testsetup':
-            self.setup.append(code)
+            if prepend:
+                self.setup.insert(0, code)
+            else:
+                self.setup.append(code)
         elif code.type == 'doctest':
             self.tests.append([code])
         elif code.type == 'testcode':
@@ -258,10 +261,16 @@ Doctest summary
         for code in add_to_all_groups:
             for group in groups.itervalues():
                 group.add_code(code)
+        if self.config.doctest_global_setup:
+            code = TestCode(self.config.doctest_global_setup,
+                            'testsetup', lineno=0)
+            for group in groups.itervalues():
+                group.add_code(code, prepend=True)
         if not groups:
             return
 
-        self._out('\nDocument: %s\n----------%s\n' % (docname, '-'*len(docname)))
+        self._out('\nDocument: %s\n----------%s\n' %
+                  (docname, '-'*len(docname)))
         for group in groups.itervalues():
             self.test_group(group, self.env.doc2path(docname, base=None))
         # Separately count results from setup code
@@ -280,7 +289,8 @@ Doctest summary
         ns = {}
         examples = []
         for setup in group.setup:
-            examples.append(doctest.Example(setup.code, '', lineno=setup.lineno))
+            examples.append(doctest.Example(setup.code, '',
+                                            lineno=setup.lineno))
         if examples:
             # simulate a doctest with the setup code
             setup_doctest = doctest.DocTest(examples, {},
@@ -335,3 +345,4 @@ def setup(app):
     # this config value adds to sys.path
     app.add_config_value('doctest_path', [], False)
     app.add_config_value('doctest_test_doctest_blocks', 'default', False)
+    app.add_config_value('doctest_global_setup', '', False)
