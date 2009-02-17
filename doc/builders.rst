@@ -3,7 +3,7 @@
 Available builders
 ==================
 
-.. module:: sphinx.builder
+.. module:: sphinx.builders
    :synopsis: Available built-in builder classes.
 
 These are the built-in Sphinx builders.  More builders can be added by
@@ -13,6 +13,7 @@ The builder's "name" must be given to the **-b** command-line option of
 :program:`sphinx-build` to select a builder.
 
 
+.. module:: sphinx.builders.html
 .. class:: StandaloneHTMLBuilder
 
    This is the standard HTML builder.  Its output is a directory with HTML
@@ -28,8 +29,9 @@ The builder's "name" must be given to the **-b** command-line option of
    also generates HTML Help support files that allow the Microsoft HTML Help
    Workshop to compile them into a CHM file.
 
-   Its name is ``htmlhelp``. 
+   Its name is ``htmlhelp``.
 
+.. module:: sphinx.builders.latex
 .. class:: LaTeXBuilder
 
    This builder produces a bunch of LaTeX files in the output directory.  You
@@ -50,6 +52,7 @@ The builder's "name" must be given to the **-b** command-line option of
 
    Its name is ``latex``.
 
+.. module:: sphinx.builders.text
 .. class:: TextBuilder
 
    This builder produces a text file for each reST file -- this is almost the
@@ -60,6 +63,7 @@ The builder's "name" must be given to the **-b** command-line option of
 
    .. versionadded:: 0.4
 
+.. currentmodule:: sphinx.builders.html
 .. class:: SerializingHTMLBuilder
 
    This builder uses a module that implements the Python serialization API
@@ -81,7 +85,7 @@ The builder's "name" must be given to the **-b** command-line option of
    .. _PHP serialization: http://pypi.python.org/pypi/phpserialize
 
    .. attribute:: implementation
-    
+
       A module that implements `dump()`, `load()`, `dumps()` and `loads()`
       functions that conform to the functions with the same names from the
       pickle module.  Known modules implementing this interface are
@@ -135,6 +139,7 @@ The builder's "name" must be given to the **-b** command-line option of
 
    .. versionadded:: 0.5
 
+.. module:: sphinx.builders.changes
 .. class:: ChangesBuilder
 
    This builder produces an HTML overview of all :dir:`versionadded`,
@@ -144,6 +149,7 @@ The builder's "name" must be given to the **-b** command-line option of
 
    Its name is ``changes``.
 
+.. module:: sphinx.builders.linkcheck
 .. class:: CheckExternalLinksBuilder
 
    This builder scans all documents for external links, tries to open them with

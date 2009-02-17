@@ -13,8 +13,10 @@ import os
 import re
 import sys
 import time
+import types
 import fnmatch
 import tempfile
+import posixpath
 import traceback
 from os import path
 
@@ -22,7 +24,7 @@ from os import path
 # Generally useful regular expressions.
 ws_re = re.compile(r'\s+')
 caption_ref_re = re.compile(r'^([^<]+?)\s*<(.+)>$')
-
+url_re = re.compile(r'(?P<schema>.+)://.*')
 
 # SEP separates path elements in the canonical file names
 #
@@ -46,6 +48,11 @@ def relative_uri(base, to):
         b2.pop(0)
         t2.pop(0)
     return ('..' + SEP) * (len(b2)-1) + SEP.join(t2)
+
+
+def docname_join(basedocname, docname):
+    return posixpath.normpath(
+        posixpath.join('/' + basedocname, '..', docname))[1:]
 
 
 def ensuredir(path):
@@ -274,14 +281,89 @@ def nested_parse_with_titles(state, content, node):
     surrounding_section_level = state.memo.section_level
     state.memo.title_styles = []
     state.memo.section_level = 0
-    state.nested_parse(content, 0, node, match_titles=1)
-    state.memo.title_styles = surrounding_title_styles
-    state.memo.section_level = surrounding_section_level
+    try:
+        return state.nested_parse(content, 0, node, match_titles=1)
+    finally:
+        state.memo.title_styles = surrounding_title_styles
+        state.memo.section_level = surrounding_section_level
 
 
 def ustrftime(format, *args):
     # strftime for unicode strings
     return time.strftime(unicode(format).encode('utf-8'), *args).decode('utf-8')
+
+
+class FilenameUniqDict(dict):
+    """
+    A dictionary that automatically generates unique names for its keys,
+    interpreted as filenames, and keeps track of a set of docnames they
+    appear in.  Used for images and downloadable files in the environment.
+    """
+    def __init__(self):
+        self._existing = set()
+
+    def add_file(self, docname, newfile):
+        if newfile in self:
+            self[newfile][0].add(docname)
+            return
+        uniquename = path.basename(newfile)
+        base, ext = path.splitext(uniquename)
+        i = 0
+        while uniquename in self._existing:
+            i += 1
+            uniquename = '%s%s%s' % (base, i, ext)
+        self[newfile] = (set([docname]), uniquename)
+        self._existing.add(uniquename)
+        return uniquename
+
+    def purge_doc(self, docname):
+        for filename, (docs, _) in self.items():
+            docs.discard(docname)
+            if not docs:
+                del self[filename]
+
+    def __getstate__(self):
+        return self._existing
+
+    def __setstate__(self, state):
+        self._existing = state
+
+
+def parselinenos(spec, total):
+    """
+    Parse a line number spec (such as "1,2,4-6") and return a list of
+    wanted line numbers.
+    """
+    items = list()
+    parts = spec.split(',')
+    for part in parts:
+        try:
+            begend = part.strip().split('-')
+            if len(begend) > 2:
+                raise ValueError
+            if len(begend) == 1:
+                items.append(int(begend[0])-1)
+            else:
+                start = (begend[0] == '') and 0 or int(begend[0])-1
+                end = (begend[1] == '') and total or int(begend[1])
+                items.extend(xrange(start, end))
+        except Exception, err:
+            raise ValueError('invalid line number spec: %r' % spec)
+    return items
+
+
+def force_decode(string, encoding):
+    if isinstance(string, str):
+        if encoding:
+            string = string.decode(encoding)
+        else:
+            try:
+                # try decoding with utf-8, should only work for real UTF-8
+                string = string.decode('utf-8')
+            except UnicodeError:
+                # last resort -- can't fail
+                string = string.decode('latin1')
+    return string
 
 
 def movefile(source, dest):
@@ -292,3 +374,40 @@ def movefile(source, dest):
         except OSError:
             pass
     os.rename(source, dest)
+
+
+# monkey-patch Node.traverse to get more speed
+# traverse() is called so many times during a build that it saves
+# on average 20-25% overall build time!
+
+def _all_traverse(self):
+    """Version of Node.traverse() that doesn't need a condition."""
+    result = []
+    result.append(self)
+    for child in self.children:
+        result.extend(child._all_traverse())
+    return result
+
+def _fast_traverse(self, cls):
+    """Version of Node.traverse() that only supports instance checks."""
+    result = []
+    if isinstance(self, cls):
+        result.append(self)
+    for child in self.children:
+        result.extend(child._fast_traverse(cls))
+    return result
+
+def _new_traverse(self, condition=None,
+                 include_self=1, descend=1, siblings=0, ascend=0):
+    if include_self and descend and not siblings and not ascend:
+        if condition is None:
+            return self._all_traverse()
+        elif isinstance(condition, (types.ClassType, type)):
+            return self._fast_traverse(condition)
+    return self._old_traverse(condition, include_self, descend, siblings, ascend)
+
+import docutils.nodes
+docutils.nodes.Node._old_traverse = docutils.nodes.Node.traverse
+docutils.nodes.Node._all_traverse = _all_traverse
+docutils.nodes.Node._fast_traverse = _fast_traverse
+docutils.nodes.Node.traverse = _new_traverse
