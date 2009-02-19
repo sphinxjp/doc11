@@ -7,7 +7,6 @@
 
     Gracefully adapted from the TextPress system by Armin.
 
-
     :copyright: Copyright 2007-2009 by the Sphinx team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
@@ -28,6 +27,10 @@ class SphinxError(Exception):
     way than normal exceptions.
     """
     category = 'Sphinx error'
+
+class SphinxWarning(SphinxError):
+    """Raised for warnings if warnings are treated as errors."""
+    category = 'Warning, treated as error'
 
 class ExtensionError(SphinxError):
     """Raised if something's wrong with the configuration."""
@@ -53,9 +56,10 @@ class ExtensionError(SphinxError):
 import sphinx
 from sphinx.roles import xfileref_role, innernodetypes
 from sphinx.config import Config
-from sphinx.builder import builtin_builders, StandaloneHTMLBuilder
-from sphinx.directives import desc_directive, target_directive, additional_xref_types
+from sphinx.builders import BUILTIN_BUILDERS
+from sphinx.directives import GenericDesc, Target, additional_xref_types
 from sphinx.environment import SphinxStandaloneReader
+from sphinx.util.compat import Directive, directive_dwim
 from sphinx.util.console import bold
 
 
@@ -77,10 +81,11 @@ CONFIG_FILENAME = 'conf.py'
 class Sphinx(object):
 
     def __init__(self, srcdir, confdir, outdir, doctreedir, buildername,
-                 confoverrides, status, warning=sys.stderr, freshenv=False):
+                 confoverrides, status, warning=sys.stderr, freshenv=False,
+                 warningiserror=False):
         self.next_listener_id = 0
         self._listeners = {}
-        self.builderclasses = builtin_builders.copy()
+        self.builderclasses = BUILTIN_BUILDERS.copy()
         self.builder = None
 
         self.srcdir = srcdir
@@ -94,11 +99,13 @@ class Sphinx(object):
         else:
             self._status = status
             self.quiet = False
+
         if warning is None:
             self._warning = StringIO()
         else:
             self._warning = warning
         self._warncount = 0
+        self.warningiserror = warningiserror
 
         self._events = events.copy()
 
@@ -128,6 +135,11 @@ class Sphinx(object):
                                                     buildername)))
 
         builderclass = self.builderclasses[buildername]
+        if isinstance(builderclass, tuple):
+            # builtin builder
+            mod, cls = builderclass
+            builderclass = getattr(
+                __import__('sphinx.builders.' + mod, None, None, [cls]), cls)
         self.builder = builderclass(self, freshenv=freshenv)
         self.emit('builder-inited')
 
@@ -144,14 +156,18 @@ class Sphinx(object):
             raise
         else:
             self.emit('build-finished', None)
+        self.builder.cleanup()
 
     def warn(self, message):
+        if self.warningiserror:
+            raise SphinxWarning('WARNING: %s\n' % message)
         self._warncount += 1
         try:
             self._warning.write('WARNING: %s\n' % message)
         except UnicodeEncodeError:
             encoding = getattr(self._warning, 'encoding', 'ascii')
-            self._warning.write(('WARNING: %s\n' % message).encode(encoding, 'replace'))
+            self._warning.write(('WARNING: %s\n' % message).encode(encoding,
+                                                                   'replace'))
 
     def info(self, message='', nonl=False):
         try:
@@ -170,7 +186,8 @@ class Sphinx(object):
         try:
             mod = __import__(extension, None, None, ['setup'])
         except ImportError, err:
-            raise ExtensionError('Could not import extension %s' % extension, err)
+            raise ExtensionError('Could not import extension %s' % extension,
+                                 err)
         if hasattr(mod, 'setup'):
             mod.setup(self)
 
@@ -180,15 +197,18 @@ class Sphinx(object):
             module, name = objname.rsplit('.', 1)
         except ValueError, err:
             raise ExtensionError('Invalid full object name %s' % objname +
-                                 (source and ' (needed for %s)' % source or ''), err)
+                                 (source and ' (needed for %s)' % source or ''),
+                                 err)
         try:
             return getattr(__import__(module, None, None, [name]), name)
         except ImportError, err:
             raise ExtensionError('Could not import %s' % module +
-                                 (source and ' (needed for %s)' % source or ''), err)
+                                 (source and ' (needed for %s)' % source or ''),
+                                 err)
         except AttributeError, err:
             raise ExtensionError('Could not find %s' % objname +
-                                 (source and ' (needed for %s)' % source or ''), err)
+                                 (source and ' (needed for %s)' % source or ''),
+                                 err)
 
     # event interface
 
@@ -228,16 +248,24 @@ class Sphinx(object):
 
     def add_builder(self, builder):
         if not hasattr(builder, 'name'):
-            raise ExtensionError('Builder class %s has no "name" attribute' % builder)
+            raise ExtensionError('Builder class %s has no "name" attribute'
+                                 % builder)
         if builder.name in self.builderclasses:
-            raise ExtensionError('Builder %r already exists (in module %s)' % (
-                builder.name, self.builderclasses[builder.name].__module__))
+            if isinstance(self.builderclasses[builder.name], tuple):
+                raise ExtensionError('Builder %r is a builtin builder' %
+                                     builder.name)
+            else:
+                raise ExtensionError(
+                    'Builder %r already exists (in module %s)' % (
+                    builder.name, self.builderclasses[builder.name].__module__))
         self.builderclasses[builder.name] = builder
 
-    def add_config_value(self, name, default, rebuild_env):
+    def add_config_value(self, name, default, rebuild):
         if name in self.config.values:
             raise ExtensionError('Config value %r already present' % name)
-        self.config.values[name] = (default, rebuild_env)
+        if rebuild in (False, True):
+            rebuild = rebuild and 'env' or ''
+        self.config.values[name] = (default, rebuild)
 
     def add_event(self, name):
         if name in self._events:
@@ -250,14 +278,14 @@ class Sphinx(object):
             try:
                 visit, depart = val
             except ValueError:
-                raise ExtensionError('Value for key %r must be a (visit, depart) '
-                                     'function tuple' % key)
+                raise ExtensionError('Value for key %r must be a '
+                                     '(visit, depart) function tuple' % key)
             if key == 'html':
-                from sphinx.htmlwriter import HTMLTranslator as translator
+                from sphinx.writers.html import HTMLTranslator as translator
             elif key == 'latex':
-                from sphinx.latexwriter import LaTeXTranslator as translator
+                from sphinx.writers.latex import LaTeXTranslator as translator
             elif key == 'text':
-                from sphinx.textwriter import TextTranslator as translator
+                from sphinx.writers.text import TextTranslator as translator
             else:
                 # ignore invalid keys for compatibility
                 continue
@@ -265,19 +293,29 @@ class Sphinx(object):
             if depart:
                 setattr(translator, 'depart_'+node.__name__, depart)
 
-    def add_directive(self, name, func, content, arguments, **options):
-        func.content = content
-        func.arguments = arguments
-        func.options = options
-        directives.register_directive(name, func)
+    def add_directive(self, name, obj, content=None, arguments=None, **options):
+        if isinstance(obj, Directive):
+            if content or arguments or options:
+                raise ExtensionError('when adding directive classes, no '
+                                     'additional arguments may be given')
+            directives.register_directive(name, directive_dwim(obj))
+        else:
+            obj.content = content
+            obj.arguments = arguments
+            obj.options = options
+            directives.register_directive(name, obj)
 
     def add_role(self, name, role):
         roles.register_canonical_role(name, role)
 
+    def add_generic_role(self, name, nodeclass):
+        roles.register_generic_role(name, nodeclass)
+
     def add_description_unit(self, directivename, rolename, indextemplate='',
                              parse_node=None, ref_nodeclass=None):
-        additional_xref_types[directivename] = (rolename, indextemplate, parse_node)
-        directives.register_directive(directivename, desc_directive)
+        additional_xref_types[directivename] = (rolename, indextemplate,
+                                                parse_node)
+        directives.register_directive(directivename, GenericDesc)
         roles.register_canonical_role(rolename, xfileref_role)
         if ref_nodeclass is not None:
             innernodetypes[rolename] = ref_nodeclass
@@ -285,7 +323,7 @@ class Sphinx(object):
     def add_crossref_type(self, directivename, rolename, indextemplate='',
                           ref_nodeclass=None):
         additional_xref_types[directivename] = (rolename, indextemplate, None)
-        directives.register_directive(directivename, target_directive)
+        directives.register_directive(directivename, Target)
         roles.register_canonical_role(rolename, xfileref_role)
         if ref_nodeclass is not None:
             innernodetypes[rolename] = ref_nodeclass
@@ -294,8 +332,20 @@ class Sphinx(object):
         SphinxStandaloneReader.transforms.append(transform)
 
     def add_javascript(self, filename):
+        from sphinx.builders.html import StandaloneHTMLBuilder
         StandaloneHTMLBuilder.script_files.append(
             posixpath.join('_static', filename))
+
+    def add_lexer(self, alias, lexer):
+        from sphinx.highlighting import lexers
+        if lexers is None:
+            return
+        lexers[alias] = lexer
+
+    def add_autodocumenter(self, cls):
+        from sphinx.ext import autodoc
+        autodoc.add_documenter(cls)
+        self.add_directive('auto' + cls.objtype, autodoc.AutoDirective)
 
 
 class TemplateBridge(object):
@@ -322,7 +372,14 @@ class TemplateBridge(object):
 
     def render(self, template, context):
         """
-        Called by the builder to render a *template* with a specified
-        context (a Python dictionary).
+        Called by the builder to render a template given as a filename with a
+        specified context (a Python dictionary).
+        """
+        raise NotImplementedError('must be implemented in subclasses')
+
+    def render_string(self, template, context):
+        """
+        Called by the builder to render a template given as a string with a
+        specified context (a Python dictionary).
         """
         raise NotImplementedError('must be implemented in subclasses')
