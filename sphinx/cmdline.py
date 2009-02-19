@@ -31,7 +31,8 @@ def usage(argv, msg=None):
 Sphinx v%s
 Usage: %s [options] sourcedir outdir [filenames...]
 Options: -b <builder> -- builder to use; default is html
-         -a        -- write all files; default is to only write new and changed files
+         -a        -- write all files; default is to only write \
+new and changed files
          -E        -- don't use a saved environment, always read all files
          -d <path> -- path for the cached environment and doctree files
                       (default: outdir/.doctrees)
@@ -43,6 +44,7 @@ Options: -b <builder> -- builder to use; default is html
          -N        -- do not do colored output
          -q        -- no output on stdout, just warnings on stderr
          -Q        -- no output at all, not even warnings
+         -W        -- turn warnings into errors
          -P        -- run Pdb on exception
 Modi:
 * without -a and without filenames, write new and changed files.
@@ -56,7 +58,7 @@ def main(argv):
         nocolor()
 
     try:
-        opts, args = getopt.getopt(argv[1:], 'ab:d:c:CD:A:NEqQP')
+        opts, args = getopt.getopt(argv[1:], 'ab:d:c:CD:A:NEqQWP')
         allopts = set(opt[0] for opt in opts)
         srcdir = confdir = path.abspath(args[0])
         if not path.isdir(srcdir):
@@ -64,7 +66,8 @@ def main(argv):
             return 1
         if not path.isfile(path.join(srcdir, 'conf.py')) and \
                '-c' not in allopts and '-C' not in allopts:
-            print >>sys.stderr, 'Error: Source directory doesn\'t contain conf.py file.'
+            print >>sys.stderr, ('Error: Source directory doesn\'t '
+                                 'contain conf.py file.')
             return 1
         outdir = path.abspath(args[1])
         if not path.isdir(outdir):
@@ -84,7 +87,7 @@ def main(argv):
         return 1
 
     buildername = all_files = None
-    freshenv = use_pdb = False
+    freshenv = warningiserror = use_pdb = False
     status = sys.stdout
     warning = sys.stderr
     confoverrides = {}
@@ -103,8 +106,8 @@ def main(argv):
         elif opt == '-c':
             confdir = path.abspath(val)
             if not path.isfile(path.join(confdir, 'conf.py')):
-                print >>sys.stderr, \
-                      'Error: Configuration directory doesn\'t contain conf.py file.'
+                print >>sys.stderr, ('Error: Configuration directory '
+                                     'doesn\'t contain conf.py file.')
                 return 1
         elif opt == '-C':
             confdir = None
@@ -112,8 +115,8 @@ def main(argv):
             try:
                 key, val = val.split('=')
             except ValueError:
-                print >>sys.stderr, \
-                      'Error: -D option argument must be in the form name=value.'
+                print >>sys.stderr, ('Error: -D option argument must be '
+                                     'in the form name=value.')
                 return 1
             try:
                 val = int(val)
@@ -124,8 +127,8 @@ def main(argv):
             try:
                 key, val = val.split('=')
             except ValueError:
-                print >>sys.stderr, \
-                      'Error: -A option argument must be in the form name=value.'
+                print >>sys.stderr, ('Error: -A option argument must be '
+                                     'in the form name=value.')
                 return 1
             try:
                 val = int(val)
@@ -141,19 +144,22 @@ def main(argv):
         elif opt == '-Q':
             status = None
             warning = None
+        elif opt == '-W':
+            warningiserror = True
         elif opt == '-P':
             use_pdb = True
     confoverrides['html_context'] = htmlcontext
 
     try:
         app = Sphinx(srcdir, confdir, outdir, doctreedir, buildername,
-                     confoverrides, status, warning, freshenv)
+                     confoverrides, status, warning, freshenv, warningiserror)
         app.build(all_files, filenames)
         return app.statuscode
     except KeyboardInterrupt:
         if use_pdb:
             import pdb
-            print >>sys.stderr, darkred('Interrupted while building, starting debugger:')
+            print >>sys.stderr, darkred('Interrupted while building, '
+                                        'starting debugger:')
             traceback.print_exc()
             pdb.post_mortem(sys.exc_info()[2])
         return 1
@@ -167,7 +173,8 @@ def main(argv):
         else:
             if isinstance(err, SystemMessage):
                 print >>sys.stderr, darkred('reST markup error:')
-                print >>sys.stderr, err.args[0].encode('ascii', 'backslashreplace')
+                print >>sys.stderr, err.args[0].encode('ascii',
+                                                       'backslashreplace')
             elif isinstance(err, SphinxError):
                 print >>sys.stderr, darkred('%s:' % err.category)
                 print >>sys.stderr, err
@@ -181,6 +188,6 @@ def main(argv):
                 print >>sys.stderr, ('Please also report this if it was a user '
                                      'error, so that a better error message '
                                      'can be provided next time.')
-                print >>sys.stderr, ('Send reports to sphinx-dev@googlegroups.com. '
-                                     'Thanks!')
+                print >>sys.stderr, ('Send reports to '
+                                     'sphinx-dev@googlegroups.com. Thanks!')
             return 1

@@ -109,10 +109,14 @@ The :program:`sphinx-build` script has several more options:
    Don't look for a configuration file; only take options via the ``-D`` option.
 
    .. versionadded:: 0.5
-   
+
 **-D** *setting=value*
-   Override a configuration value set in the :file:`conf.py` file.  (The value
-   must be a string value.)
+   Override a configuration value set in the :file:`conf.py` file.  The value
+   must be a string or dictionary value.  For the latter, supply the setting
+   name and key like this: ``-D latex_elements.docclass=scrartcl``.
+
+   .. versionchanged:: 0.6
+      The value can now be a dictionary value.
 
 **-A** *name=value*
    Make the *name* assigned to *value* in the HTML templates.
@@ -128,6 +132,10 @@ The :program:`sphinx-build` script has several more options:
 **-Q**
    Do not output anything on standard output, also suppress warnings.  Only
    errors are written to standard error.
+
+**-W**
+   Turn warnings into errors.  This means that the build stops at the first
+   warning and ``sphinx-build`` exits with exit status 1.
 
 **-P**
    (Useful for debugging only.)  Run the Python debugger, :mod:`pdb`, if an

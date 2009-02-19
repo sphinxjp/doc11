@@ -19,7 +19,8 @@ except ImportError:
     # functools is new in 2.4
     wraps = lambda f: (lambda w: w)
 
-from sphinx import application, builder
+from sphinx import application
+from sphinx.ext.autodoc import AutoDirective
 
 from path import path
 
@@ -97,7 +98,8 @@ class TestApp(application.Sphinx):
     """
 
     def __init__(self, srcdir=None, confdir=None, outdir=None, doctreedir=None,
-                 buildername='html', confoverrides=None, status=None, warning=None,
+                 buildername='html', confoverrides=None,
+                 status=None, warning=None,
                  freshenv=None, confname='conf.py', cleanenv=False):
 
         application.CONFIG_FILENAME = confname
@@ -140,6 +142,7 @@ class TestApp(application.Sphinx):
                                     freshenv)
 
     def cleanup(self, doctrees=False):
+        AutoDirective._registry.clear()
         for tree in self.cleanup_trees:
             shutil.rmtree(tree, True)
 

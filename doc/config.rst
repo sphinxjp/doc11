@@ -22,8 +22,8 @@ Important points to note:
 
 * The term "fully-qualified name" refers to a string that names an importable
   Python object inside a module; for example, the FQN
-  ``"sphinx.builder.Builder"`` means the ``Builder`` class in the
-  ``sphinx.builder`` module.
+  ``"sphinx.builders.Builder"`` means the ``Builder`` class in the
+  ``sphinx.builders`` module.
 
 * Remember that document names use ``/`` as the path separator and don't contain
   the file name extension.
@@ -76,7 +76,7 @@ General configuration
 
    .. versionadded:: 0.5
       Previously, Sphinx accepted only UTF-8 encoded sources.
-   
+
 .. confval:: master_doc
 
    The document name of the "master" document, that is, the document that
@@ -131,17 +131,34 @@ General configuration
 .. confval:: templates_path
 
    A list of paths that contain extra templates (or templates that overwrite
-   builtin templates).  Relative paths are taken as relative to the
-   configuration directory.
+   builtin/theme-specific templates).  Relative paths are taken as relative to
+   the configuration directory.
 
 .. confval:: template_bridge
 
    A string with the fully-qualified name of a callable (or simply a class) that
    returns an instance of :class:`~sphinx.application.TemplateBridge`.  This
    instance is then used to render HTML documents, and possibly the output of
-   other builders (currently the changes builder).
+   other builders (currently the changes builder).  (Note that the template
+   bridge must be made theme-aware if HTML themes are to be used.)
 
+.. confval:: rst_epilog
+
+   .. index:: pair: global; substitutions
+
+   A string of reStructuredText that will be included at the end of every source
+   file that is read.  This is the right place to add substitutions that should
+   be available in every file.  An example::
+
+      rst_epilog = """
+      .. |psf| replace:: Python Software Foundation
+      """
+
+   .. versionadded:: 0.6
+   
 .. confval:: default_role
+
+   .. index:: default; role
 
    The name of a reST role (builtin or Sphinx extension) to use as the default
    role, that is, for text marked up ```like this```.  This can be set to
@@ -164,9 +181,19 @@ General configuration
    .. versionadded:: 0.5
 
 
+.. confval:: modindex_common_prefix
+
+   A list of prefixes that are ignored for sorting the module index (e.g.,
+   if this is set to ``['foo.']``, then ``foo.bar`` is shown under ``B``, not
+   ``F``). This can be handy if you document a project that consists of a single
+   package.  Works only for the HTML builder currently.   Default is ``[]``.
+
+   .. versionadded:: 0.6
+
+
 Project information
 -------------------
-   
+
 .. confval:: project
 
    The documented project's name.
@@ -204,11 +231,14 @@ Project information
    * ``de`` -- German
    * ``en`` -- English
    * ``es`` -- Spanish
+   * ``fi`` -- Finnish
    * ``fr`` -- French
+   * ``it`` -- Italian
    * ``nl`` -- Dutch
    * ``pl`` -- Polish
    * ``pt_BR`` -- Brazilian Portuguese
    * ``sl`` -- Slovenian
+   * ``uk_UA`` -- Ukrainian
    * ``zh_TW`` -- Traditional Chinese
 
 .. confval:: today
@@ -232,7 +262,7 @@ Project information
    :ref:`code-examples` for more details.
 
    .. versionadded:: 0.5
-   
+
 .. confval:: pygments_style
 
    The style name to use for Pygments highlighting of source code.  Default is
@@ -260,7 +290,14 @@ Project information
    A boolean that decides whether :dir:`moduleauthor` and :dir:`sectionauthor`
    directives produce any output in the built files.
 
+.. confval:: trim_footnote_reference_space
 
+   Trim spaces before footnote references that are necessary for the reST parser
+   to recognize the footnote, but do not look too nice in the output.
+
+   .. versionadded:: 0.6
+
+   
 .. _html-options:
 
 Options for HTML output
@@ -268,6 +305,37 @@ Options for HTML output
 
 These options influence HTML as well as HTML Help output, and other builders
 that use Sphinx' HTMLWriter class.
+
+.. confval:: html_theme
+
+   The "theme" that the HTML output should use.  See the :doc:`section about
+   theming <theming>`.  The default is ``'default'``.
+
+   .. versionadded:: 0.6
+
+.. confval:: html_theme_options
+
+   A dictionary of options that influence the look and feel of the selected
+   theme.  These are theme-specific.  For the options understood by the builtin
+   themes, see :ref:`this section <builtin-themes>`.
+
+   .. versionadded:: 0.6
+
+.. confval:: html_theme_path
+
+   A list of paths that contain custom themes, either as subdirectories or as
+   zip files.  Relative paths are taken as relative to the configuration
+   directory.
+
+   .. versionadded:: 0.6
+
+.. confval:: html_style
+
+   The style sheet to use for HTML pages.  A file of that name must exist either
+   in Sphinx' :file:`static/` path, or in one of the custom paths given in
+   :confval:`html_static_path`.  Default is the stylesheet given by the selected
+   theme.  If you only want to add or override a few things compared to the
+   theme's stylesheet, use CSS ``@import`` to import the theme's stylesheet.
 
 .. confval:: html_title
 
@@ -284,12 +352,6 @@ that use Sphinx' HTMLWriter class.
    :confval:`html_title`.
 
    .. versionadded:: 0.4
-
-.. confval:: html_style
-
-   The style sheet to use for HTML pages.  A file of that name must exist either
-   in Sphinx' :file:`static/` path, or in one of the custom paths given in
-   :confval:`html_static_path`.  Default is ``'default.css'``.
 
 .. confval:: html_logo
 
@@ -314,8 +376,8 @@ that use Sphinx' HTMLWriter class.
 
    A list of paths that contain custom static files (such as style sheets or
    script files).  Relative paths are taken as relative to the configuration
-   directory.  They are copied to the output directory after the builtin static
-   files, so a file named :file:`default.css` will overwrite the builtin
+   directory.  They are copied to the output directory after the theme's static
+   files, so a file named :file:`default.css` will overwrite the theme's
    :file:`default.css`.
 
    .. versionchanged:: 0.4
@@ -331,6 +393,15 @@ that use Sphinx' HTMLWriter class.
 
    If true, *SmartyPants* will be used to convert quotes and dashes to
    typographically correct entities.  Default: ``True``.
+
+.. confval:: html_add_permalinks
+
+   If true, Sphinx will add "permalinks" for each heading and description
+   environment as paragraph signs that become visible when the mouse hovers over
+   them.  Default: ``True``.
+
+   .. versionadded:: 0.6
+      Previously, this was always activated.
 
 .. confval:: html_sidebars
 
@@ -399,6 +470,13 @@ that use Sphinx' HTMLWriter class.
       will only display the titles of matching documents, and no excerpt from
       the matching contents.
 
+.. confval:: html_show_sourcelink
+
+   If true (and :confval:`html_copy_source` is true as well), links to the
+   reST sources will be added to the sidebar.  The default is ``True``.
+
+   .. versionadded:: 0.6
+
 .. confval:: html_use_opensearch
 
    If nonempty, an `OpenSearch <http://opensearch.org>` description file will be
@@ -415,10 +493,18 @@ that use Sphinx' HTMLWriter class.
 
    .. versionadded:: 0.4
 
+.. confval:: html_link_suffix
+
+   Suffix for generated links to HTML files.  The default is whatever
+   :confval:`html_file_suffix` is set to; it can be set differently (e.g. to
+   support different web server setups).
+
+   .. versionadded:: 0.6
+
 .. confval:: html_translator_class
 
    A string with the fully-qualified name of a HTML Translator class, that is, a
-   subclass of Sphinx' :class:`~sphinx.htmlwriter.HTMLTranslator`, that is used
+   subclass of Sphinx' :class:`~sphinx.writers.html.HTMLTranslator`, that is used
    to translate document trees to HTML.  Default is ``None`` (use the builtin
    translator).
 
@@ -502,7 +588,7 @@ These options influence LaTeX output.
    avoid interpretation as escape sequences.
 
    * Keys that you may want to override include:
-     
+
      ``'papersize'``
         Paper size option of the document class (``'a4paper'`` or
         ``'letterpaper'``), default ``'letterpaper'``.
@@ -526,9 +612,9 @@ These options influence LaTeX output.
         Additional preamble content, default empty.
      ``'footer'```
         Additional footer content (before the indices), default empty.
-     
+
    * Keys that don't need be overridden unless in special cases are:
-     
+
      ``'inputenc'``
         "inputenc" package inclusion, default
         ``'\\usepackage[utf8]{inputenc}'``.
@@ -545,9 +631,9 @@ These options influence LaTeX output.
         "printindex" call, the last thing in the file, default
         ``'\\printindex'``.  Override if you want to generate the index
         differently or append some content after the index.
-     
+
    * Keys that are set by other options and therefore should not be overridden are:
-     
+
      ``'docclass'``
      ``'classoptions'``
      ``'title'``
@@ -560,7 +646,7 @@ These options influence LaTeX output.
      ``'makemodindex'``
      ``'shorthandoff'``
      ``'printmodindex'``
-   
+
 .. confval:: latex_preamble
 
    Additional LaTeX markup for the preamble.
