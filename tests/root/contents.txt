@@ -9,6 +9,7 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
+   :numbered:
 
    images
    subdir/images
@@ -17,6 +18,8 @@ Contents:
    desc
    math
    autodoc
+
+   Python <http://python.org/>
 
 Indices and tables
 ==================

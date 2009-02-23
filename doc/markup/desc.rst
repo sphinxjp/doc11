@@ -205,6 +205,12 @@ The directives are:
 
    .. versionadded:: 0.4
 
+.. directive:: .. classmethod:: name(signature)
+
+   Like :dir:`method`, but indicates that the method is a class method.
+
+   .. versionadded:: 0.6
+
 
 .. _signatures:
 
@@ -254,7 +260,7 @@ explained by an example::
    .. function:: format_exception(etype, value, tb[, limit=None])
 
       Format the exception with a traceback.
-   
+
       :param etype: exception type
       :param value: exception value
       :param tb: traceback object
