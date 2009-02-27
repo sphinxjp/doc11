@@ -18,8 +18,9 @@ from os import path
 from docutils.utils import SystemMessage
 
 from sphinx import __version__
-from sphinx.application import Sphinx, SphinxError
-from sphinx.util import format_exception_cut_frames, save_traceback
+from sphinx.errors import SphinxError
+from sphinx.application import Sphinx
+from sphinx.util import Tee, format_exception_cut_frames, save_traceback
 from sphinx.util.console import darkred, nocolor, color_terminal
 
 
@@ -31,8 +32,10 @@ def usage(argv, msg=None):
 Sphinx v%s
 Usage: %s [options] sourcedir outdir [filenames...]
 Options: -b <builder> -- builder to use; default is html
-         -a        -- write all files; default is to only write new and changed files
+         -a        -- write all files; default is to only write \
+new and changed files
          -E        -- don't use a saved environment, always read all files
+         -t <tag>  -- include "only" blocks with <tag>
          -d <path> -- path for the cached environment and doctree files
                       (default: outdir/.doctrees)
          -c <path> -- path where configuration file (conf.py) is located
@@ -43,6 +46,8 @@ Options: -b <builder> -- builder to use; default is html
          -N        -- do not do colored output
          -q        -- no output on stdout, just warnings on stderr
          -Q        -- no output at all, not even warnings
+         -w <file> -- write warnings (and errors) to given file
+         -W        -- turn warnings into errors
          -P        -- run Pdb on exception
 Modi:
 * without -a and without filenames, write new and changed files.
@@ -56,7 +61,7 @@ def main(argv):
         nocolor()
 
     try:
-        opts, args = getopt.getopt(argv[1:], 'ab:d:c:CD:A:NEqQP')
+        opts, args = getopt.getopt(argv[1:], 'ab:t:d:c:CD:A:NEqQWw:P')
         allopts = set(opt[0] for opt in opts)
         srcdir = confdir = path.abspath(args[0])
         if not path.isdir(srcdir):
@@ -64,7 +69,8 @@ def main(argv):
             return 1
         if not path.isfile(path.join(srcdir, 'conf.py')) and \
                '-c' not in allopts and '-C' not in allopts:
-            print >>sys.stderr, 'Error: Source directory doesn\'t contain conf.py file.'
+            print >>sys.stderr, ('Error: Source directory doesn\'t '
+                                 'contain conf.py file.')
             return 1
         outdir = path.abspath(args[1])
         if not path.isdir(outdir):
@@ -84,11 +90,14 @@ def main(argv):
         return 1
 
     buildername = all_files = None
-    freshenv = use_pdb = False
+    freshenv = warningiserror = use_pdb = False
     status = sys.stdout
     warning = sys.stderr
+    error = sys.stderr
+    warnfile = None
     confoverrides = {}
     htmlcontext = {}
+    tags = []
     doctreedir = path.join(outdir, '.doctrees')
     for opt, val in opts:
         if opt == '-b':
@@ -98,13 +107,15 @@ def main(argv):
                 usage(argv, 'Cannot combine -a option and filenames.')
                 return 1
             all_files = True
+        elif opt == '-t':
+            tags.append(val)
         elif opt == '-d':
             doctreedir = path.abspath(val)
         elif opt == '-c':
             confdir = path.abspath(val)
             if not path.isfile(path.join(confdir, 'conf.py')):
-                print >>sys.stderr, \
-                      'Error: Configuration directory doesn\'t contain conf.py file.'
+                print >>sys.stderr, ('Error: Configuration directory '
+                                     'doesn\'t contain conf.py file.')
                 return 1
         elif opt == '-C':
             confdir = None
@@ -112,8 +123,8 @@ def main(argv):
             try:
                 key, val = val.split('=')
             except ValueError:
-                print >>sys.stderr, \
-                      'Error: -D option argument must be in the form name=value.'
+                print >>sys.stderr, ('Error: -D option argument must be '
+                                     'in the form name=value.')
                 return 1
             try:
                 val = int(val)
@@ -124,8 +135,8 @@ def main(argv):
             try:
                 key, val = val.split('=')
             except ValueError:
-                print >>sys.stderr, \
-                      'Error: -A option argument must be in the form name=value.'
+                print >>sys.stderr, ('Error: -A option argument must be '
+                                     'in the form name=value.')
                 return 1
             try:
                 val = int(val)
@@ -141,46 +152,57 @@ def main(argv):
         elif opt == '-Q':
             status = None
             warning = None
+        elif opt == '-W':
+            warningiserror = True
+        elif opt == '-w':
+            warnfile = val
         elif opt == '-P':
             use_pdb = True
     confoverrides['html_context'] = htmlcontext
 
+    if warning and warnfile:
+        warnfp = open(warnfile, 'w')
+        warning = Tee(warning, warnfp)
+        error = warning
+
     try:
         app = Sphinx(srcdir, confdir, outdir, doctreedir, buildername,
-                     confoverrides, status, warning, freshenv)
+                     confoverrides, status, warning, freshenv,
+                     warningiserror, tags)
         app.build(all_files, filenames)
         return app.statuscode
     except KeyboardInterrupt:
         if use_pdb:
             import pdb
-            print >>sys.stderr, darkred('Interrupted while building, starting debugger:')
+            print >>error, darkred('Interrupted while building, '
+                                   'starting debugger:')
             traceback.print_exc()
             pdb.post_mortem(sys.exc_info()[2])
         return 1
     except Exception, err:
         if use_pdb:
             import pdb
-            print >>sys.stderr, darkred('Exception occurred while building, '
-                                        'starting debugger:')
+            print >>error, darkred('Exception occurred while building, '
+                                   'starting debugger:')
             traceback.print_exc()
             pdb.post_mortem(sys.exc_info()[2])
         else:
             if isinstance(err, SystemMessage):
-                print >>sys.stderr, darkred('reST markup error:')
-                print >>sys.stderr, err.args[0].encode('ascii', 'backslashreplace')
+                print >>error, darkred('reST markup error:')
+                print >>error, err.args[0].encode('ascii', 'backslashreplace')
             elif isinstance(err, SphinxError):
-                print >>sys.stderr, darkred('%s:' % err.category)
-                print >>sys.stderr, err
+                print >>error, darkred('%s:' % err.category)
+                print >>error, err
             else:
-                print >>sys.stderr, darkred('Exception occurred:')
-                print >>sys.stderr, format_exception_cut_frames().rstrip()
+                print >>error, darkred('Exception occurred:')
+                print >>error, format_exception_cut_frames().rstrip()
                 tbpath = save_traceback()
-                print >>sys.stderr, darkred('The full traceback has been saved '
-                                            'in %s, if you want to report the '
-                                            'issue to the author.' % tbpath)
-                print >>sys.stderr, ('Please also report this if it was a user '
-                                     'error, so that a better error message '
-                                     'can be provided next time.')
-                print >>sys.stderr, ('Send reports to sphinx-dev@googlegroups.com. '
-                                     'Thanks!')
+                print >>error, darkred('The full traceback has been saved '
+                                       'in %s, if you want to report the '
+                                       'issue to the author.' % tbpath)
+                print >>error, ('Please also report this if it was a user '
+                                'error, so that a better error message '
+                                'can be provided next time.')
+                print >>error, ('Send reports to sphinx-dev@googlegroups.com. '
+                                'Thanks!')
             return 1

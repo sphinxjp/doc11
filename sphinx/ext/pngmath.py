@@ -22,9 +22,9 @@ except ImportError:
 
 from docutils import nodes
 
+from sphinx.errors import SphinxError
 from sphinx.util import ensuredir
 from sphinx.util.png import read_png_depth, write_png_depth
-from sphinx.application import SphinxError
 from sphinx.ext.mathbase import setup as mathbase_setup, wrap_displaymath
 
 class MathExtError(SphinxError):
@@ -131,8 +131,8 @@ def render_math(self, math):
 
     stdout, stderr = p.communicate()
     if p.returncode != 0:
-        raise MathExtError('latex exited with error:\n[stderr]\n%s\n[stdout]\n%s'
-                           % (stderr, stdout))
+        raise MathExtError('latex exited with error:\n[stderr]\n%s\n'
+                           '[stdout]\n%s' % (stderr, stdout))
 
     ensuredir(path.dirname(outfn))
     # use some standard dvipng arguments
@@ -156,8 +156,8 @@ def render_math(self, math):
         return None, None
     stdout, stderr = p.communicate()
     if p.returncode != 0:
-        raise MathExtError('dvipng exited with error:\n[stderr]\n%s\n[stdout]\n%s'
-                           % (stderr, stdout))
+        raise MathExtError('dvipng exited with error:\n[stderr]\n%s\n'
+                           '[stdout]\n%s' % (stderr, stdout))
     depth = None
     if use_preview:
         for line in stdout.splitlines():
