@@ -15,7 +15,8 @@ from util import *
 from sphinx.application import ExtensionError
 
 
-@with_app(confoverrides={'master_doc': 'master', 'nonexisting_value': 'True'})
+@with_app(confoverrides={'master_doc': 'master', 'nonexisting_value': 'True',
+                         'latex_elements.docclass': 'scrartcl'})
 def test_core_config(app):
     cfg = app.config
 
@@ -26,6 +27,7 @@ def test_core_config(app):
 
     # overrides
     assert cfg.master_doc == 'master'
+    assert cfg.latex_elements['docclass'] == 'scrartcl'
 
     # simple default values
     assert 'exclude_dirs' not in cfg.__dict__
@@ -34,7 +36,7 @@ def test_core_config(app):
 
     # complex default values
     assert 'html_title' not in cfg.__dict__
-    assert cfg.html_title == 'Sphinx <Tests> v0.4alpha1 documentation'
+    assert cfg.html_title == 'Sphinx <Tests> v0.6alpha1 documentation'
 
     # complex default values mustn't raise
     for valuename in cfg.config_values:
