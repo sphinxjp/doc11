@@ -10,24 +10,38 @@ This function is called at initialization time with one argument, the
 application object representing the Sphinx process.  This application object has
 the following public API:
 
+.. method:: Sphinx.setup_extension(name)
+
+   Load the extension given by the module *name*.  Use this if your extension
+   needs the features provided by another extension.
+
 .. method:: Sphinx.add_builder(builder)
 
    Register a new builder.  *builder* must be a class that inherits from
-   :class:`~sphinx.builder.Builder`.
+   :class:`~sphinx.builders.Builder`.
 
-.. method:: Sphinx.add_config_value(name, default, rebuild_env)
+.. method:: Sphinx.add_config_value(name, default, rebuild)
 
    Register a configuration value.  This is necessary for Sphinx to recognize
    new values and set default values accordingly.  The *name* should be prefixed
    with the extension name, to avoid clashes.  The *default* value can be any
-   Python object.  The boolean value *rebuild_env* must be ``True`` if a change
-   in the setting only takes effect when a document is parsed -- this means that
-   the whole environment must be rebuilt.
+   Python object.  The string value *rebuild* must be one of those values:
+
+   * ``'env'`` if a change in the setting only takes effect when a document is
+     parsed -- this means that the whole environment must be rebuilt.
+   * ``'html'`` if a change in the setting needs a full rebuild of HTML
+     documents.
+   * ``''`` if a change in the setting will not need any special rebuild.
 
    .. versionchanged:: 0.4
       If the *default* value is a callable, it will be called with the config
       object as its argument in order to get the default value.  This can be
       used to implement config values whose default depends on other values.
+
+   .. versionchanged:: 0.6
+      Changed *rebuild* from a simple boolean (equivalent to ``''`` or
+      ``'env'``) to a string.  However, booleans are still accepted and
+      converted internally.
 
 .. method:: Sphinx.add_event(name)
 
@@ -45,12 +59,12 @@ the following public API:
    :exc:`docutils.nodes.SkipNode`.  Example::
 
       class math(docutils.nodes.Element)
-   
+
       def visit_math_html(self, node):
           self.body.append(self.starttag(node, 'math'))
       def depart_math_html(self, node):
           self.body.append('</math>')
-   
+
       app.add_node(math, html=(visit_math_html, depart_math_html))
 
    Obviously, translators for which you don't specify visitor methods will choke
@@ -60,13 +74,28 @@ the following public API:
       Added the support for keyword arguments giving visit functions.
 
 .. method:: Sphinx.add_directive(name, func, content, arguments, **options)
+            Sphinx.add_directive(name, directiveclass)
 
    Register a Docutils directive.  *name* must be the prospective directive
-   name, *func* the directive function for details about the signature and
-   return value.  *content*, *arguments* and *options* are set as attributes on
-   the function and determine whether the directive has content, arguments and
-   options, respectively.  For their exact meaning, please consult the Docutils
-   documentation.
+   name.  There are two possible ways to write a directive:
+
+   * In the docutils 0.4 style, *func* is the directive function.  *content*,
+     *arguments* and *options* are set as attributes on the function and
+     determine whether the directive has content, arguments and options,
+     respectively.
+
+   * In the docutils 0.5 style, *directiveclass* is the directive class.  It
+     must already have attributes named *has_content*, *required_arguments*,
+     *optional_arguments*, *final_argument_whitespace* and *option_spec* that
+     correspond to the options for the function way.  See `the Docutils docs
+     <http://docutils.sourceforge.net/docs/howto/rst-directives.html>`_ for
+     details.
+
+     The directive class normally must inherit from the class
+     ``docutils.parsers.rst.Directive``.  When writing a directive for usage in
+     a Sphinx extension, you inherit from ``sphinx.util.compat.Directive``
+     instead which does the right thing even on docutils 0.4 (which doesn't
+     support directive classes otherwise).
 
    For example, the (already existing) :dir:`literalinclude` directive would be
    added like this::
@@ -78,13 +107,21 @@ the following public API:
                     language = direcitves.unchanged,
                     encoding = directives.encoding)
 
-   .. XXX once we target docutils 0.5, update this
+   .. versionchanged:: 0.6
+      Docutils 0.5-style directive classes are now supported.
 
 .. method:: Sphinx.add_role(name, role)
 
    Register a Docutils role.  *name* must be the role name that occurs in the
    source, *role* the role function (see the `Docutils documentation
    <http://docutils.sourceforge.net/docs/howto/rst-roles.html>`_ on details).
+
+.. method:: Sphinx.add_generic_role(name, nodeclass)
+
+   Register a Docutils role that does nothing but wrap its contents in the
+   node given by *nodeclass*.
+
+   .. versionadded:: 0.6
 
 .. method:: Sphinx.add_description_unit(directivename, rolename, indextemplate='', parse_node=None, ref_nodeclass=None)
 
@@ -167,7 +204,32 @@ the following public API:
    :confval:`the docs for the config value <html_static_path>`.
 
    .. versionadded:: 0.5
-   
+
+.. method:: Sphinx.add_lexer(alias, lexer)
+
+   Use *lexer*, which must be an instance of a Pygments lexer class, to
+   highlight code blocks with the given language *alias*.
+
+   .. versionadded:: 0.6
+
+.. method:: Sphinx.add_autodocumenter(cls)
+
+   Add *cls* as a new documenter class for the :mod:`sphinx.ext.autodoc`
+   extension.  It must be a subclass of :class:`sphinx.ext.autodoc.Documenter`.
+   This allows to auto-document new types of objects.  See the source of the
+   autodoc module for examples on how to subclass :class:`Documenter`.
+
+   .. versionadded:: 0.6
+
+.. method:: Sphinx.add_autodoc_attrgetter(type, getter)
+
+   Add *getter*, which must be a function with an interface compatible to the
+   :func:`getattr` builtin, as the autodoc attribute getter for objects that are
+   instances of *type*.  All cases where autodoc needs to get an attribute of a
+   type are then handled by this function instead of :func:`getattr`.
+
+   .. versionadded:: 0.6
+
 .. method:: Sphinx.connect(event, callback)
 
    Register *callback* to be called when *event* is emitted.  For details on
@@ -230,7 +292,7 @@ registered event handlers.
    since the module declarations could have been removed from the file.
 
    .. versionadded:: 0.5
-   
+
 .. event:: source-read (app, docname, source)
 
    Emitted when a source file has been read.  The *source* argument is a list
@@ -242,7 +304,7 @@ registered event handlers.
    ``:math:`...```.
 
    .. versionadded:: 0.5
-   
+
 .. event:: doctree-read (app, doctree)
 
    Emitted when a doctree has been parsed and read by the environment, and is
@@ -264,7 +326,7 @@ registered event handlers.
       future reference and should be a child of the returned reference node.
 
    .. versionadded:: 0.5
-   
+
 .. event:: doctree-resolved (app, doctree, docname)
 
    Emitted when a doctree has been "resolved" by the environment, that is, all
@@ -280,7 +342,7 @@ registered event handlers.
    completed, that is, the environment and all doctrees are now up-to-date.
 
    .. versionadded:: 0.5
-   
+
 .. event:: page-context (app, pagename, templatename, context, doctree)
 
    Emitted when the HTML builder has created a context dictionary to render a
@@ -311,7 +373,7 @@ registered event handlers.
    cleanup actions depending on the exception status.
 
    .. versionadded:: 0.5
-   
+
 
 .. _template-bridge:
 
