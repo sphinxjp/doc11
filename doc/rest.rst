@@ -212,10 +212,14 @@ reST supports an image directive, used like so::
    .. image:: gnu.png
       (options)
 
-When used within Sphinx, the file name given (here ``gnu.png``) must be relative
-to the source file, and Sphinx will automatically copy image files over to a
-subdirectory of the output directory on building (e.g. the ``_static`` directory
-for HTML output.)
+When used within Sphinx, the file name given (here ``gnu.png``) must either be
+relative to the source file, or absolute which means that they are relative to
+the top source directory.  For example, the file ``sketch/spam.rst`` could refer
+to the image ``images/spam.png`` as ``../images/spam.png`` or
+``/images/spam.png``.
+
+Sphinx will automatically copy image files over to a subdirectory of the output
+directory on building (e.g. the ``_static`` directory for HTML output.)
 
 Interpretation of image size options (``width`` and ``height``) is as follows:
 if the size has no unit or the unit is pixels, the given size will only be
@@ -235,6 +239,9 @@ the former, while the HTML builder would prefer the latter.
 
 .. versionchanged:: 0.4
    Added the support for file names ending in an asterisk.
+
+.. versionchanged:: 0.6
+   Image paths can now be absolute.
 
 
 Footnotes
@@ -282,7 +289,7 @@ markup blocks, like this::
 See the `reST reference for substitutions
 <http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html#substitution-definitions>`_
 for details.
-   
+
 If you want to use some substitutions for all documents, put them into a
 separate file and include it into all documents you want to use them in, using
 the :dir:`include` directive.  Be sure to give the include file a file name
@@ -301,7 +308,7 @@ footnotes above) is regarded as a comment.  For example::
    .. This is a comment.
 
 You can indent text after a comment start to form multiline comments::
-   
+
    ..
       This whole indented block
       is a comment.
@@ -329,5 +336,5 @@ There are some problems one commonly runs into while authoring reST documents:
 
 * **No nested inline markup:** Something like ``*see :func:`foo`*`` is not
   possible.
-  
+
 .. XXX more?
