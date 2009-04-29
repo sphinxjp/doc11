@@ -245,6 +245,7 @@ Project information
    * ``ru`` -- Russian
    * ``sl`` -- Slovenian
    * ``uk_UA`` -- Ukrainian
+   * ``zh_CN`` -- Simplified Chinese
    * ``zh_TW`` -- Traditional Chinese
 
 .. confval:: today
@@ -513,6 +514,12 @@ that use Sphinx' HTMLWriter class.
    subclass of Sphinx' :class:`~sphinx.writers.html.HTMLTranslator`, that is used
    to translate document trees to HTML.  Default is ``None`` (use the builtin
    translator).
+
+.. confval:: html_show_copyright
+
+   If true, "(C) Copyright ..." is shown in the HTML footer. Default is ``True``.
+
+   .. versionadded:: 0.7
 
 .. confval:: html_show_sphinx
 
