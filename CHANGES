@@ -1,3 +1,19 @@
+Release 1.0 (in development)
+============================
+
+* Added the ``extlinks`` extension.
+
+* Allow searching for object names including the module name, like
+  ``sys.argv``.
+
+* Many improvements and fixes to the ``autosummary`` extension,
+  thanks to Pauli Virtanen.
+
+* Added ``html_show_copyright`` config value.
+
+* Added simplified Chinese locale.
+
+
 Release 0.6.2 (in development)
 ==============================
 
@@ -26,7 +42,7 @@ Release 0.6.2 (in development)
 * #134: Fix pending_xref leftover nodes when using the todolist
   directive from the todo extension.
 
-  
+ 
 Release 0.6.1 (Mar 26, 2009)
 ============================
 
