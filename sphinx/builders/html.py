@@ -22,7 +22,7 @@ except ImportError:
 
 from docutils import nodes
 from docutils.io import DocTreeInput, StringOutput
-from docutils.core import publish_parts
+from docutils.core import Publisher, publish_parts
 from docutils.utils import new_document
 from docutils.frontend import OptionParser
 from docutils.readers.doctree import Reader as DoctreeReader
@@ -71,6 +71,9 @@ class StandaloneHTMLBuilder(Builder):
 
     # This is a class attribute because it is mutated by Sphinx.add_javascript.
     script_files = ['_static/jquery.js', '_static/doctools.js']
+
+    # cached publisher object for snippets
+    _publisher = None
 
     def init(self):
         # a hash of all config values that, if changed, cause a full rebuild
@@ -180,13 +183,24 @@ class StandaloneHTMLBuilder(Builder):
         """Utility: Render a lone doctree node."""
         doc = new_document('<partial node>')
         doc.append(node)
-        return publish_parts(
-            doc,
-            source_class=DocTreeInput,
-            reader=DoctreeReader(),
-            writer=HTMLWriter(self),
-            settings_overrides={'output_encoding': 'unicode'}
-        )
+
+        if self._publisher is None:
+            self._publisher = Publisher(
+                    source_class = DocTreeInput,
+                    destination_class=StringOutput)
+            self._publisher.set_components('standalone',
+                                           'restructuredtext', 'pseudoxml')
+
+        pub = self._publisher
+
+        pub.reader = DoctreeReader()
+        pub.writer = HTMLWriter(self)
+        pub.process_programmatic_settings(
+            None, {'output_encoding': 'unicode'}, None)
+        pub.set_source(doc, None)
+        pub.set_destination(None, None)
+        pub.publish()
+        return pub.writer.parts
 
     def prepare_writing(self, docnames):
         from sphinx.search import IndexBuilder
@@ -244,6 +258,7 @@ class StandaloneHTMLBuilder(Builder):
             use_opensearch = self.config.html_use_opensearch,
             docstitle = self.config.html_title,
             shorttitle = self.config.html_short_title,
+            show_copyright = self.config.html_show_copyright,
             show_sphinx = self.config.html_show_sphinx,
             has_source = self.config.html_copy_source,
             show_source = self.config.html_show_sourcelink,
