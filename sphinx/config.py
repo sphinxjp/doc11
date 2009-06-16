@@ -82,6 +82,7 @@ class Config(object):
         html_use_opensearch = ('', 'html'),
         html_file_suffix = (None, 'html'),
         html_link_suffix = (None, 'html'),
+        html_show_copyright = (True, 'html'),
         html_show_sphinx = (True, 'html'),
         html_context = ({}, 'html'),
 
@@ -103,6 +104,7 @@ class Config(object):
         latex_font_size = ('10pt', None),
         latex_elements = ({}, None),
         latex_additional_files = ([], None),
+        latex_docclass = ({}, None),
         # now deprecated - use latex_elements
         latex_preamble = ('', None),
     )
