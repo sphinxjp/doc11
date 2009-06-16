@@ -245,6 +245,7 @@ Project information
    * ``ru`` -- Russian
    * ``sl`` -- Slovenian
    * ``uk_UA`` -- Ukrainian
+   * ``zh_CN`` -- Simplified Chinese
    * ``zh_TW`` -- Traditional Chinese
 
 .. confval:: today
@@ -514,6 +515,12 @@ that use Sphinx' HTMLWriter class.
    to translate document trees to HTML.  Default is ``None`` (use the builtin
    translator).
 
+.. confval:: html_show_copyright
+
+   If true, "(C) Copyright ..." is shown in the HTML footer. Default is ``True``.
+
+   .. versionadded:: 1.0
+
 .. confval:: html_show_sphinx
 
    If true, "Created using Sphinx" is shown in the HTML footer.  Default is
@@ -652,6 +659,14 @@ These options influence LaTeX output.
      ``'makemodindex'``
      ``'shorthandoff'``
      ``'printmodindex'``
+
+.. confval:: latex_docclass
+
+   A dictionary mapping ``'howto'`` and ``'manual'`` to names of real document
+   classes that will be used as the base for the two Sphinx classes.  Default
+   is to use ``'article'`` for ``'howto'`` and ``'report'`` for ``'manual'``.
+
+   .. versionadded:: 1.0
 
 .. confval:: latex_additional_files
 
