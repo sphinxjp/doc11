@@ -20,9 +20,10 @@ from docutils import nodes
 from docutils.parsers.rst import directives, roles
 
 import sphinx
-from sphinx.roles import xfileref_role, innernodetypes
+from sphinx.roles import XRefRole
 from sphinx.config import Config
 from sphinx.errors import SphinxError, SphinxWarning, ExtensionError
+from sphinx.domains import domains
 from sphinx.builders import BUILTIN_BUILDERS
 from sphinx.directives import GenericDesc, Target, additional_xref_types
 from sphinx.environment import SphinxStandaloneReader
@@ -298,23 +299,28 @@ class Sphinx(object):
         role = roles.GenericRole(name, nodeclass)
         roles.register_local_role(name, role)
 
+    def add_domain(self, domain):
+        if domain.name in domains:
+            raise ExtensionError('domain %s already registered' % domain.name)
+        domains[domain.name] = domain
+
     def add_description_unit(self, directivename, rolename, indextemplate='',
                              parse_node=None, ref_nodeclass=None):
         additional_xref_types[directivename] = (rolename, indextemplate,
                                                 parse_node)
         directives.register_directive(directivename,
                                       directive_dwim(GenericDesc))
-        roles.register_local_role(rolename, xfileref_role)
-        if ref_nodeclass is not None:
-            innernodetypes[rolename] = ref_nodeclass
+        # XXX support more options?
+        role_func = XRefRole('', innernodeclass=ref_nodeclass)
+        roles.register_local_role(rolename, role_func)
 
     def add_crossref_type(self, directivename, rolename, indextemplate='',
                           ref_nodeclass=None):
         additional_xref_types[directivename] = (rolename, indextemplate, None)
         directives.register_directive(directivename, directive_dwim(Target))
-        roles.register_local_role(rolename, xfileref_role)
-        if ref_nodeclass is not None:
-            innernodetypes[rolename] = ref_nodeclass
+        # XXX support more options
+        role_func = XRefRole('', innernodeclass=ref_nodeclass)
+        roles.register_local_role(rolename, role_func)
 
     def add_transform(self, transform):
         SphinxStandaloneReader.transforms.append(transform)
@@ -322,6 +328,11 @@ class Sphinx(object):
     def add_javascript(self, filename):
         from sphinx.builders.html import StandaloneHTMLBuilder
         StandaloneHTMLBuilder.script_files.append(
+            posixpath.join('_static', filename))
+
+    def add_stylesheet(self, filename):
+        from sphinx.builders.html import StandaloneHTMLBuilder
+        StandaloneHTMLBuilder.css_files.append(
             posixpath.join('_static', filename))
 
     def add_lexer(self, alias, lexer):
