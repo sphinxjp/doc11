@@ -185,7 +185,6 @@ General configuration
 
    .. versionadded:: 0.5
 
-
 .. confval:: modindex_common_prefix
 
    A list of prefixes that are ignored for sorting the module index (e.g.,
@@ -194,6 +193,15 @@ General configuration
    package.  Works only for the HTML builder currently.   Default is ``[]``.
 
    .. versionadded:: 0.6
+
+.. confval:: trim_doctest_flags
+
+   If true, doctest flags (comments looking like ``# doctest: FLAG, ...``) at
+   the ends of lines are removed for all code blocks showing interactive Python
+   sessions (i.e. doctests).  Default is true.  See the extension
+   :mod:`~sphinx.ext.doctest` for more possibilities of including doctests.
+
+   .. versionadded:: 1.0
 
 
 Project information
@@ -232,6 +240,7 @@ Project information
 
    Currently supported languages are:
 
+   * ``ca`` -- Catalan
    * ``cs`` -- Czech
    * ``de`` -- German
    * ``en`` -- English
@@ -245,6 +254,7 @@ Project information
    * ``ru`` -- Russian
    * ``sl`` -- Slovenian
    * ``uk_UA`` -- Ukrainian
+   * ``zh_CN`` -- Simplified Chinese
    * ``zh_TW`` -- Traditional Chinese
 
 .. confval:: today
@@ -514,12 +524,26 @@ that use Sphinx' HTMLWriter class.
    to translate document trees to HTML.  Default is ``None`` (use the builtin
    translator).
 
+.. confval:: html_show_copyright
+
+   If true, "(C) Copyright ..." is shown in the HTML footer. Default is ``True``.
+
+   .. versionadded:: 1.0
+
 .. confval:: html_show_sphinx
 
    If true, "Created using Sphinx" is shown in the HTML footer.  Default is
    ``True``.
 
    .. versionadded:: 0.4
+
+.. confval:: html_output_encoding
+
+   Encoding of HTML output files. Default is ``'utf-8'``.  Note that this
+   encoding name must both be a valid Python encoding name and a valid HTML
+   ``charset`` value.
+
+   .. versionadded:: 1.0
 
 .. confval:: htmlhelp_basename
 
@@ -652,6 +676,14 @@ These options influence LaTeX output.
      ``'makemodindex'``
      ``'shorthandoff'``
      ``'printmodindex'``
+
+.. confval:: latex_docclass
+
+   A dictionary mapping ``'howto'`` and ``'manual'`` to names of real document
+   classes that will be used as the base for the two Sphinx classes.  Default
+   is to use ``'article'`` for ``'howto'`` and ``'report'`` for ``'manual'``.
+
+   .. versionadded:: 1.0
 
 .. confval:: latex_additional_files
 

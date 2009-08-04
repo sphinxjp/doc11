@@ -14,8 +14,14 @@ from cStringIO import StringIO
 
 from docutils.nodes import comment, Text, NodeVisitor, SkipNode
 
-from sphinx.util.stemmer import PorterStemmer
 from sphinx.util import jsdump, rpartition
+try:
+    # http://bitbucket.org/methane/porterstemmer/
+    from porterstemmer import Stemmer as CStemmer
+    CSTEMMER = True
+except ImportError:
+    from sphinx.util.stemmer import PorterStemmer
+    CSTEMMER = False
 
 
 word_re = re.compile(r'\w+(?u)')
@@ -62,15 +68,23 @@ class _JavaScriptIndex(object):
 js_index = _JavaScriptIndex()
 
 
-class Stemmer(PorterStemmer):
-    """
-    All those porter stemmer implementations look hideous.
-    make at least the stem method nicer.
-    """
+if CSTEMMER:
+    class Stemmer(CStemmer):
 
-    def stem(self, word):
-        word = word.lower()
-        return PorterStemmer.stem(self, word, 0, len(word) - 1)
+        def stem(self, word):
+            return self(word.lower())
+
+else:
+    class Stemmer(PorterStemmer):
+        """
+        All those porter stemmer implementations look hideous.
+        make at least the stem method nicer.
+        """
+
+        def stem(self, word):
+            word = word.lower()
+            return PorterStemmer.stem(self, word, 0, len(word) - 1)
+
 
 
 class WordCollector(NodeVisitor):
@@ -135,6 +149,8 @@ class IndexBuilder(object):
 
     def get_modules(self, fn2index):
         rv = {}
+        # XXX implement search capability
+        return rv
         for name, (doc, _, _, _) in self.env.modules.iteritems():
             if doc in fn2index:
                 rv[name] = fn2index[doc]
@@ -143,6 +159,8 @@ class IndexBuilder(object):
     def get_descrefs(self, fn2index):
         rv = {}
         dt = self._desctypes
+        # XXX implement search capability
+        return rv
         for fullname, (doc, desctype) in self.env.descrefs.iteritems():
             if doc not in fn2index:
                 continue
@@ -198,11 +216,11 @@ class IndexBuilder(object):
         visitor = WordCollector(doctree)
         doctree.walk(visitor)
 
-        def add_term(word, prefix='', stem=self._stemmer.stem):
+        def add_term(word, stem=self._stemmer.stem):
             word = stem(word)
             if len(word) < 3 or word in stopwords or word.isdigit():
                 return
-            self._mapping.setdefault(prefix + word, set()).add(filename)
+            self._mapping.setdefault(word, set()).add(filename)
 
         for word in word_re.findall(title):
             add_term(word)

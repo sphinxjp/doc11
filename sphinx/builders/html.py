@@ -22,7 +22,7 @@ except ImportError:
 
 from docutils import nodes
 from docutils.io import DocTreeInput, StringOutput
-from docutils.core import publish_parts
+from docutils.core import Publisher, publish_parts
 from docutils.utils import new_document
 from docutils.frontend import OptionParser
 from docutils.readers.doctree import Reader as DoctreeReader
@@ -33,7 +33,8 @@ from sphinx.util import SEP, os_path, relative_uri, ensuredir, \
 from sphinx.errors import SphinxError
 from sphinx.search import js_index
 from sphinx.theming import Theme
-from sphinx.builders import Builder, ENV_PICKLE_FILENAME
+from sphinx.builders import Builder
+from sphinx.application import ENV_PICKLE_FILENAME
 from sphinx.highlighting import PygmentsBridge
 from sphinx.util.console import bold
 from sphinx.writers.html import HTMLWriter, HTMLTranslator, \
@@ -71,6 +72,11 @@ class StandaloneHTMLBuilder(Builder):
 
     # This is a class attribute because it is mutated by Sphinx.add_javascript.
     script_files = ['_static/jquery.js', '_static/doctools.js']
+    # Dito for this one.
+    css_files = []
+
+    # cached publisher object for snippets
+    _publisher = None
 
     def init(self):
         # a hash of all config values that, if changed, cause a full rebuild
@@ -110,7 +116,8 @@ class StandaloneHTMLBuilder(Builder):
             style = self.theme.get_confstr('theme', 'pygments_style', 'none')
         else:
             style = 'sphinx'
-        self.highlighter = PygmentsBridge('html', style)
+        self.highlighter = PygmentsBridge('html', style,
+                                          self.config.trim_doctest_flags)
 
     def init_translator_class(self):
         if self.config.html_translator_class:
@@ -180,13 +187,24 @@ class StandaloneHTMLBuilder(Builder):
         """Utility: Render a lone doctree node."""
         doc = new_document('<partial node>')
         doc.append(node)
-        return publish_parts(
-            doc,
-            source_class=DocTreeInput,
-            reader=DoctreeReader(),
-            writer=HTMLWriter(self),
-            settings_overrides={'output_encoding': 'unicode'}
-        )
+
+        if self._publisher is None:
+            self._publisher = Publisher(
+                    source_class = DocTreeInput,
+                    destination_class=StringOutput)
+            self._publisher.set_components('standalone',
+                                           'restructuredtext', 'pseudoxml')
+
+        pub = self._publisher
+
+        pub.reader = DoctreeReader()
+        pub.writer = HTMLWriter(self)
+        pub.process_programmatic_settings(
+            None, {'output_encoding': 'unicode'}, None)
+        pub.set_source(doc, None)
+        pub.set_destination(None, None)
+        pub.publish()
+        return pub.writer.parts
 
     def prepare_writing(self, docnames):
         from sphinx.search import IndexBuilder
@@ -222,7 +240,9 @@ class StandaloneHTMLBuilder(Builder):
         rellinks = []
         if self.config.html_use_index:
             rellinks.append(('genindex', _('General Index'), 'I', _('index')))
-        if self.config.html_use_modindex and self.env.modules:
+        # XXX generalization of modindex?
+        if self.config.html_use_modindex and \
+                self.env.domaindata['py']['modules']:
             rellinks.append(('modindex', _('Global Module Index'),
                              'M', _('modules')))
 
@@ -244,11 +264,13 @@ class StandaloneHTMLBuilder(Builder):
             use_opensearch = self.config.html_use_opensearch,
             docstitle = self.config.html_title,
             shorttitle = self.config.html_short_title,
+            show_copyright = self.config.html_show_copyright,
             show_sphinx = self.config.html_show_sphinx,
             has_source = self.config.html_copy_source,
             show_source = self.config.html_show_sourcelink,
             file_suffix = self.out_suffix,
             script_files = self.script_files,
+            css_files = self.css_files,
             sphinx_version = __version__,
             style = stylename,
             rellinks = rellinks,
@@ -385,12 +407,13 @@ class StandaloneHTMLBuilder(Builder):
 
         # the global module index
 
-        if self.config.html_use_modindex and self.env.modules:
+        moduleindex = self.env.domaindata['py']['modules']
+        if self.config.html_use_modindex and moduleindex:
             # the sorted list of all modules, for the global module index
             modules = sorted(((mn, (self.get_relative_uri('modindex', fn) +
                                     '#module-' + mn, sy, pl, dep))
                               for (mn, (fn, sy, pl, dep)) in
-                              self.env.modules.iteritems()),
+                              moduleindex.iteritems()),
                              key=lambda x: x[0].lower())
             # collect all platforms
             platforms = set()
@@ -646,6 +669,7 @@ class StandaloneHTMLBuilder(Builder):
         ctx['pathto'] = pathto
         ctx['hasdoc'] = lambda name: name in self.env.all_docs
         ctx['customsidebar'] = self.config.html_sidebars.get(pagename)
+        ctx['encoding'] = encoding = self.config.html_output_encoding
         ctx['toctree'] = lambda **kw: self._get_local_toctree(pagename, **kw)
         ctx.update(addctx)
 
@@ -658,7 +682,7 @@ class StandaloneHTMLBuilder(Builder):
         # outfilename's path is in general different from self.outdir
         ensuredir(path.dirname(outfilename))
         try:
-            f = codecs.open(outfilename, 'w', 'utf-8')
+            f = codecs.open(outfilename, 'w', encoding)
             try:
                 f.write(output)
             finally:
@@ -689,14 +713,15 @@ class StandaloneHTMLBuilder(Builder):
         self.info(bold('dumping object inventory... '), nonl=True)
         f = open(path.join(self.outdir, INVENTORY_FILENAME), 'w')
         try:
+            # XXX inventory version 2
             f.write('# Sphinx inventory version 1\n')
             f.write('# Project: %s\n' % self.config.project.encode('utf-8'))
             f.write('# Version: %s\n' % self.config.version)
-            for modname, info in self.env.modules.iteritems():
-                f.write('%s mod %s\n' % (modname, self.get_target_uri(info[0])))
-            for refname, (docname, desctype) in self.env.descrefs.iteritems():
-                f.write('%s %s %s\n' % (refname, desctype,
-                                        self.get_target_uri(docname)))
+            #for modname, info in self.env.modules.iteritems():
+            #    f.write('%s mod %s\n' % (modname, self.get_target_uri(info[0])))
+            #for refname, (docname, desctype) in self.env.descrefs.iteritems():
+            #    f.write('%s %s %s\n' % (refname, desctype,
+            #                            self.get_target_uri(docname)))
         finally:
             f.close()
         self.info('done')
