@@ -54,6 +54,8 @@ class Config(object):
         keep_warnings = (False, 'env'),
         modindex_common_prefix = ([], 'html'),
         rst_epilog = (None, 'env'),
+        trim_doctest_flags = (True, 'env'),
+        default_domain = ('py', 'env'),
 
         # HTML options
         html_theme = ('default', 'html'),
@@ -82,14 +84,19 @@ class Config(object):
         html_use_opensearch = ('', 'html'),
         html_file_suffix = (None, 'html'),
         html_link_suffix = (None, 'html'),
+        html_show_copyright = (True, 'html'),
         html_show_sphinx = (True, 'html'),
         html_context = ({}, 'html'),
+        html_output_encoding = ('utf-8', 'html'),
 
         # HTML help only options
         htmlhelp_basename = (lambda self: make_filename(self.project), None),
 
         # Qt help only options
         qthelp_basename = (lambda self: make_filename(self.project), None),
+
+        # Devhelp only options
+        devhelp_basename = (lambda self: make_filename(self.project), None),
 
         # LaTeX options
         latex_documents = ([], None),
@@ -103,8 +110,13 @@ class Config(object):
         latex_font_size = ('10pt', None),
         latex_elements = ({}, None),
         latex_additional_files = ([], None),
+        latex_docclass = ({}, None),
         # now deprecated - use latex_elements
         latex_preamble = ('', None),
+
+        # text options
+        text_sectionchars = ('*=-~"+`', 'text'),
+        text_windows_newlines = (False, 'text'),
     )
 
     def __init__(self, dirname, filename, overrides, tags):
