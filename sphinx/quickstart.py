@@ -56,7 +56,7 @@ templates_path = ['%(dot)stemplates']
 source_suffix = '%(suffix)s'
 
 # The encoding of source files.
-#source_encoding = 'utf-8'
+#source_encoding = 'utf-8-sig'
 
 # The master toctree document.
 master_doc = '%(master_str)s'
@@ -174,6 +174,12 @@ html_static_path = ['%(dot)sstatic']
 # If true, links to the reST sources are added to the pages.
 #html_show_sourcelink = True
 
+# If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
+#html_show_sphinx = True
+
+# If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
+#html_show_copyright = True
+
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the
 # base URL from which the finished HTML is served.
@@ -274,7 +280,9 @@ help:
 \t@echo "  json      to make JSON files"
 \t@echo "  htmlhelp  to make HTML files and a HTML help project"
 \t@echo "  qthelp    to make HTML files and a qthelp project"
+\t@echo "  devhelp   to make HTML files and a Devhelp project"
 \t@echo "  latex     to make LaTeX files, you can set PAPER=a4 or PAPER=letter"
+\t@echo "  latexpdf  to make LaTeX files and run them through pdflatex"
 \t@echo "  changes   to make an overview of all changed/added/deprecated items"
 \t@echo "  linkcheck to check all external links for integrity"
 \t@echo "  doctest   to run all doctests embedded in the documentation \
@@ -318,12 +326,27 @@ qthelp:
 \t@echo "To view the help file:"
 \t@echo "# assistant -collectionFile %(rbuilddir)s/qthelp/%(project_fn)s.qhc"
 
+devhelp:
+\t$(SPHINXBUILD) -b devhelp $(ALLSPHINXOPTS) %(rbuilddir)s/devhelp
+\t@echo
+\t@echo "Build finished."
+\t@echo "To view the help file:"
+\t@echo "# mkdir -p $$HOME/.local/share/devhelp/%(project_fn)s"
+\t@echo "# ln -s %(rbuilddir)s/devhelp $$HOME/.local/share/devhelp/%(project_fn)s"
+\t@echo "# devhelp"
+
 latex:
 \t$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) %(rbuilddir)s/latex
 \t@echo
 \t@echo "Build finished; the LaTeX files are in %(rbuilddir)s/latex."
 \t@echo "Run \\`make all-pdf' or \\`make all-ps' in that directory to" \\
 \t      "run these through (pdf)latex."
+
+latexpdf: latex
+\t$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) %(rbuilddir)s/latex
+\t@echo "Running LaTeX files through pdflatex..."
+\tmake -C %(rbuilddir)s/latex all-pdf
+\t@echo "pdflatex finished; the PDF files are in %(rbuilddir)s/latex."
 
 changes:
 \t$(SPHINXBUILD) -b changes $(ALLSPHINXOPTS) %(rbuilddir)s/changes
@@ -364,6 +387,7 @@ if "%%1" == "help" (
 \techo.  json      to make JSON files
 \techo.  htmlhelp  to make HTML files and a HTML help project
 \techo.  qthelp    to make HTML files and a qthelp project
+\techo.  devhelp   to make HTML files and a Devhelp project
 \techo.  latex     to make LaTeX files, you can set PAPER=a4 or PAPER=letter
 \techo.  changes   to make an overview over all changed/added/deprecated items
 \techo.  linkcheck to check all external links for integrity
@@ -421,6 +445,13 @@ if "%%1" == "qthelp" (
 \techo.^> qcollectiongenerator %(rbuilddir)s\\qthelp\\%(project_fn)s.qhcp
 \techo.To view the help file:
 \techo.^> assistant -collectionFile %(rbuilddir)s\\qthelp\\%(project_fn)s.ghc
+\tgoto end
+)
+
+if "%%1" == "devhelp" (
+\t%%SPHINXBUILD%% -b devhelp %%ALLSPHINXOPTS%% %(rbuilddir)s/devhelp
+\techo.
+\techo.Build finished.
 \tgoto end
 )
 
