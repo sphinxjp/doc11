@@ -226,7 +226,7 @@ class Autosummary(Directive):
         ``[(name, signature, summary_string, real_name), ...]``.
         """
         env = self.state.document.settings.env
-        
+
         prefixes = ['']
         if env.currmodule:
             prefixes.insert(0, env.currmodule)
@@ -443,8 +443,9 @@ def autolink_role(typ, rawtext, etext, lineno, inliner,
     Expands to ':obj:`text`' if `text` is an object that can be imported;
     otherwise expands to '*text*'.
     """
-    r = roles.xfileref_role('obj', rawtext, etext, lineno, inliner,
-                            options, content)
+    env = inliner.document.settings.env
+    r = env.get_domain('py').role('obj')(
+        'obj', rawtext, etext, lineno, inliner, options, content)
     pnode = r[0][0]
 
     prefixes = [None]

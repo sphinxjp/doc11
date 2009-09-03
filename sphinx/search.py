@@ -148,6 +148,8 @@ class IndexBuilder(object):
 
     def get_modules(self, fn2index):
         rv = {}
+        # XXX implement search capability
+        return rv
         for name, (doc, _, _, _) in self.env.modules.iteritems():
             if doc in fn2index:
                 rv[name] = fn2index[doc]
@@ -156,6 +158,8 @@ class IndexBuilder(object):
     def get_descrefs(self, fn2index):
         rv = {}
         dt = self._desctypes
+        # XXX implement search capability
+        return rv
         for fullname, (doc, desctype) in self.env.descrefs.iteritems():
             if doc not in fn2index:
                 continue
