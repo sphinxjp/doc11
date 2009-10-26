@@ -173,9 +173,9 @@ There are also these config values for customizing the doctest extension:
 
       Some more documentation text.
 
-   (Note that no special ``::`` is needed to introduce the block; docutils
-   recognizes it from the leading ``>>>``.  Also, no additional indentation is
-   necessary, though it doesn't hurt.)
+   (Note that no special ``::`` is used to introduce a doctest block; docutils
+   recognizes them from the leading ``>>>``.  Also, no additional indentation is
+   used, though it doesn't hurt.)
 
    If this value is left at its default value, the above snippet is interpreted
    by the doctest builder exactly like the following::
@@ -196,4 +196,5 @@ There are also these config values for customizing the doctest extension:
    Note though that you can't have blank lines in reST doctest blocks.  They
    will be interpreted as one block ending and another one starting.  Also,
    removal of ``<BLANKLINE>`` and ``# doctest:`` options only works in
-   :dir:`doctest` blocks.
+   :dir:`doctest` blocks, though you may set :confval:`trim_doctest_flags` to
+   achieve the latter in all code blocks with Python console content.
