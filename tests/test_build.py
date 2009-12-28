@@ -136,6 +136,8 @@ if pygments:
             r'^class Foo:\n    pass\nclass Bar:\n$',
         ".//div[@class='inc-startend highlight-text']/div/pre":
             ur'^foo = u"Including Unicode characters: üöä"\n$',
+        ".//div[@class='inc-preappend highlight-text']/div/pre":
+            r'(?m)^START CODE$',
         ".//div[@class='inc-pyobj-dedent highlight-python']/div/pre/span":
             r'def',
     })
