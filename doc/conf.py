@@ -9,6 +9,8 @@ import sys, os, re
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.todo',
               'sphinx.ext.autosummary']
 
+extlinks = {'issue': ('http://bugs.python.org/issue', 'issue ')}
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -62,6 +64,19 @@ html_use_opensearch = 'http://sphinx.pocoo.org'
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'Sphinxdoc'
 
+# Epub fields
+epub_theme = 'epub'
+epub_basename = 'sphinx'
+epub_author = 'Georg Brandl'
+epub_publisher = 'http://sphinx.pocoo.org/'
+epub_scheme = 'url'
+epub_identifier = epub_publisher
+epub_pre_files = [('index', 'Welcome')]
+epub_exclude_files = ['_static/opensearch.xml', '_static/doctools.js',
+    '_static/jquery.js', '_static/searchtools.js',
+    '_static/basic.css', 'search.html']
+
+
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [('contents', 'sphinx.tex', 'Sphinx Documentation',
@@ -72,7 +87,7 @@ latex_logo = '_static/sphinx.png'
 
 # Additional stuff for the LaTeX preamble.
 latex_elements = {
-    'fontpkg': '\\usepackage{palatino}'
+    'fontpkg': '\\usepackage{palatino}',
 }
 
 # Put TODOs into the output.
