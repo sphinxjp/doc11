@@ -32,7 +32,8 @@ ENOENT = getattr(errno, 'ENOENT', 0)
 
 # Generally useful regular expressions.
 ws_re = re.compile(r'\s+')
-caption_ref_re = re.compile(r'^([^<]+?)\s*<(.+)>$')
+explicit_title_re = re.compile('^(.+?)\s*<(.*?)>$', re.DOTALL)
+caption_ref_re = explicit_title_re  # b/w compat alias
 url_re = re.compile(r'(?P<schema>.+)://.*')
 
 # SEP separates path elements in the canonical file names
@@ -442,34 +443,40 @@ def copy_static_entry(source, target, builder, context={}):
         shutil.copytree(source, target)
 
 
+
+def split_explicit_title(text):
+    """Split role content into title and target, if given."""
+    match = explicit_title_re.match(text)
+    if match:
+        return True, match.group(1), match.group(2)
+    return False, text, text
+
 # monkey-patch Node.traverse to get more speed
 # traverse() is called so many times during a build that it saves
 # on average 20-25% overall build time!
 
-def _all_traverse(self):
+def _all_traverse(self, result):
     """Version of Node.traverse() that doesn't need a condition."""
-    result = []
     result.append(self)
     for child in self.children:
-        result.extend(child._all_traverse())
+        child._all_traverse(result)
     return result
 
-def _fast_traverse(self, cls):
+def _fast_traverse(self, cls, result):
     """Version of Node.traverse() that only supports instance checks."""
-    result = []
     if isinstance(self, cls):
         result.append(self)
     for child in self.children:
-        result.extend(child._fast_traverse(cls))
+        child._fast_traverse(cls, result)
     return result
 
 def _new_traverse(self, condition=None,
                  include_self=1, descend=1, siblings=0, ascend=0):
     if include_self and descend and not siblings and not ascend:
         if condition is None:
-            return self._all_traverse()
+            return self._all_traverse([])
         elif isinstance(condition, (types.ClassType, type)):
-            return self._fast_traverse(condition)
+            return self._fast_traverse(condition, [])
     return self._old_traverse(condition, include_self,
                               descend, siblings, ascend)
 
