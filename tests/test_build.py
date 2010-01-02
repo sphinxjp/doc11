@@ -121,6 +121,11 @@ HTML_XPATH = {
     'bom.html': {
         ".//title": " File with UTF-8 BOM",
     },
+    'extensions.html': {
+        ".//a[@href='http://python.org/dev/']": "http://python.org/dev/",
+        ".//a[@href='http://bugs.python.org/issue1000']": "issue 1000",
+        ".//a[@href='http://bugs.python.org/issue1042']": "explicit caption",
+    },
     '_static/statictmpl.html': {
         ".//project": 'Sphinx <Tests>',
     },
@@ -137,6 +142,8 @@ if pygments:
             r'^class Foo:\n    pass\nclass Bar:\n$',
         ".//div[@class='inc-startend highlight-text']/div/pre":
             ur'^foo = u"Including Unicode characters: üöä"\n$',
+        ".//div[@class='inc-preappend highlight-text']/div/pre":
+            r'(?m)^START CODE$',
         ".//div[@class='inc-pyobj-dedent highlight-python']/div/pre/span":
             r'def',
     })
@@ -277,6 +284,10 @@ def test_htmlhelp(app):
 
 @with_app(buildername='qthelp')
 def test_qthelp(app):
+    app.builder.build_all()
+
+@with_app(buildername='epub')
+def test_epub(app):
     app.builder.build_all()
 
 @with_app(buildername='changes', cleanenv=True)

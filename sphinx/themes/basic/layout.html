@@ -91,16 +91,21 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset={{ encoding }}" />
     {{ metatags }}
     {%- if not embedded and docstitle %}
       {%- set titlesuffix = " &mdash; "|safe + docstitle|e %}
     {%- else %}
       {%- set titlesuffix = "" %}
     {%- endif %}
+    {%- block htmltitle %}
     <title>{{ title|striptags }}{{ titlesuffix }}</title>
+    {%- endblock %}
     <link rel="stylesheet" href="{{ pathto('_static/' + style, 1) }}" type="text/css" />
     <link rel="stylesheet" href="{{ pathto('_static/pygments.css', 1) }}" type="text/css" />
+    {%- for cssfile in css_files %}
+    <link rel="stylesheet" href="{{ pathto('_static/' + cssfile, 1) }}" type="text/css" />
+    {%- endfor %}
     {%- if not embedded %}
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -154,10 +159,11 @@
 
 {%- block relbar1 %}{{ relbar() }}{% endblock %}
 
-{%- block sidebar1 %} {# possible location for sidebar #} {% endblock %}
+{%- block content %}
+  {%- block sidebar1 %} {# possible location for sidebar #} {% endblock %}
 
     <div class="document">
-{%- block document %}
+  {%- block document %}
       <div class="documentwrapper">
       {%- if not embedded %}{% if not theme_nosidebar|tobool %}
         <div class="bodywrapper">
@@ -169,20 +175,23 @@
         </div>
       {%- endif %}{% endif %}
       </div>
-{%- endblock %}
+  {%- endblock %}
 
-{%- block sidebar2 %}{{ sidebar() }}{% endblock %}
+  {%- block sidebar2 %}{{ sidebar() }}{% endblock %}
       <div class="clearer"></div>
     </div>
+{%- endblock %}
 
 {%- block relbar2 %}{{ relbar() }}{% endblock %}
 
 {%- block footer %}
     <div class="footer">
-    {%- if hasdoc('copyright') %}
-      {% trans path=pathto('copyright'), copyright=copyright|e %}&copy; <a href="{{ path }}">Copyright</a> {{ copyright }}.{% endtrans %}
-    {%- else %}
-      {% trans copyright=copyright|e %}&copy; Copyright {{ copyright }}.{% endtrans %}
+    {%- if show_copyright %}
+      {%- if hasdoc('copyright') %}
+        {% trans path=pathto('copyright'), copyright=copyright|e %}&copy; <a href="{{ path }}">Copyright</a> {{ copyright }}.{% endtrans %}
+      {%- else %}
+        {% trans copyright=copyright|e %}&copy; Copyright {{ copyright }}.{% endtrans %}
+      {%- endif %}
     {%- endif %}
     {%- if last_updated %}
       {% trans last_updated=last_updated|e %}Last updated on {{ last_updated }}.{% endtrans %}

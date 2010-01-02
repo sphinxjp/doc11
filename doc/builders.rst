@@ -36,6 +36,7 @@ The builder's "name" must be given to the **-b** command-line option of
 
    .. versionadded:: 0.6
 
+.. module:: sphinx.builders.htmlhelp
 .. class:: HTMLHelpBuilder
 
    This builder produces the same output as the standalone HTML builder, but
@@ -43,6 +44,34 @@ The builder's "name" must be given to the **-b** command-line option of
    Workshop to compile them into a CHM file.
 
    Its name is ``htmlhelp``.
+
+.. module:: sphinx.builders.qthelp
+.. class:: QtHelpBuilder
+
+   This builder produces the same output as the standalone HTML builder, but
+   also generates Qt help collection support files that allow
+   the Qt collection generator to compile them.
+
+   Its name is ``qthelp``.
+
+.. module:: sphinx.builders.devhelp
+.. class:: DevhelpBuilder
+
+   This builder produces the same output as the standalone HTML builder, but
+   also generates `GNOME Devhelp <http://live.gnome.org/devhelp>`__
+   support file that allows the GNOME Devhelp reader to view them.
+
+   Its name is ``devhelp``.
+
+.. module:: sphinx.builders.epub
+.. class:: EpubBuilder
+
+   This builder produces the same output as the standalone HTML builder, but
+   also generates an *epub* file for ebook readers.  See :ref:`epub-faq` for
+   details about it.  For definition of the epub format, have a look at
+   `<http://www.idpf.org/specs.htm>`_ or `<http://en.wikipedia.org/wiki/EPUB>`_.
+
+   Its name is ``epub``.
 
 .. module:: sphinx.builders.latex
 .. class:: LaTeXBuilder
