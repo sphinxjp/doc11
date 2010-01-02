@@ -13,7 +13,9 @@ Other contributors, listed alphabetically, are:
 * Martin Hans -- autodoc improvements
 * Dave Kuhlman -- original LaTeX writer
 * Thomas Lamb -- linkcheck builder
+* Dan MacKinlay -- metadata fixes
 * Will Maier -- directory HTML builder
+* Roland Meister -- epub builder
 * Christopher Perkins -- autosummary integration
 * Benjamin Peterson -- unittests
 * Stefan Seefeld -- toctree improvements
