@@ -12,12 +12,10 @@
 import re
 import os
 import time
-import heapq
 import types
 import codecs
 import imghdr
 import string
-import difflib
 import cPickle as pickle
 from os import path
 from glob import glob
@@ -757,6 +755,7 @@ class BuildEnvironment:
     def process_metadata(self, docname, doctree):
         """
         Process the docinfo part of the doctree as metadata.
+        Keep processing minimal -- just return what docutils says.
         """
         self.metadata[docname] = md = {}
         try:
@@ -768,10 +767,12 @@ class BuildEnvironment:
             # nothing to see here
             return
         for node in docinfo:
-            if node.__class__ is nodes.author:
-                # handled specially by docutils
-                md['author'] = node.astext()
-            elif node.__class__ is nodes.field:
+            # nodes are multiply inherited...
+            if isinstance(node, nodes.authors):
+                md['authors'] = [author.astext() for author in node]
+            elif isinstance(node, nodes.TextElement): # e.g. author
+                md[node.__class__.__name__] = node.astext()
+            else:
                 name, body = node
                 md[name.astext()] = body.astext()
         del doctree[0]
@@ -1131,6 +1132,8 @@ class BuildEnvironment:
             return entries
 
         maxdepth = maxdepth or toctree.get('maxdepth', -1)
+        if not titles_only and toctree.get('titlesonly', False):
+            titles_only = True
 
         # NOTE: previously, this was separate=True, but that leads to artificial
         # separation when two or more toctree entries form a logical unit, so
@@ -1232,7 +1235,8 @@ class BuildEnvironment:
                     # keywords are referenced by named labels
                     docname, labelid, _ = self.labels.get(target, ('','',''))
                     if not docname:
-                        #self.warn(node['refdoc'], 'unknown keyword: %s' % target)
+                        #self.warn(node['refdoc'],
+                        #          'unknown keyword: %s' % target)
                         newnode = contnode
                     else:
                         newnode = nodes.reference('', '')
@@ -1286,9 +1290,6 @@ class BuildEnvironment:
                             'missing-reference', self, node, contnode)
                         if not newnode:
                             newnode = contnode
-                    elif docname == fromdocname:
-                        # don't link to self
-                        newnode = contnode
                     else:
                         newnode = nodes.reference('', '')
                         newnode['refuri'] = builder.get_relative_uri(
