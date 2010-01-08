@@ -56,6 +56,7 @@ class Config(object):
         modindex_common_prefix = ([], 'html'),
         rst_epilog = (None, 'env'),
         trim_doctest_flags = (True, 'env'),
+        default_domain = ('py', 'env'),
 
         # HTML options
         html_theme = ('default', 'html'),
@@ -128,6 +129,10 @@ class Config(object):
         latex_docclass = ({}, None),
         # now deprecated - use latex_elements
         latex_preamble = ('', None),
+
+        # text options
+        text_sectionchars = ('*=-~"+`', 'text'),
+        text_windows_newlines = (False, 'text'),
     )
 
     def __init__(self, dirname, filename, overrides, tags):
