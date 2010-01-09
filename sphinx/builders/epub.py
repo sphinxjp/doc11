@@ -177,7 +177,7 @@ class EpubBuilder(StandaloneHTMLBuilder):
         if isinstance(doctree, nodes.reference):
             classes = doctree.parent.attributes['classes']
             level = 1
-            for l in range(5,0,-1): # or range(1,6)?
+            for l in range(8,0,-1): # or range(1,8)?
                 if (_toctree_template % l) in classes:
                     level = l
             result.append({
@@ -194,7 +194,8 @@ class EpubBuilder(StandaloneHTMLBuilder):
         """Get the total table of contents, containg the master_doc
         and pre and post files not managed by sphinx.
         """
-        doctree = self.env.get_and_resolve_doctree(self.config.master_doc, self)
+        doctree = self.env.get_and_resolve_doctree(self.config.master_doc,
+            self, prune_toctrees=False)
         self.refnodes = self.get_refnodes(doctree, [])
         self.refnodes.insert(0, {
             'level': 1,
