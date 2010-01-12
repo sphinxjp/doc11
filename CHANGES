@@ -1,3 +1,81 @@
+Release 1.0 (in development)
+============================
+
+* Added ``tab-width`` option to ``literalinclude`` directive.
+
+* The ``html_sidebars`` config value can now contain patterns as
+  keys, and the values can be lists that explicitly select which
+  sidebar templates should be rendered.  That means that the builtin
+  sidebar contents can be included only selectively.
+
+* ``html_static_path`` can now contain single file entries.
+
+* The new universal config value ``exclude_patterns`` makes the
+  old ``unused_docs``, ``exclude_trees`` and ``exclude_dirnames``
+  obsolete.
+
+* Remove the deprecated ``exclude_dirs`` config value.
+
+* #129: Wrap toctrees in a div tag with class ``toctree-wrapper``
+  in HTML output.
+
+* #280: Autodoc can now document instance attributes assigned in
+  ``__init__`` methods.
+
+* Added ``alt`` option to ``graphviz`` extension directives.
+
+* Added Epub builder.
+
+* #309: The ``graphviz`` extension can now output SVG instead of PNG
+  images, controlled by the ``graphviz_output_format`` config value.
+
+* #284: All docinfo metadata is now put into the document metadata, not
+  just the author.
+
+* Added new HTML theme ``haiku``, inspired by the Haiku OS user guide.
+
+* Added new HTML theme ``nature``.
+
+* Added new HTML theme ``agogo``, created by Andi Albrecht.
+
+* Added new HTML theme ``scrolls``, created by Armin Ronacher.
+
+* Added ``html_output_encoding`` config value.
+
+* #200: Added ``Sphinx.add_stylesheet()``.
+
+* Added ``titlesonly`` option to ``toctree`` directive.
+
+* Removed the deprecated ``sphinx.builder`` module.
+
+* #193: Added a ``visitedlinkcolor`` theme option to the default
+  theme.
+
+* Added the ``prepend`` and ``append`` options to the
+  ``literalinclude`` directive.
+
+* Added the ``latex_docclass`` config value and made the "twoside"
+  documentclass option overridable by "oneside".
+
+* Added the ``trim_doctest_flags`` config value, which is true by default.
+
+* Added the ``extlinks`` extension.
+
+* Allow searching for object names including the module name, like
+  ``sys.argv``.
+
+* Many improvements and fixes to the ``autosummary`` extension,
+  thanks to Pauli Virtanen.
+
+* Added ``html_show_copyright`` config value.
+
+* Added simplified Chinese locale.
+
+* Added ``latexpdf`` target in quickstart Makefile.
+
+* Added ``htmltitle`` block in layout template.
+
+
 Release 0.6.4 (in development)
 ==============================
 

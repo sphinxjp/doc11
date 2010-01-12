@@ -12,12 +12,10 @@
 import re
 import os
 import time
-import heapq
 import types
 import codecs
 import imghdr
 import string
-import difflib
 import cPickle as pickle
 from os import path
 from glob import glob
@@ -37,7 +35,7 @@ from docutils.transforms.parts import ContentsFilter
 
 from sphinx import addnodes
 from sphinx.util import movefile, get_matching_docs, SEP, ustrftime, \
-     docname_join, FilenameUniqDict, url_re, clean_astext
+     docname_join, FilenameUniqDict, url_re, clean_astext, compile_matchers
 from sphinx.errors import SphinxError
 from sphinx.directives import additional_xref_types
 
@@ -395,14 +393,15 @@ class BuildEnvironment:
         """
         Find all source files in the source dir and put them in self.found_docs.
         """
-        exclude_dirs  = [d.replace(SEP, path.sep) for d in config.exclude_dirs]
-        exclude_trees = [d.replace(SEP, path.sep) for d in config.exclude_trees]
+        matchers = compile_matchers(
+            config.exclude_patterns[:] +
+            config.exclude_trees +
+            [d + config.source_suffix for d in config.unused_docs] +
+            ['**/' + d for d in config.exclude_dirnames] +
+            ['**/_sources']
+        )
         self.found_docs = set(get_matching_docs(
-            self.srcdir, config.source_suffix,
-            exclude_docs=set(config.unused_docs),
-            exclude_dirs=exclude_dirs,
-            exclude_trees=exclude_trees,
-            exclude_dirnames=['_sources'] + config.exclude_dirnames))
+            self.srcdir, config.source_suffix, exclude_matchers=matchers))
 
     def get_outdated_files(self, config_changed):
         """
@@ -757,6 +756,7 @@ class BuildEnvironment:
     def process_metadata(self, docname, doctree):
         """
         Process the docinfo part of the doctree as metadata.
+        Keep processing minimal -- just return what docutils says.
         """
         self.metadata[docname] = md = {}
         try:
@@ -768,10 +768,12 @@ class BuildEnvironment:
             # nothing to see here
             return
         for node in docinfo:
-            if node.__class__ is nodes.author:
-                # handled specially by docutils
-                md['author'] = node.astext()
-            elif node.__class__ is nodes.field:
+            # nodes are multiply inherited...
+            if isinstance(node, nodes.authors):
+                md['authors'] = [author.astext() for author in node]
+            elif isinstance(node, nodes.TextElement): # e.g. author
+                md[node.__class__.__name__] = node.astext()
+            else:
                 name, body = node
                 md[name.astext()] = body.astext()
         del doctree[0]
@@ -1131,6 +1133,8 @@ class BuildEnvironment:
             return entries
 
         maxdepth = maxdepth or toctree.get('maxdepth', -1)
+        if not titles_only and toctree.get('titlesonly', False):
+            titles_only = True
 
         # NOTE: previously, this was separate=True, but that leads to artificial
         # separation when two or more toctree entries form a logical unit, so
@@ -1168,6 +1172,7 @@ class BuildEnvironment:
 
             typ = node['reftype']
             target = node['reftarget']
+            refdoc = node.get('refdoc', fromdocname)
 
             try:
                 if typ == 'ref':
@@ -1177,7 +1182,7 @@ class BuildEnvironment:
                         docname, labelid = self.anonlabels.get(target, ('',''))
                         sectname = node.astext()
                         if not docname:
-                            self.warn(node['refdoc'], 'undefined label: %s' %
+                            self.warn(refdoc, 'undefined label: %s' %
                                       target, node.line)
                     else:
                         # reference to the named label; the final node will
@@ -1185,8 +1190,7 @@ class BuildEnvironment:
                         docname, labelid, sectname = self.labels.get(target,
                                                                      ('','',''))
                         if not docname:
-                            self.warn(
-                                node['refdoc'],
+                            self.warn(refdoc,
                                 'undefined label: %s' % target + ' -- if you '
                                 'don\'t give a link caption the label must '
                                 'precede a section header.', node.line)
@@ -1212,10 +1216,10 @@ class BuildEnvironment:
                 elif typ == 'doc':
                     # directly reference to document by source name;
                     # can be absolute or relative
-                    docname = docname_join(node['refdoc'], target)
+                    docname = docname_join(refdoc, target)
                     if docname not in self.all_docs:
-                        self.warn(node['refdoc'],
-                                  'unknown document: %s' % docname, node.line)
+                        self.warn(refdoc, 'unknown document: %s' % docname,
+                                  node.line)
                         newnode = contnode
                     else:
                         if node['refcaption']:
@@ -1232,8 +1236,7 @@ class BuildEnvironment:
                     # keywords are referenced by named labels
                     docname, labelid, _ = self.labels.get(target, ('','',''))
                     if not docname:
-                        #self.warn(node['refdoc'],
-                        #          'unknown keyword: %s' % target)
+                        #self.warn(refdoc, 'unknown keyword: %s' % target)
                         newnode = contnode
                     else:
                         newnode = nodes.reference('', '')
@@ -1262,12 +1265,11 @@ class BuildEnvironment:
                                                            ('', ''))
                     if not docname:
                         if typ == 'term':
-                            self.warn(node['refdoc'],
+                            self.warn(refdoc,
                                       'term not in glossary: %s' % target,
                                       node.line)
                         elif typ == 'citation':
-                            self.warn(node['refdoc'],
-                                      'citation not found: %s' % target,
+                            self.warn(refdoc, 'citation not found: %s' % target,
                                       node.line)
                         newnode = contnode
                     else:
@@ -1287,9 +1289,6 @@ class BuildEnvironment:
                             'missing-reference', self, node, contnode)
                         if not newnode:
                             newnode = contnode
-                    elif docname == fromdocname:
-                        # don't link to self
-                        newnode = contnode
                     else:
                         newnode = nodes.reference('', '')
                         newnode['refuri'] = builder.get_relative_uri(
