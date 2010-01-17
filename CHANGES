@@ -1,6 +1,19 @@
 Release 1.0 (in development)
 ============================
 
+.. XXX add short info about domains
+
+* Support for domains has been added.
+
+* Support for docutils 0.4 has been removed.
+
+* New more compact doc field syntax is now recognized:
+  ``:param type name: description``.
+
+* Added the ``viewcode`` extension.
+
+* Added ``html-collect-pages`` event.
+
 * Added ``needs_sphinx`` config value and ``Sphinx.require_sphinx``
   application API function.
 
@@ -44,6 +57,11 @@ Release 1.0 (in development)
 * Added new HTML theme ``agogo``, created by Andi Albrecht.
 
 * Added new HTML theme ``scrolls``, created by Armin Ronacher.
+
+* The ``toctree()`` callable in templates now has a ``maxdepth``
+  keyword argument to control the depth of the generated tree.
+
+* Added Catalan translation, thanks to Pau Fernández.
 
 * Added ``html_output_encoding`` config value.
 

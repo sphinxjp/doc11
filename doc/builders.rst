@@ -127,7 +127,7 @@ Note that a direct PDF builder using ReportLab is available in `rst2pdf
    (`pickle`, `simplejson`, `phpserialize`, and others) to dump the generated
    HTML documentation.  The pickle builder is a subclass of it.
 
-   A concreate subclass of this builder serializing to the `PHP serialization`_
+   A concrete subclass of this builder serializing to the `PHP serialization`_
    format could look like this::
 
         import phpserialize
@@ -298,7 +298,9 @@ The special files are located in the root output directory.  They are:
 ``environment.pickle``
    The build environment.  This is always a pickle file, independent of the
    builder and a copy of the environment that was used when the builder was
-   started.  (XXX: document common members)
+   started.
 
-   Unlike the other pickle files this pickle file requires that the sphinx
-   module is available on unpickling.
+   .. todo:: Document common members.
+
+   Unlike the other pickle files this pickle file requires that the ``sphinx``
+   package is available on unpickling.
