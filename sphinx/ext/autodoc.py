@@ -20,9 +20,10 @@ from docutils import nodes
 from docutils.utils import assemble_option_dict
 from docutils.statemachine import ViewList
 
-from sphinx.util import rpartition, nested_parse_with_titles, force_decode
+from sphinx.util import rpartition, force_decode
 from sphinx.pycode import ModuleAnalyzer, PycodeError
 from sphinx.application import ExtensionError
+from sphinx.util.nodes import nested_parse_with_titles
 from sphinx.util.compat import Directive
 from sphinx.util.inspect import isdescriptor, safe_getmembers, safe_getattr
 from sphinx.util.docstrings import prepare_docstring
@@ -72,6 +73,7 @@ class Options(dict):
 
 
 ALL = object()
+INSTANCEATTR = object()
 
 def members_option(arg):
     """Used to convert the :members: option to auto directives."""
@@ -355,6 +357,16 @@ class Documenter(object):
         """
         return None
 
+    def format_name(self):
+        """
+        Format the name of *self.object*.  This normally should be something
+        that can be parsed by the generated directive, but doesn't need to be
+        (Sphinx will display it unparsed then).
+        """
+        # normally the name doesn't contain the module (except for module
+        # directives of course)
+        return '.'.join(self.objpath) or self.modname
+
     def format_signature(self):
         """
         Format the signature (arguments and return annotation) of the object.
@@ -366,8 +378,7 @@ class Documenter(object):
         else:
             # try to introspect the signature
             args = self.format_args()
-        if args is None:
-            return ''
+
         retann = self.retann
 
         result = self.env.app.emit_firstresult(
@@ -384,11 +395,8 @@ class Documenter(object):
     def add_directive_header(self, sig):
         """Add the directive header and options to the generated content."""
         directive = getattr(self, 'directivetype', self.objtype)
-        # the name to put into the generated directive -- doesn't contain
-        # the module (except for module directive of course)
-        name_in_directive = '.'.join(self.objpath) or self.modname
-        self.add_line(u'.. %s:: %s%s' % (directive, name_in_directive, sig),
-                      '<autodoc>')
+        name = self.format_name()
+        self.add_line(u'.. %s:: %s%s' % (directive, name, sig), '<autodoc>')
         if self.options.noindex:
             self.add_line(u'   :noindex:', '<autodoc>')
         if self.objpath:
@@ -468,19 +476,30 @@ class Documenter(object):
                     self.directive.warn('missing attribute %s in object %s'
                                         % (mname, self.fullname))
             return False, ret
-        elif self.options.inherited_members:
+
+        if self.options.inherited_members:
             # safe_getmembers() uses dir() which pulls in members from all
             # base classes
-            return False, safe_getmembers(self.object)
+            members = safe_getmembers(self.object)
         else:
             # __dict__ contains only the members directly defined in
             # the class (but get them via getattr anyway, to e.g. get
             # unbound method objects instead of function objects);
             # using keys() because apparently there are objects for which
             # __dict__ changes while getting attributes
-            return False, sorted([
-                (mname, self.get_attr(self.object, mname, None))
-                for mname in self.get_attr(self.object, '__dict__').keys()])
+            obj_dict = self.get_attr(self.object, '__dict__')
+            members = [(mname, self.get_attr(self.object, mname, None))
+                       for mname in obj_dict.keys()]
+        membernames = set(m[0] for m in members)
+        # add instance attributes from the analyzer
+        if self.analyzer:
+            attr_docs = self.analyzer.find_attr_docs()
+            namespace = '.'.join(self.objpath)
+            for item in attr_docs.iteritems():
+                if item[0][0] == namespace:
+                    if item[0][1] not in membernames:
+                        members.append((item[0][1], INSTANCEATTR))
+        return False, sorted(members)
 
     def filter_members(self, members, want_all):
         """
@@ -1030,6 +1049,34 @@ class AttributeDocumenter(ClassLevelDocumenter):
         pass
 
 
+class InstanceAttributeDocumenter(AttributeDocumenter):
+    """
+    Specialized Documenter subclass for attributes that cannot be imported
+    because they are instance attributes (e.g. assigned in __init__).
+    """
+    objtype = 'instanceattribute'
+    directivetype = 'attribute'
+    member_order = 60
+
+    # must be higher than AttributeDocumenter
+    priority = 11
+
+    @classmethod
+    def can_document_member(cls, member, membername, isattr, parent):
+        """This documents only INSTANCEATTR members."""
+        return isattr and (member is INSTANCEATTR)
+
+    def import_object(self):
+        """Never import anything."""
+        # disguise as an attribute
+        self.objtype = 'attribute'
+        return True
+
+    def add_content(self, more_content, no_docstring=False):
+        """Never try to get a docstring from the object."""
+        AttributeDocumenter.add_content(self, more_content, no_docstring=True)
+
+
 class AutoDirective(Directive):
     """
     The AutoDirective class is used for all autodoc directives.  It dispatches
@@ -1126,6 +1173,7 @@ def setup(app):
     app.add_autodocumenter(FunctionDocumenter)
     app.add_autodocumenter(MethodDocumenter)
     app.add_autodocumenter(AttributeDocumenter)
+    app.add_autodocumenter(InstanceAttributeDocumenter)
 
     app.add_config_value('autoclass_content', 'class', True)
     app.add_config_value('autodoc_member_order', 'alphabetic', True)

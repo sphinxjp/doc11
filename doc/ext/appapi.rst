@@ -209,6 +209,14 @@ the following public API:
 
    .. versionadded:: 0.5
 
+.. method:: Sphinx.add_stylesheet(filename)
+
+   Add *filename* to the list of CSS files that the default HTML template will
+   include.  Like for :meth:`add_javascript`, the filename must be relative to
+   the HTML static path.
+
+   .. versionadded:: 1.0
+
 .. method:: Sphinx.add_lexer(alias, lexer)
 
    Use *lexer*, which must be an instance of a Pygments lexer class, to
@@ -260,6 +268,14 @@ the following public API:
    the rest of the callbacks).
 
    .. versionadded:: 0.5
+
+.. method:: Sphinx.require_sphinx(version)
+
+   Compare *version* (which must be a ``major.minor`` version string,
+   e.g. ``'1.1'``) with the version of the running Sphinx, and abort the build
+   when it is too old.
+
+   .. versionadded:: 1.0
 
 
 .. exception:: ExtensionError
