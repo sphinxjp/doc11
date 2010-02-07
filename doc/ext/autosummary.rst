@@ -130,7 +130,10 @@ also use this new config value:
 
 .. confval:: autosummary_generate
 
-   A list of documents for which stub pages should be generated.
+   Boolean indicating whether to scan all found documents for autosummary
+   directives, and to generate stub pages for each.
+
+   Can also be a list of documents for which stub pages should be generated.
 
    The new files will be placed in the directories specified in the
    ``:toctree:`` options of the directives.
@@ -159,6 +162,8 @@ Autosummary uses the following template files:
 - :file:`autosummary/method.rst` -- template for class methods
 
 The following variables available in the templates:
+
+.. currentmodule:: None
 
 .. data:: name
 

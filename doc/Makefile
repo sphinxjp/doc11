@@ -19,6 +19,7 @@ help:
 	@echo "  dirhtml   to make HTML files called index.html in directories"
 	@echo "  pickle    to make pickle files"
 	@echo "  htmlhelp  to make HTML files and a HTML help project"
+	@echo "  epub      to make an epub file"
 	@echo "  latex     to make LaTeX files, you can set PAPER=a4 or PAPER=letter"
 	@echo "  changes   to make an overview over all changed/added/deprecated items"
 	@echo "  linkcheck to check all external links for integrity"
@@ -27,36 +28,35 @@ clean:
 	-rm -rf _build/*
 
 html:
-	mkdir -p _build/html _build/doctrees
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) _build/html
 	@echo
 	@echo "Build finished. The HTML pages are in _build/html."
 
 dirhtml:
-	mkdir -p _build/dirhtml _build/doctrees
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) _build/dirhtml
 	@echo
 	@echo "Build finished. The HTML pages are in _build/dirhtml."
 
+singlehtml:
+	$(SPHINXBUILD) -b singlehtml $(ALLSPHINXOPTS) _build/singlehtml
+	@echo
+	@echo "Build finished. The HTML page is in _build/singlehtml."
+
 text:
-	mkdir -p _build/text _build/doctrees
 	$(SPHINXBUILD) -b text $(ALLSPHINXOPTS) _build/text
 	@echo
 	@echo "Build finished."
 
 pickle:
-	mkdir -p _build/pickle _build/doctrees
 	$(SPHINXBUILD) -b pickle $(ALLSPHINXOPTS) _build/pickle
 
 htmlhelp:
-	mkdir -p _build/htmlhelp _build/doctrees
 	$(SPHINXBUILD) -b htmlhelp $(ALLSPHINXOPTS) _build/htmlhelp
 	@echo
 	@echo "Build finished; now you can run HTML Help Workshop with the" \
 	      ".hhp project file in _build/htmlhelp."
 
 qthelp:
-	mkdir -p _build/qthelp _build/doctrees
 	$(SPHINXBUILD) -b qthelp $(ALLSPHINXOPTS) _build/qthelp
 	@echo
 	@echo "Build finished; now you can run qcollectiongenerator with the" \
@@ -65,8 +65,12 @@ qthelp:
 	@echo "To view the help collection:"
 	@echo "# assistant -collectionFile _build/qthelp/Sphinx.qhc"
 
+epub:
+	$(SPHINXBUILD) -b epub $(ALLSPHINXOPTS) _build/epub
+	@echo
+	@echo "Build finished. The epub file is in _build/epub."
+
 latex:
-	mkdir -p _build/latex _build/doctrees
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) _build/latex
 	@echo
 	@echo "Build finished; the LaTeX files are in _build/latex."
@@ -74,18 +78,15 @@ latex:
 	      "run these through (pdf)latex."
 
 changes:
-	mkdir -p _build/changes _build/doctrees
 	$(SPHINXBUILD) -b changes $(ALLSPHINXOPTS) _build/changes
 	@echo
 	@echo "The overview file is in _build/changes."
 
 linkcheck:
-	mkdir -p _build/linkcheck _build/doctrees
 	$(SPHINXBUILD) -b linkcheck $(ALLSPHINXOPTS) _build/linkcheck
 	@echo
 	@echo "Link check complete; look for any errors in the above output " \
 	      "or in _build/linkcheck/output.txt."
 
 doctest:
-	mkdir -p _build/doctest _build/doctrees
 	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) _build/doctest
