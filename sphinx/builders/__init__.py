@@ -16,8 +16,8 @@ from os import path
 from docutils import nodes
 
 from sphinx import package_dir, locale
-from sphinx.util import SEP, ENOENT, relative_uri
 from sphinx.environment import BuildEnvironment
+from sphinx.util.osutil import SEP, ENOENT, relative_uri
 from sphinx.util.console import bold, purple, darkgreen, term_width_line
 
 # side effect: registers roles and directives
@@ -380,15 +380,18 @@ class Builder(object):
 
 
 BUILTIN_BUILDERS = {
-    'html':      ('html', 'StandaloneHTMLBuilder'),
-    'dirhtml':   ('html', 'DirectoryHTMLBuilder'),
-    'pickle':    ('html', 'PickleHTMLBuilder'),
-    'json':      ('html', 'JSONHTMLBuilder'),
-    'web':       ('html', 'PickleHTMLBuilder'),
-    'htmlhelp':  ('htmlhelp', 'HTMLHelpBuilder'),
-    'qthelp':    ('qthelp', 'QtHelpBuilder'),
-    'latex':     ('latex', 'LaTeXBuilder'),
-    'text':      ('text', 'TextBuilder'),
-    'changes':   ('changes', 'ChangesBuilder'),
-    'linkcheck': ('linkcheck', 'CheckExternalLinksBuilder'),
+    'html':       ('html', 'StandaloneHTMLBuilder'),
+    'dirhtml':    ('html', 'DirectoryHTMLBuilder'),
+    'singlehtml': ('html', 'SingleFileHTMLBuilder'),
+    'pickle':     ('html', 'PickleHTMLBuilder'),
+    'json':       ('html', 'JSONHTMLBuilder'),
+    'web':        ('html', 'PickleHTMLBuilder'),
+    'htmlhelp':   ('htmlhelp', 'HTMLHelpBuilder'),
+    'devhelp':    ('devhelp', 'DevhelpBuilder'),
+    'qthelp':     ('qthelp', 'QtHelpBuilder'),
+    'epub':       ('epub', 'EpubBuilder'),
+    'latex':      ('latex', 'LaTeXBuilder'),
+    'text':       ('text', 'TextBuilder'),
+    'changes':    ('changes', 'ChangesBuilder'),
+    'linkcheck':  ('linkcheck', 'CheckExternalLinksBuilder'),
 }
