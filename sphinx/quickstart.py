@@ -14,7 +14,8 @@ from os import path
 
 TERM_ENCODING = getattr(sys.stdin, 'encoding', None)
 
-from sphinx.util import make_filename
+from sphinx import __version__
+from sphinx.util.osutil import make_filename
 from sphinx.util.console import purple, bold, red, turquoise, \
      nocolor, color_terminal
 from sphinx.util import texescape
@@ -45,6 +46,9 @@ import sys, os
 
 # -- General configuration -----------------------------------------------------
 
+# If your documentation needs a minimal Sphinx version, state it here.
+#needs_sphinx = '1.0'
+
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [%(extensions)s]
@@ -56,7 +60,7 @@ templates_path = ['%(dot)stemplates']
 source_suffix = '%(suffix)s'
 
 # The encoding of source files.
-#source_encoding = 'utf-8'
+#source_encoding = 'utf-8-sig'
 
 # The master toctree document.
 master_doc = '%(master_str)s'
@@ -84,12 +88,9 @@ release = '%(release_str)s'
 # Else, today_fmt is used as the format for a strftime call.
 #today_fmt = '%%B %%d, %%Y'
 
-# List of documents that shouldn't be included in the build.
-#unused_docs = []
-
-# List of directories, relative to source directory, that shouldn't be searched
-# for source files.
-exclude_trees = [%(exclude_trees)s]
+# List of patterns, relative to source directory, that match files and
+# directories to ignore when looking for source files.
+exclude_patterns = [%(exclude_patterns)s]
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -174,6 +175,12 @@ html_static_path = ['%(dot)sstatic']
 # If true, links to the reST sources are added to the pages.
 #html_show_sourcelink = True
 
+# If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
+#html_show_sphinx = True
+
+# If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
+#html_show_copyright = True
+
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the
 # base URL from which the finished HTML is served.
@@ -217,6 +224,43 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+
+
+# -- Options for Epub output ---------------------------------------------------
+
+# Bibliographic Dublin Core info.
+#epub_title = ''
+#epub_author = ''
+#epub_publisher = ''
+#epub_copyright = ''
+
+# The language of the text. It defaults to the language option
+# or en if the language is not set.
+#epub_language = ''
+
+# The scheme of the identifier. Typical schemes are ISBN or URL.
+#epub_scheme = ''
+
+# The unique identifier of the text. This can be a ISBN number
+# or the project homepage.
+#epub_identifier = ''
+
+# A unique identification for the text.
+#epub_uid = ''
+
+# HTML files that should be inserted before the pages created by sphinx.
+# The format is a list of tuples containing the path and title.
+#epub_pre_files = []
+
+# HTML files shat should be inserted after the pages created by sphinx.
+# The format is a list of tuples containing the path and title.
+#epub_post_files = []
+
+# A list of files that should not be packed into the epub file.
+#epub_exclude_files = []
+
+# The depth of the table of contents in toc.ncx.
+#epub_tocdepth = 3
 '''
 
 INTERSPHINX_CONFIG = '''
@@ -264,21 +308,25 @@ PAPEROPT_letter = -D latex_paper_size=letter
 ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) \
 $(SPHINXOPTS) %(rsrcdir)s
 
-.PHONY: help clean html dirhtml pickle json htmlhelp qthelp latex changes \
-linkcheck doctest
+.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp epub \
+latex changes linkcheck doctest
 
 help:
 \t@echo "Please use \\`make <target>' where <target> is one of"
-\t@echo "  html      to make standalone HTML files"
-\t@echo "  dirhtml   to make HTML files named index.html in directories"
-\t@echo "  pickle    to make pickle files"
-\t@echo "  json      to make JSON files"
-\t@echo "  htmlhelp  to make HTML files and a HTML help project"
-\t@echo "  qthelp    to make HTML files and a qthelp project"
-\t@echo "  latex     to make LaTeX files, you can set PAPER=a4 or PAPER=letter"
-\t@echo "  changes   to make an overview of all changed/added/deprecated items"
-\t@echo "  linkcheck to check all external links for integrity"
-\t@echo "  doctest   to run all doctests embedded in the documentation \
+\t@echo "  html       to make standalone HTML files"
+\t@echo "  dirhtml    to make HTML files named index.html in directories"
+\t@echo "  singlehtml to make a single large HTML file"
+\t@echo "  pickle     to make pickle files"
+\t@echo "  json       to make JSON files"
+\t@echo "  htmlhelp   to make HTML files and a HTML help project"
+\t@echo "  qthelp     to make HTML files and a qthelp project"
+\t@echo "  devhelp    to make HTML files and a Devhelp project"
+\t@echo "  epub       to make an epub"
+\t@echo "  latex      to make LaTeX files, you can set PAPER=a4 or PAPER=letter"
+\t@echo "  latexpdf   to make LaTeX files and run them through pdflatex"
+\t@echo "  changes    to make an overview of all changed/added/deprecated items"
+\t@echo "  linkcheck  to check all external links for integrity"
+\t@echo "  doctest    to run all doctests embedded in the documentation \
 (if enabled)"
 
 clean:
@@ -293,6 +341,11 @@ dirhtml:
 \t$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
 \t@echo
 \t@echo "Build finished. The HTML pages are in $(BUILDDIR)/dirhtml."
+
+singlehtml:
+\t$(SPHINXBUILD) -b singlehtml $(ALLSPHINXOPTS) $(BUILDDIR)/singlehtml
+\t@echo
+\t@echo "Build finished. The HTML page is in $(BUILDDIR)/singlehtml."
 
 pickle:
 \t$(SPHINXBUILD) -b pickle $(ALLSPHINXOPTS) $(BUILDDIR)/pickle
@@ -319,12 +372,33 @@ qthelp:
 \t@echo "To view the help file:"
 \t@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/%(project_fn)s.qhc"
 
+devhelp:
+\t$(SPHINXBUILD) -b devhelp $(ALLSPHINXOPTS) %(rbuilddir)s/devhelp
+\t@echo
+\t@echo "Build finished."
+\t@echo "To view the help file:"
+\t@echo "# mkdir -p $$HOME/.local/share/devhelp/%(project_fn)s"
+\t@echo "# ln -s %(rbuilddir)s/devhelp\
+ $$HOME/.local/share/devhelp/%(project_fn)s"
+\t@echo "# devhelp"
+
+epub:
+\t$(SPHINXBUILD) -b epub $(ALLSPHINXOPTS) $(BUILDDIR)/epub
+\t@echo
+\t@echo "Build finished. The epub file is in $(BUILDDIR)/epub."
+
 latex:
 \t$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
 \t@echo
 \t@echo "Build finished; the LaTeX files are in $(BUILDDIR)/latex."
 \t@echo "Run \\`make all-pdf' or \\`make all-ps' in that directory to" \\
 \t      "run these through (pdf)latex."
+
+latexpdf: latex
+\t$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) %(rbuilddir)s/latex
+\t@echo "Running LaTeX files through pdflatex..."
+\tmake -C %(rbuilddir)s/latex all-pdf
+\t@echo "pdflatex finished; the PDF files are in %(rbuilddir)s/latex."
 
 changes:
 \t$(SPHINXBUILD) -b changes $(ALLSPHINXOPTS) $(BUILDDIR)/changes
@@ -360,16 +434,19 @@ if "%%1" == "" goto help
 if "%%1" == "help" (
 \t:help
 \techo.Please use `make ^<target^>` where ^<target^> is one of
-\techo.  html      to make standalone HTML files
-\techo.  dirhtml   to make HTML files named index.html in directories
-\techo.  pickle    to make pickle files
-\techo.  json      to make JSON files
-\techo.  htmlhelp  to make HTML files and a HTML help project
-\techo.  qthelp    to make HTML files and a qthelp project
-\techo.  latex     to make LaTeX files, you can set PAPER=a4 or PAPER=letter
-\techo.  changes   to make an overview over all changed/added/deprecated items
-\techo.  linkcheck to check all external links for integrity
-\techo.  doctest   to run all doctests embedded in the documentation if enabled
+\techo.  html       to make standalone HTML files
+\techo.  dirhtml    to make HTML files named index.html in directories
+\techo.  singlehtml to make a single large HTML file
+\techo.  pickle     to make pickle files
+\techo.  json       to make JSON files
+\techo.  htmlhelp   to make HTML files and a HTML help project
+\techo.  qthelp     to make HTML files and a qthelp project
+\techo.  devhelp    to make HTML files and a Devhelp project
+\techo.  epub       to make an epub
+\techo.  latex      to make LaTeX files, you can set PAPER=a4 or PAPER=letter
+\techo.  changes    to make an overview over all changed/added/deprecated items
+\techo.  linkcheck  to check all external links for integrity
+\techo.  doctest    to run all doctests embedded in the documentation if enabled
 \tgoto end
 )
 
@@ -390,6 +467,13 @@ if "%%1" == "dirhtml" (
 \t%%SPHINXBUILD%% -b dirhtml %%ALLSPHINXOPTS%% %%BUILDDIR%%/dirhtml
 \techo.
 \techo.Build finished. The HTML pages are in %%BUILDDIR%%/dirhtml.
+\tgoto end
+)
+
+if "%%1" == "singlehtml" (
+\t%%SPHINXBUILD%% -b singlehtml %%ALLSPHINXOPTS%% %%BUILDDIR%%/singlehtml
+\techo.
+\techo.Build finished. The HTML pages are in %%BUILDDIR%%/singlehtml.
 \tgoto end
 )
 
@@ -423,6 +507,20 @@ if "%%1" == "qthelp" (
 \techo.^> qcollectiongenerator %%BUILDDIR%%\\qthelp\\%(project_fn)s.qhcp
 \techo.To view the help file:
 \techo.^> assistant -collectionFile %%BUILDDIR%%\\qthelp\\%(project_fn)s.ghc
+\tgoto end
+)
+
+if "%%1" == "devhelp" (
+\t%%SPHINXBUILD%% -b devhelp %%ALLSPHINXOPTS%% %(rbuilddir)s/devhelp
+\techo.
+\techo.Build finished.
+\tgoto end
+)
+
+if "%%1" == "epub" (
+\t%%SPHINXBUILD%% -b epub %%ALLSPHINXOPTS%% %%BUILDDIR%%/epub
+\techo.
+\techo.Build finished. The epub file is in %%BUILDDIR%%/epub.
 \tgoto end
 )
 
@@ -537,7 +635,7 @@ def inner_main(args):
     if not color_terminal():
         nocolor()
 
-    print bold('Welcome to the Sphinx quickstart utility.')
+    print bold('Welcome to the Sphinx %s quickstart utility.') % __version__
     print '''
 Please enter values for the following settings (just press Enter to
 accept a default value, if one is given in brackets).'''
@@ -663,10 +761,10 @@ directly.'''
     mkdir_p(srcdir)
     if d['sep']:
         builddir = path.join(d['path'], 'build')
-        d['exclude_trees'] = ''
+        d['exclude_patterns'] = ''
     else:
         builddir = path.join(srcdir, d['dot'] + 'build')
-        d['exclude_trees'] = repr(d['dot'] + 'build')
+        d['exclude_patterns'] = repr(d['dot'] + 'build')
     mkdir_p(builddir)
     mkdir_p(path.join(srcdir, d['dot'] + 'templates'))
     mkdir_p(path.join(srcdir, d['dot'] + 'static'))

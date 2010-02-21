@@ -14,8 +14,10 @@ from docutils.parsers.rst import directives
 
 from sphinx import addnodes
 from sphinx.locale import pairindextypes
-from sphinx.util import patfilter, ws_re, caption_ref_re, url_re, docname_join
+from sphinx.util import ws_re, url_re, docname_join
+from sphinx.util.nodes import explicit_title_re
 from sphinx.util.compat import Directive, directive_dwim, make_admonition
+from sphinx.util.matching import patfilter
 
 
 class TocTree(Directive):
@@ -33,6 +35,7 @@ class TocTree(Directive):
         'glob': directives.flag,
         'hidden': directives.flag,
         'numbered': directives.flag,
+        'titlesonly': directives.flag,
     }
 
     def run(self):
@@ -54,7 +57,7 @@ class TocTree(Directive):
                 continue
             if not glob:
                 # look for explicit titles ("Some Title <document>")
-                m = caption_ref_re.match(entry)
+                m = explicit_title_re.match(entry)
                 if m:
                     ref = m.group(2)
                     title = m.group(1)
@@ -97,7 +100,10 @@ class TocTree(Directive):
         subnode['glob'] = glob
         subnode['hidden'] = 'hidden' in self.options
         subnode['numbered'] = 'numbered' in self.options
-        ret.append(subnode)
+        subnode['titlesonly'] = 'titlesonly' in self.options
+        wrappernode = nodes.compound(classes=['toctree-wrapper'])
+        wrappernode.append(subnode)
+        ret.append(wrappernode)
         return ret
 
 
