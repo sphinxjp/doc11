@@ -49,6 +49,11 @@ latex_elements = {
 
 todo_include_todos = True
 
+man_pages = [
+    ('contents', 'sphinx-all', 'Sphinx documentation generator system manual',
+     'Georg Brandl', 1),
+]
+
 
 # -- Extension interface -------------------------------------------------------
 
@@ -101,5 +106,6 @@ def setup(app):
                              parse_directive)
     app.add_description_unit('role', 'role', 'pair: %s; role', parse_role)
     app.add_description_unit('confval', 'confval',
-                             'pair: %s; configuration value')
+                             objname='configuration value',
+                             indextemplate='pair: %s; configuration value')
     app.add_description_unit('event', 'event', 'pair: %s; event', parse_event)
