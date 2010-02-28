@@ -208,10 +208,11 @@ General configuration
 
 .. confval:: modindex_common_prefix
 
-   A list of prefixes that are ignored for sorting the module index (e.g.,
-   if this is set to ``['foo.']``, then ``foo.bar`` is shown under ``B``, not
-   ``F``). This can be handy if you document a project that consists of a single
-   package.  Works only for the HTML builder currently.   Default is ``[]``.
+   A list of prefixes that are ignored for sorting the Python module index
+   (e.g., if this is set to ``['foo.']``, then ``foo.bar`` is shown under ``B``,
+   not ``F``). This can be handy if you document a project that consists of a
+   single package.  Works only for the HTML builder currently.  Default is
+   ``[]``.
 
    .. versionadded:: 0.6
 
@@ -268,6 +269,7 @@ Project information
 
    Currently supported languages are:
 
+   * ``ca`` -- Catalan
    * ``cs`` -- Czech
    * ``de`` -- German
    * ``en`` -- English
@@ -324,8 +326,8 @@ Project information
 .. confval:: add_module_names
 
    A boolean that decides whether module names are prepended to all
-   :term:`description unit` titles, e.g. for :dir:`function` directives.
-   Default is ``True``.
+   :term:`object` names (for object types where a "module" of some kind is
+   defined), e.g. for :dir:`function` directives.  Default is ``True``.
 
 .. confval:: show_authors
 
@@ -526,9 +528,24 @@ that use Sphinx' HTMLWriter class.
          ... old template content ...
          {% endblock %}
 
+.. confval:: html_domain_indices
+
+   If true, generate domain-specific indices in addition to the general index.
+   For e.g. the Python domain, this is the global module index.  Default is
+   ``True``.
+
+   This value can be a bool or a list of index names that should be generated.
+   To find out the index name for a specific index, look at the HTML file name.
+   For example, the Python module index has the name ``'py-modindex'``.
+
+   .. versionadded:: 1.0
+
 .. confval:: html_use_modindex
 
    If true, add a module index to the HTML documents.   Default is ``True``.
+
+   .. deprecated:: 1.0
+      Use :confval:`html_domain_indices`.
 
 .. confval:: html_use_index
 
@@ -767,9 +784,23 @@ These options influence LaTeX output.
 
    A list of document names to append as an appendix to all manuals.
 
+.. confval:: latex_domain_indices
+
+   If true, generate domain-specific indices in addition to the general index.
+   For e.g. the Python domain, this is the global module index.  Default is
+   ``True``.
+
+   This value can be a bool or a list of index names that should be generated,
+   like for :confval:`html_domain_indices`.
+
+   .. versionadded:: 1.0
+
 .. confval:: latex_use_modindex
 
    If true, add a module index to LaTeX documents.   Default is ``True``.
+
+   .. deprecated:: 1.0
+      Use :confval:`latex_domain_indices`.
 
 .. confval:: latex_elements
 
@@ -837,9 +868,7 @@ These options influence LaTeX output.
      ``'logo'``
      ``'releasename'``
      ``'makeindex'``
-     ``'makemodindex'``
      ``'shorthandoff'``
-     ``'printmodindex'``
 
 .. confval:: latex_docclass
 
@@ -882,6 +911,37 @@ These options influence LaTeX output.
 
    .. deprecated:: 0.5
       Use the ``'pointsize'`` key in the :confval:`latex_elements` value.
+
+
+.. _man-options:
+
+Options for manual page output
+------------------------------
+
+These options influence manual page output.
+
+.. confval:: man_pages
+
+   This value determines how to group the document tree into manual pages.  It
+   must be a list of tuples ``(startdocname, name, description, authors,
+   section)``, where the items are:
+
+   * *startdocname*: document name that is the "root" of the manual page.  All
+     documents referenced by it in TOC trees will be included in the manual file
+     too.  (If you want one master manual page, use your :confval:`master_doc`
+     here.)
+   * *name*: name of the manual page.  This should be a short string without
+     spaces or special characters.  It is used to determine the file name as
+     well as the name of the manual page (in the NAME section).
+   * *description*: description of the manual page.  This is used in the NAME
+     section.
+   * *authors*: A list of strings with authors, or a single string.  Can be
+     an empty string or list if you do not want to automatically generate
+     an AUTHORS section in the manual page.
+   * *section*: The manual page section.  Used for the output file name as well
+     as in the manual page header.
+
+   .. versionadded:: 1.0
 
 
 .. rubric:: Footnotes

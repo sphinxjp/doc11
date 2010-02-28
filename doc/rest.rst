@@ -23,6 +23,8 @@ is significant in reST, so all lines of the same paragraph must be left-aligned
 to the same level of indentation.
 
 
+.. _inlinemarkup:
+
 Inline markup
 -------------
 
@@ -178,6 +180,8 @@ indentation.  (There needs to be a blank line between explicit markup and normal
 paragraphs.  This may all sound a bit complicated, but it is intuitive enough
 when you write it.)
 
+
+.. _directives:
 
 Directives
 ----------
@@ -336,5 +340,3 @@ There are some problems one commonly runs into while authoring reST documents:
 
 * **No nested inline markup:** Something like ``*see :func:`foo`*`` is not
   possible.
-
-.. XXX more?
