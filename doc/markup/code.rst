@@ -103,6 +103,9 @@ Includes
    is absolute (starting with ``/``), it is relative to the top source
    directory.
 
+   Tabs in the input are expanded if you give a ``tab-width`` option with the
+   desired tab width.
+
    The directive also supports the ``linenos`` flag option to switch on line
    numbers, and a ``language`` option to select a language different from the
    current file's standard language.  Example with options::
@@ -143,11 +146,17 @@ Includes
    string option, only lines that precede the first lines containing that string
    are included.
 
+   You can prepend and/or append a line to the included code, using the
+   ``prepend`` and ``append`` option, respectively.  This is useful e.g. for
+   highlighting PHP code that doesn't include the ``<?php``/``?>`` markers.
+
    .. versionadded:: 0.4.3
       The ``encoding`` option.
    .. versionadded:: 0.6
       The ``pyobject``, ``lines``, ``start-after`` and ``end-before`` options,
       as well as support for absolute filenames.
+   .. versionadded:: 1.0
+      The ``prepend`` and ``append`` options, as well as ``tab-width``.
 
 
 .. rubric:: Footnotes
