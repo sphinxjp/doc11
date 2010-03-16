@@ -11,12 +11,12 @@ File-wide metadata
 reST has the concept of "field lists"; these are a sequence of fields marked up
 like this::
 
-   :Field name: Field content
+   :fieldname: Field content
 
-A field list at the very top of a file is parsed as the "docinfo", which in
-normal documents can be used to record the author, date of publication and
-other metadata.  In Sphinx, the docinfo is used as metadata, too, but not
-displayed in the output.
+A field list at the very top of a file is parsed by docutils as the "docinfo",
+which is normally used to record the author, date of publication and other
+metadata.  *In Sphinx*, the docinfo is used as metadata, too, but not displayed
+in the output.
 
 At the moment, these metadata fields are recognized:
 
@@ -29,11 +29,17 @@ At the moment, these metadata fields are recognized:
    If set, the web application won't display a comment form for a page generated
    from this source file.
 
+``orphan``
+   If set, warnings about this file not being included in any toctree will be
+   suppressed.
+
+   .. versionadded:: 1.0
+
 
 Meta-information markup
 -----------------------
 
-.. directive:: sectionauthor
+.. directive:: .. sectionauthor:: name <email>
 
    Identifies the author of the current section.  The argument should include
    the author's name such that it can be used for presentation and email
@@ -46,6 +52,14 @@ Meta-information markup
    keep track of contributions), but you can set the configuration value
    :confval:`show_authors` to True to make them produce a paragraph in the
    output.
+
+
+.. directive:: .. codeauthor:: name <email>
+
+   The :dir:`codeauthor` directive, which can appear multiple times, names the
+   authors of the described code, just like :dir:`sectionauthor` names the
+   author(s) of a piece of documentation.  It too only produces output if the
+   :confval:`show_authors` configuration value is True.
 
 
 .. _tags:
@@ -73,10 +87,10 @@ Including content based on tags
 Tables
 ------
 
-Use standard reStructuredText tables.  They work fine in HTML output, however
-there are some gotchas when using tables in LaTeX: the column width is hard to
-determine correctly automatically.  For this reason, the following directive
-exists:
+Use :ref:`standard reStructuredText tables <rst-tables>`.  They work fine in
+HTML output, however there are some gotchas when using tables in LaTeX: the
+column width is hard to determine correctly automatically.  For this reason, the
+following directive exists:
 
 .. directive:: .. tabularcolumns:: column spec
 
