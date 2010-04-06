@@ -89,6 +89,9 @@ directive.
         .. autoclass:: Noodle
            :members: eat, slurp
 
+   * If you want to make the ``members`` option the default, see
+     :confval:`autodoc_default_flags`.
+
    * Members without docstrings will be left out, unless you give the
      ``undoc-members`` flag option::
 
@@ -223,10 +226,16 @@ There are also new config values that you can set:
 .. confval:: autodoc_member_order
 
    This value selects if automatically documented members are sorted
-   alphabetical (value ``'alphabetical'``) or by member type (value
-   ``'groupwise'``).  The default is alphabetical.
+   alphabetical (value ``'alphabetical'``), by member type (value
+   ``'groupwise'``) or by source order (value ``'bysource'``).  The default is
+   alphabetical.
+
+   Note that for source order, the module must be a Python module with the
+   source code available.
 
    .. versionadded:: 0.6
+   .. versionchanged:: 1.0
+      Support for ``'bysource'``.
 
 .. confval:: autodoc_default_flags
 

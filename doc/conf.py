@@ -6,7 +6,7 @@ import re
 import sphinx
 
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.todo',
-              'sphinx.ext.autosummary']
+              'sphinx.ext.autosummary', 'sphinx.ext.extlinks']
 
 master_doc = 'contents'
 templates_path = ['_templates']
@@ -16,7 +16,6 @@ project = 'Sphinx'
 copyright = '2007-2010, Georg Brandl'
 version = sphinx.__released__
 release = version
-
 show_authors = True
 
 html_theme = 'sphinxdoc'
@@ -47,14 +46,30 @@ latex_elements = {
     'fontpkg': '\\usepackage{palatino}',
 }
 
+autodoc_member_order = 'groupwise'
 todo_include_todos = True
+extlinks = {'rstref': ('http://docutils.sourceforge.net/docs/ref/rst/'
+                       'restructuredtext.html#%s', ''),
+            'rstrole': ('http://docutils.sourceforge.net/docs/ref/rst/'
+                        'roles.html#%s', ''),
+            'rstdir': ('http://docutils.sourceforge.net/docs/ref/rst/'
+                       'directives.html#%s', '')}
+
+man_pages = [
+    ('contents', 'sphinx-all', 'Sphinx documentation generator system manual',
+     'Georg Brandl', 1),
+    ('man/sphinx-build', 'sphinx-build', 'Sphinx documentation generator tool',
+     '', 1),
+    ('man/sphinx-quickstart', 'sphinx-quickstart', 'Sphinx documentation '
+     'template generator', '', 1),
+]
 
 
 # -- Extension interface -------------------------------------------------------
 
 from sphinx import addnodes
 
-dir_sig_re = re.compile(r'\.\. ([^:]+)::(.*)$')
+dir_sig_re = re.compile(r'\.\. (.+?)::(.*)$')
 
 def parse_directive(env, sig, signode):
     if not sig.startswith('.'):
@@ -101,5 +116,6 @@ def setup(app):
                              parse_directive)
     app.add_description_unit('role', 'role', 'pair: %s; role', parse_role)
     app.add_description_unit('confval', 'confval',
-                             'pair: %s; configuration value')
+                             objname='configuration value',
+                             indextemplate='pair: %s; configuration value')
     app.add_description_unit('event', 'event', 'pair: %s; event', parse_event)
