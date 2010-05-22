@@ -13,11 +13,10 @@ import codecs
 from os import path
 
 from docutils import nodes
-from docutils.parsers.rst import directives
+from docutils.parsers.rst import Directive, directives
 
 from sphinx import addnodes
 from sphinx.util import parselinenos
-from sphinx.util.compat import Directive, directive_dwim
 
 
 class Highlight(Directive):
@@ -81,12 +80,15 @@ class LiteralInclude(Directive):
     final_argument_whitespace = False
     option_spec = {
         'linenos': directives.flag,
+        'tab-width': int,
         'language': directives.unchanged_required,
         'encoding': directives.encoding,
         'pyobject': directives.unchanged_required,
         'lines': directives.unchanged_required,
         'start-after': directives.unchanged_required,
         'end-before': directives.unchanged_required,
+        'prepend': directives.unchanged_required,
+        'append': directives.unchanged_required,
     }
 
     def run(self):
@@ -152,7 +154,9 @@ class LiteralInclude(Directive):
             lines = [lines[i] for i in linelist]
 
         startafter = self.options.get('start-after')
-        endbefore = self.options.get('end-before')
+        endbefore  = self.options.get('end-before')
+        prepend    = self.options.get('prepend')
+        append     = self.options.get('append')
         if startafter is not None or endbefore is not None:
             use = not startafter
             res = []
@@ -166,7 +170,14 @@ class LiteralInclude(Directive):
                     res.append(line)
             lines = res
 
+        if prepend:
+           lines.insert(0, prepend + '\n')
+        if append:
+           lines.append(append + '\n')
+
         text = ''.join(lines)
+        if self.options.get('tab-width'):
+            text = text.expandtabs(self.options['tab-width'])
         retnode = nodes.literal_block(text, text, source=fn)
         retnode.line = 1
         if self.options.get('language', ''):
@@ -177,8 +188,8 @@ class LiteralInclude(Directive):
         return [retnode]
 
 
-directives.register_directive('highlight', directive_dwim(Highlight))
-directives.register_directive('highlightlang', directive_dwim(Highlight)) # old
-directives.register_directive('code-block', directive_dwim(CodeBlock))
-directives.register_directive('sourcecode', directive_dwim(CodeBlock))
-directives.register_directive('literalinclude', directive_dwim(LiteralInclude))
+directives.register_directive('highlight', Highlight)
+directives.register_directive('highlightlang', Highlight) # old
+directives.register_directive('code-block', CodeBlock)
+directives.register_directive('sourcecode', CodeBlock)
+directives.register_directive('literalinclude', LiteralInclude)

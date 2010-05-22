@@ -139,23 +139,36 @@ The following blocks exist in the ``layout.html`` template:
     The logo location within the sidebar.  Override this if you want to place
     some content at the top of the sidebar.
 
+`footer`
+    The block for the footer div.  If you want a custom footer or markup before
+    or after it, override this one.
+
+The following four blocks are *only* used for pages that do not have assigned a
+list of custom sidebars in the :confval:`html_sidebars` config value.  Their use
+is deprecated in favor of separate sidebar templates, which can be included via
+:confval:`html_sidebars`.
+
 `sidebartoc`
     The table of contents within the sidebar.
 
+    .. deprecated:: 1.0
+
 `sidebarrel`
     The relation links (previous, next document) within the sidebar.
+
+    .. deprecated:: 1.0
 
 `sidebarsourcelink`
     The "Show source" link within the sidebar (normally only shown if this is
     enabled by :confval:`html_show_sourcelink`).
 
+    .. deprecated:: 1.0
+
 `sidebarsearch`
     The search box within the sidebar.  Override this if you want to place some
     content at the bottom of the sidebar.
 
-`footer`
-    The block for the footer div.  If you want a custom footer or markup before
-    or after it, override this one.
+    .. deprecated:: 1.0
 
 
 Configuration Variables
@@ -305,9 +318,9 @@ in the future.
 .. data:: rellinks
 
    A list of links to put at the left side of the relbar, next to "next" and
-   "prev".  This usually contains links to the index and the modindex.  If you
-   add something yourself, it must be a tuple ``(pagename, link title,
-   accesskey, link text)``.
+   "prev".  This usually contains links to the general index and other indices,
+   such as the Python module index.  If you add something yourself, it must be a
+   tuple ``(pagename, link title, accesskey, link text)``.
 
 .. data:: shorttitle
 
@@ -364,6 +377,10 @@ are in HTML form), these variables are also available:
 .. data:: toctree
 
    A callable yielding the global TOC tree containing the current page, rendered
-   as HTML bullet lists.  If the optional keyword argument ``collapse`` is true
-   (the default), all TOC entries that are not ancestors of the current page are
-   collapsed.
+   as HTML bullet lists.  Optional keyword arguments:
+
+   * ``collapse`` (true by default): if true, all TOC entries that are not
+     ancestors of the current page are collapsed
+
+   * ``maxdepth`` (defaults to the max depth selected in the toctree directive):
+     the maximum depth of the tree; set it to ``-1`` to allow unlimited depth
