@@ -1,3 +1,137 @@
+Release 1.0 (in development)
+============================
+
+* Support for domains has been added.  A domain is a collection of
+  directives and roles that all describe objects belonging together,
+  e.g. elements of a programming language.  Builtin domains are
+  provided for Python and C objects.
+
+* Added a JavaScript domain.
+
+* Support for docutils 0.4 has been removed.
+
+* Added Croatian translation, thanks to Bojan Mihelač.
+
+* Added a manual page builder.
+
+* Added support for source ordering of members in autodoc, with
+  ``autodoc_member_order = 'bysource'``.
+
+* In HTML output, inline roles now get a CSS class with their name,
+  allowing styles to customize their appearance.  Domain-specific
+  roles get two classes, ``domain`` and ``domain-rolename``.
+
+* New more compact doc field syntax is now recognized:
+  ``:param type name: description``.
+
+* Added a "nitpicky" mode that emits warnings for all missing
+  references.  It is activated by the ``-n`` command-line switch
+  or the ``nitpicky`` config value.
+
+* Added the ``viewcode`` extension.
+
+* Added ``html-collect-pages`` event.
+
+* Sphinx now requires Jinja2 version 2.2 or greater.
+
+* Added Turkish translation, thanks to Firat Ozgul.
+
+* Added ``needs_sphinx`` config value and ``Sphinx.require_sphinx``
+  application API function.
+
+* Added single-file HTML builder.
+
+* Added ``autodoc_default_flags`` config value, which can be used
+  to select default flags for all autodoc directives.
+
+* Added ``tab-width`` option to ``literalinclude`` directive.
+
+* Added ``rst_prolog`` config value.
+
+* Added ``html_secnumber_suffix`` config value to control section
+  numbering format.
+
+* Added ``html_compact_lists`` config value to control docutils'
+  compact lists feature.
+
+* The ``html_sidebars`` config value can now contain patterns as
+  keys, and the values can be lists that explicitly select which
+  sidebar templates should be rendered.  That means that the builtin
+  sidebar contents can be included only selectively.
+
+* ``html_static_path`` can now contain single file entries.
+
+* The new universal config value ``exclude_patterns`` makes the
+  old ``unused_docs``, ``exclude_trees`` and ``exclude_dirnames``
+  obsolete.
+
+* Remove the deprecated ``exclude_dirs`` config value.
+
+* #129: Wrap toctrees in a div tag with class ``toctree-wrapper``
+  in HTML output.
+
+* #280: Autodoc can now document instance attributes assigned in
+  ``__init__`` methods.
+
+* Added ``alt`` option to ``graphviz`` extension directives.
+
+* Added Epub builder.
+
+* #309: The ``graphviz`` extension can now output SVG instead of PNG
+  images, controlled by the ``graphviz_output_format`` config value.
+
+* #284: All docinfo metadata is now put into the document metadata, not
+  just the author.
+
+* Added new HTML theme ``haiku``, inspired by the Haiku OS user guide.
+
+* Added new HTML theme ``nature``.
+
+* Added new HTML theme ``agogo``, created by Andi Albrecht.
+
+* Added new HTML theme ``scrolls``, created by Armin Ronacher.
+
+* The ``toctree()`` callable in templates now has a ``maxdepth``
+  keyword argument to control the depth of the generated tree.
+
+* Added Catalan translation, thanks to Pau Fernández.
+
+* Added ``html_output_encoding`` config value.
+
+* #200: Added ``Sphinx.add_stylesheet()``.
+
+* Added ``titlesonly`` option to ``toctree`` directive.
+
+* Removed the deprecated ``sphinx.builder`` module.
+
+* #193: Added a ``visitedlinkcolor`` theme option to the default
+  theme.
+
+* Added the ``prepend`` and ``append`` options to the
+  ``literalinclude`` directive.
+
+* Added the ``latex_docclass`` config value and made the "twoside"
+  documentclass option overridable by "oneside".
+
+* Added the ``trim_doctest_flags`` config value, which is true by default.
+
+* Added the ``extlinks`` extension.
+
+* Allow searching for object names including the module name, like
+  ``sys.argv``.
+
+* Many improvements and fixes to the ``autosummary`` extension,
+  thanks to Pauli Virtanen.
+
+* Added ``html_show_copyright`` config value.
+
+* Added simplified Chinese locale.
+
+* Added ``latexpdf`` target in quickstart Makefile.
+
+* Added ``htmltitle`` block in layout template.
+
+
 Release 0.6.6 (in development)
 ==============================
 
