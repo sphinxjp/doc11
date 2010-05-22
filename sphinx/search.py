@@ -13,8 +13,14 @@ import cPickle as pickle
 
 from docutils.nodes import comment, Text, NodeVisitor, SkipNode
 
-from sphinx.util.stemmer import PorterStemmer
 from sphinx.util import jsdump, rpartition
+try:
+    # http://bitbucket.org/methane/porterstemmer/
+    from porterstemmer import Stemmer as CStemmer
+    CSTEMMER = True
+except ImportError:
+    from sphinx.util.stemmer import PorterStemmer
+    CSTEMMER = False
 
 
 word_re = re.compile(r'\w+(?u)')
@@ -61,15 +67,23 @@ class _JavaScriptIndex(object):
 js_index = _JavaScriptIndex()
 
 
-class Stemmer(PorterStemmer):
-    """
-    All those porter stemmer implementations look hideous.
-    make at least the stem method nicer.
-    """
+if CSTEMMER:
+    class Stemmer(CStemmer):
 
-    def stem(self, word):
-        word = word.lower()
-        return PorterStemmer.stem(self, word, 0, len(word) - 1)
+        def stem(self, word):
+            return self(word.lower())
+
+else:
+    class Stemmer(PorterStemmer):
+        """
+        All those porter stemmer implementations look hideous.
+        make at least the stem method nicer.
+        """
+
+        def stem(self, word):
+            word = word.lower()
+            return PorterStemmer.stem(self, word, 0, len(word) - 1)
+
 
 
 class WordCollector(NodeVisitor):
@@ -105,8 +119,10 @@ class IndexBuilder(object):
         self._titles = {}
         # stemmed word -> set(filenames)
         self._mapping = {}
-        # desctypes -> index
-        self._desctypes = {}
+        # objtype -> index
+        self._objtypes = {}
+        # objtype index -> objname (localized)
+        self._objnames = {}
 
     def load(self, stream, format):
         """Reconstruct from frozen data."""
@@ -124,7 +140,7 @@ class IndexBuilder(object):
                 self._mapping[k] = set([index2fn[v]])
             else:
                 self._mapping[k] = set(index2fn[i] for i in v)
-        # no need to load keywords/desctypes
+        # no need to load keywords/objtypes
 
     def dump(self, stream, format):
         """Dump the frozen index to a stream."""
@@ -132,27 +148,30 @@ class IndexBuilder(object):
             format = self.formats[format]
         format.dump(self.freeze(), stream)
 
-    def get_modules(self, fn2index):
+    def get_objects(self, fn2index):
         rv = {}
-        for name, (doc, _, _, _) in self.env.modules.iteritems():
-            if doc in fn2index:
-                rv[name] = fn2index[doc]
-        return rv
-
-    def get_descrefs(self, fn2index):
-        rv = {}
-        dt = self._desctypes
-        for fullname, (doc, desctype) in self.env.descrefs.iteritems():
-            if doc not in fn2index:
-                continue
-            prefix, name = rpartition(fullname, '.')
-            pdict = rv.setdefault(prefix, {})
-            try:
-                i = dt[desctype]
-            except KeyError:
-                i = len(dt)
-                dt[desctype] = i
-            pdict[name] = (fn2index[doc], i)
+        otypes = self._objtypes
+        onames = self._objnames
+        for domainname, domain in self.env.domains.iteritems():
+            for fullname, type, docname, anchor, prio in domain.get_objects():
+                if docname not in fn2index:
+                    continue
+                if prio < 0:
+                    continue
+                # XXX splitting at dot is kind of Python specific
+                prefix, name = rpartition(fullname, '.')
+                pdict = rv.setdefault(prefix, {})
+                try:
+                    i = otypes[domainname, type]
+                except KeyError:
+                    i = len(otypes)
+                    otypes[domainname, type] = i
+                    otype = domain.object_types.get(type)
+                    if otype:
+                        onames[i] = str(otype.lname)  # fire translation proxies
+                    else:
+                        onames[i] = type
+                pdict[name] = (fn2index[docname], i, prio)
         return rv
 
     def get_terms(self, fn2index):
@@ -171,14 +190,13 @@ class IndexBuilder(object):
         filenames = self._titles.keys()
         titles = self._titles.values()
         fn2index = dict((f, i) for (i, f) in enumerate(filenames))
-        return dict(
-            filenames=filenames,
-            titles=titles,
-            terms=self.get_terms(fn2index),
-            descrefs=self.get_descrefs(fn2index),
-            modules=self.get_modules(fn2index),
-            desctypes=dict((v, k) for (k, v) in self._desctypes.items()),
-        )
+        terms = self.get_terms(fn2index)
+        objects = self.get_objects(fn2index)  # populates _objtypes
+        objtypes = dict((v, k[0] + ':' + k[1])
+                        for (k, v) in self._objtypes.iteritems())
+        objnames = self._objnames
+        return dict(filenames=filenames, titles=titles, terms=terms,
+                    objects=objects, objtypes=objtypes, objnames=objnames)
 
     def prune(self, filenames):
         """Remove data for all filenames not in the list."""
@@ -197,11 +215,11 @@ class IndexBuilder(object):
         visitor = WordCollector(doctree)
         doctree.walk(visitor)
 
-        def add_term(word, prefix='', stem=self._stemmer.stem):
+        def add_term(word, stem=self._stemmer.stem):
             word = stem(word)
             if len(word) < 3 or word in stopwords or word.isdigit():
                 return
-            self._mapping.setdefault(prefix + word, set()).add(filename)
+            self._mapping.setdefault(word, set()).add(filename)
 
         for word in word_re.findall(title):
             add_term(word)
