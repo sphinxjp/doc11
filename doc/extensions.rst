@@ -51,6 +51,9 @@ These extensions are built in and can be activated by respective entries in the
    ext/ifconfig
    ext/coverage
    ext/todo
+   ext/extlinks
+   ext/viewcode
+   ext/oldcmarkup
 
 
 Third-party extensions

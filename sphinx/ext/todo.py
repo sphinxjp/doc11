@@ -14,6 +14,7 @@
 
 from docutils import nodes
 
+from sphinx.locale import _
 from sphinx.environment import NoUri
 from sphinx.util.compat import Directive, make_admonition
 
@@ -34,9 +35,7 @@ class Todo(Directive):
 
     def run(self):
         env = self.state.document.settings.env
-
-        targetid = "todo-%s" % env.index_num
-        env.index_num += 1
+        targetid = 'index-%s' % env.new_serialno('index')
         targetnode = nodes.target('', '', ids=[targetid])
 
         ad = make_admonition(todo_node, self.name, [_('Todo')], self.options,
@@ -105,17 +104,17 @@ def process_todo_nodes(app, doctree, fromdocname):
         content = []
 
         for todo_info in env.todo_all_todos:
-            para = nodes.paragraph()
+            para = nodes.paragraph(classes=['todo-source'])
             filename = env.doc2path(todo_info['docname'], base=None)
-            description = (
-                _('(The original entry is located in %s, line %d and '
-                  'can be found ') % (filename, todo_info['lineno']))
-            para += nodes.Text(description, description)
+            description = _('(The <<original entry>> is located in '
+                            ' %s, line %d.)') % (filename, todo_info['lineno'])
+            desc1 = description[:description.find('<<')]
+            desc2 = description[description.find('>>')+2:]
+            para += nodes.Text(desc1, desc1)
 
             # Create a reference
-            newnode = nodes.reference('', '')
-            innernode = nodes.emphasis(_('here'), _('here'))
-            newnode['refdocname'] = todo_info['docname']
+            newnode = nodes.reference('', '', internal=True)
+            innernode = nodes.emphasis(_('original entry'), _('original entry'))
             try:
                 newnode['refuri'] = app.builder.get_relative_uri(
                     fromdocname, todo_info['docname'])
@@ -125,7 +124,7 @@ def process_todo_nodes(app, doctree, fromdocname):
                 pass
             newnode.append(innernode)
             para += newnode
-            para += nodes.Text('.)', '.)')
+            para += nodes.Text(desc2, desc2)
 
             # (Recursively) resolve references in the todo content
             todo_entry = todo_info['todo']
@@ -159,7 +158,8 @@ def setup(app):
     app.add_node(todo_node,
                  html=(visit_todo_node, depart_todo_node),
                  latex=(visit_todo_node, depart_todo_node),
-                 text=(visit_todo_node, depart_todo_node))
+                 text=(visit_todo_node, depart_todo_node),
+                 man=(visit_todo_node, depart_todo_node))
 
     app.add_directive('todo', Todo)
     app.add_directive('todolist', TodoList)

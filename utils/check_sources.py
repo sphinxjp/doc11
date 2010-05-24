@@ -154,8 +154,7 @@ def check_whitespace_and_spelling(fn, lines):
                 yield lno+1, '"%s" used' % word
 
 
-bad_tags = ('<u>', '<s>', '<strike>'
-            '<center>', '<big>', '<small>', '<font')
+bad_tags = ('<u>', '<s>', '<strike>', '<center>', '<font')
 
 @checker('.html')
 def check_xhtml(fn, lines):
@@ -189,9 +188,6 @@ def main(argv):
 
     num = 0
     out = cStringIO.StringIO()
-
-    # TODO: replace os.walk run with iteration over output of
-    #       `svn list -R`.
 
     for root, dirs, files in os.walk(path):
         if '.svn' in dirs:
