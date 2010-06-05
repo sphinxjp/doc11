@@ -1,5 +1,7 @@
 .. highlightlang:: python
 
+.. _build-config:
+
 The build configuration file
 ============================
 
@@ -85,13 +87,38 @@ General configuration
 .. confval:: master_doc
 
    The document name of the "master" document, that is, the document that
-   contains the root :dir:`toctree` directive.  Default is ``'contents'``.
+   contains the root :rst:dir:`toctree` directive.  Default is ``'contents'``.
+
+.. confval:: exclude_patterns
+
+   A list of glob-style patterns that should be excluded when looking for source
+   files. [1]_ They are matched against the source file names relative to the
+   source directory, using slashes as directory separators on all platforms.
+
+   Example patterns:
+
+   - ``'library/xml.rst'`` -- ignores the ``library/xml.rst`` file (replaces
+     entry in :confval:`unused_docs`
+   - ``'library/xml'`` -- ignores the ``library/xml`` directory (replaces entry
+     in :confval:`exclude_trees`)
+   - ``'library/xml*'`` -- ignores all files and directories starting with
+     ``library/xml``
+   - ``'**/.svn'`` -- ignores all ``.svn`` directories (replaces entry in
+     :confval:`exclude_dirnames`)
+
+   :confval:`exclude_patterns` is also consulted when looking for static files
+   in :confval:`html_static_path`.
+
+   .. versionadded:: 1.0
 
 .. confval:: unused_docs
 
    A list of document names that are present, but not currently included in the
    toctree.  Use this setting to suppress the warning that is normally emitted
    in that case.
+
+   .. deprecated:: 1.0
+      Use :confval:`exclude_patterns` instead.
 
 .. confval:: exclude_trees
 
@@ -100,6 +127,9 @@ General configuration
    subdirectories won't be searched too.  The default is ``[]``.
 
    .. versionadded:: 0.4
+
+   .. deprecated:: 1.0
+      Use :confval:`exclude_patterns` instead.
 
 .. confval:: exclude_dirnames
 
@@ -110,15 +140,8 @@ General configuration
 
    .. versionadded:: 0.5
 
-.. confval:: exclude_dirs
-
-   A list of directory names, relative to the source directory, that are to be
-   excluded from the search for source files.
-
-   .. deprecated:: 0.5
-      This does not take subdirs of the excluded directories into account.  Use
-      :confval:`exclude_trees` or :confval:`exclude_dirnames`, which match the
-      expectations.
+   .. deprecated:: 1.0
+      Use :confval:`exclude_patterns` instead.
 
 .. confval:: locale_dirs
 
@@ -126,10 +149,11 @@ General configuration
 
    Directories in which to search for additional Sphinx message catalogs (see
    :confval:`language`), relative to the source directory.  The directories on
-   this path are searched by the standard :mod:`gettext` module for a domain of
-   ``sphinx``; so if you add the directory :file:`./locale` to this settting,
-   the message catalogs (compiled from ``.po`` format using :program:`msgfmt`)
-   must be in :file:`./locale/{language}/LC_MESSAGES/sphinx.mo`.
+   this path are searched by the standard :mod:`gettext` module for a text
+   domain of ``sphinx``; so if you add the directory :file:`./locale` to this
+   settting, the message catalogs (compiled from ``.po`` format using
+   :program:`msgfmt`) must be in
+   :file:`./locale/{language}/LC_MESSAGES/sphinx.mo`.
 
    The default is ``[]``.
 
@@ -161,17 +185,38 @@ General configuration
 
    .. versionadded:: 0.6
 
+.. confval:: rst_prolog
+
+   A string of reStructuredText that will be included at the beginning of every
+   source file that is read.
+
+   .. versionadded:: 1.0
+
+.. confval:: primary_domain
+
+   .. index:: default; domain
+              primary; domain
+
+   The name of the default :ref:`domain <domains>`.  Can also be ``None`` to
+   disable a default domain.  The default is ``'py'``.  Those objects in other
+   domains (whether the domain name is given explicitly, or selected by a
+   :rst:dir:`default-domain` directive) will have the domain name explicitly
+   prepended when named (e.g., when the default domain is C, Python functions
+   will be named "Python function", not just "function").
+
+   .. versionadded:: 1.0
+
 .. confval:: default_role
 
    .. index:: default; role
 
    The name of a reST role (builtin or Sphinx extension) to use as the default
    role, that is, for text marked up ```like this```.  This can be set to
-   ``'obj'`` to make ```filter``` a cross-reference to the function "filter".
-   The default is ``None``, which doesn't reassign the default role.
+   ``'py:obj'`` to make ```filter``` a cross-reference to the Python function
+   "filter".  The default is ``None``, which doesn't reassign the default role.
 
    The default role can always be set within individual documents using the
-   standard reST :dir:`default-role` directive.
+   standard reST :rst:dir:`default-role` directive.
 
    .. versionadded:: 0.4
 
@@ -185,15 +230,21 @@ General configuration
 
    .. versionadded:: 0.5
 
+.. confval:: needs_sphinx
 
-.. confval:: modindex_common_prefix
+   If set to a ``major.minor`` version string like ``'1.1'``, Sphinx will
+   compare it with its version and refuse to build if it is too old.  Default is
+   no requirement.
 
-   A list of prefixes that are ignored for sorting the module index (e.g.,
-   if this is set to ``['foo.']``, then ``foo.bar`` is shown under ``B``, not
-   ``F``). This can be handy if you document a project that consists of a single
-   package.  Works only for the HTML builder currently.   Default is ``[]``.
+   .. versionadded:: 1.0
 
-   .. versionadded:: 0.6
+.. confval:: nitpicky
+
+   If true, Sphinx will warn about *all* references where the target cannot be
+   found.  Default is ``False``.  You can activate this mode temporarily using
+   the :option:`-n` command-line switch.
+
+   .. versionadded:: 1.0
 
 
 Project information
@@ -232,19 +283,24 @@ Project information
 
    Currently supported languages are:
 
+   * ``ca`` -- Catalan
    * ``cs`` -- Czech
+   * ``da`` -- Danish
    * ``de`` -- German
    * ``en`` -- English
    * ``es`` -- Spanish
    * ``fi`` -- Finnish
    * ``fr`` -- French
+   * ``hr`` -- Croatian
    * ``it`` -- Italian
    * ``nl`` -- Dutch
    * ``pl`` -- Polish
    * ``pt_BR`` -- Brazilian Portuguese
    * ``ru`` -- Russian
    * ``sl`` -- Slovenian
+   * ``tr`` -- Turkish
    * ``uk_UA`` -- Ukrainian
+   * ``zh_CN`` -- Simplified Chinese
    * ``zh_TW`` -- Traditional Chinese
 
 .. confval:: today
@@ -287,13 +343,23 @@ Project information
 .. confval:: add_module_names
 
    A boolean that decides whether module names are prepended to all
-   :term:`description unit` titles, e.g. for :dir:`function` directives.
-   Default is ``True``.
+   :term:`object` names (for object types where a "module" of some kind is
+   defined), e.g. for :rst:dir:`function` directives.  Default is ``True``.
 
 .. confval:: show_authors
 
-   A boolean that decides whether :dir:`moduleauthor` and :dir:`sectionauthor`
+   A boolean that decides whether :rst:dir:`moduleauthor` and :rst:dir:`sectionauthor`
    directives produce any output in the built files.
+
+.. confval:: modindex_common_prefix
+
+   A list of prefixes that are ignored for sorting the Python module index
+   (e.g., if this is set to ``['foo.']``, then ``foo.bar`` is shown under ``B``,
+   not ``F``). This can be handy if you document a project that consists of a
+   single package.  Works only for the HTML builder currently.  Default is
+   ``[]``.
+
+   .. versionadded:: 0.6
 
 .. confval:: trim_footnote_reference_space
 
@@ -301,6 +367,15 @@ Project information
    to recognize the footnote, but do not look too nice in the output.
 
    .. versionadded:: 0.6
+
+.. confval:: trim_doctest_flags
+
+   If true, doctest flags (comments looking like ``# doctest: FLAG, ...``) at
+   the ends of lines are removed for all code blocks showing interactive Python
+   sessions (i.e. doctests).  Default is true.  See the extension
+   :mod:`~sphinx.ext.doctest` for more possibilities of including doctests.
+
+   .. versionadded:: 1.0
 
 
 .. _html-options:
@@ -388,6 +463,9 @@ that use Sphinx' HTMLWriter class.
    .. versionchanged:: 0.4
       The paths in :confval:`html_static_path` can now contain subdirectories.
 
+   .. versionchanged:: 1.0
+      The entries in :confval:`html_static_path` can now be single files.
+
 .. confval:: html_last_updated_fmt
 
    If this is not the empty string, a 'Last updated on:' timestamp is inserted
@@ -411,14 +489,53 @@ that use Sphinx' HTMLWriter class.
 .. confval:: html_sidebars
 
    Custom sidebar templates, must be a dictionary that maps document names to
-   template names.  Example::
+   template names.
+
+   The keys can contain glob-style patterns [1]_, in which case all matching
+   documents will get the specified sidebars.  (A warning is emitted when a
+   more than one glob-style pattern matches for any document.)
+
+   The values can be either lists or single strings.
+
+   * If a value is a list, it specifies the complete list of sidebar templates
+     to include.  If all or some of the default sidebars are to be included,
+     they must be put into this list as well.
+
+     The default sidebars (for documents that don't match any pattern) are:
+     ``['localtoc.html', 'relations.html', 'sourcelink.html',
+     'searchbox.html']``.
+
+   * If a value is a single string, it specifies a custom sidebar to be added
+     between the ``'sourcelink.html'`` and ``'searchbox.html'`` entries.  This
+     is for compatibility with Sphinx versions before 1.0.
+
+   Builtin sidebar templates that can be rendered are:
+
+   * **localtoc.html** -- a fine-grained table of contents of the current document
+   * **globaltoc.html** -- a coarse-grained table of contents for the whole
+     documentation set, collapsed
+   * **relations.html** -- two links to the previous and next documents
+   * **sourcelink.html** -- a link to the source of the current document, if
+     enabled in :confval:`html_show_sourcelink`
+   * **searchbox.html** -- the "quick search" box
+
+   Example::
 
       html_sidebars = {
-         'using/windows': 'windowssidebar.html'
+         '**': ['globaltoc.html', 'sourcelink.html', 'searchbox.html'],
+         'using/windows': ['windowssidebar.html', 'searchbox.html'],
       }
 
-   This will render the template ``windowssidebar.html`` within the sidebar of
-   the given document.
+   This will render the custom template ``windowssidebar.html`` and the quick
+   search box within the sidebar of the given document, and render the default
+   sidebars for all other pages (except that the local TOC is replaced by the
+   global TOC).
+
+   .. versionadded:: 1.0
+      The ability to use globbing keys and to specify multiple sidebars.
+
+   Note that this value only has no effect if the chosen theme does not possess
+   a sidebar, like the builtin **scrolls** and **haiku** themes.
 
 .. confval:: html_additional_pages
 
@@ -447,9 +564,24 @@ that use Sphinx' HTMLWriter class.
          ... old template content ...
          {% endblock %}
 
+.. confval:: html_domain_indices
+
+   If true, generate domain-specific indices in addition to the general index.
+   For e.g. the Python domain, this is the global module index.  Default is
+   ``True``.
+
+   This value can be a bool or a list of index names that should be generated.
+   To find out the index name for a specific index, look at the HTML file name.
+   For example, the Python module index has the name ``'py-modindex'``.
+
+   .. versionadded:: 1.0
+
 .. confval:: html_use_modindex
 
    If true, add a module index to the HTML documents.   Default is ``True``.
+
+   .. deprecated:: 1.0
+      Use :confval:`html_domain_indices`.
 
 .. confval:: html_use_index
 
@@ -513,6 +645,12 @@ that use Sphinx' HTMLWriter class.
    to translate document trees to HTML.  Default is ``None`` (use the builtin
    translator).
 
+.. confval:: html_show_copyright
+
+   If true, "(C) Copyright ..." is shown in the HTML footer. Default is ``True``.
+
+   .. versionadded:: 1.0
+
 .. confval:: html_show_sphinx
 
    If true, "Created using Sphinx" is shown in the HTML footer.  Default is
@@ -520,9 +658,128 @@ that use Sphinx' HTMLWriter class.
 
    .. versionadded:: 0.4
 
+.. confval:: html_output_encoding
+
+   Encoding of HTML output files. Default is ``'utf-8'``.  Note that this
+   encoding name must both be a valid Python encoding name and a valid HTML
+   ``charset`` value.
+
+   .. versionadded:: 1.0
+
+.. confval:: html_compact_lists
+
+   If true, list items containing only a single paragraph will not be rendered
+   with a ``<p>`` element.  This is standard docutils behavior.  Default:
+   ``True``.
+
+   .. versionadded:: 1.0
+
+.. confval:: html_secnumber_suffix
+
+   Suffix for section numbers.  Default: ``". "``.  Set to ``" "`` to suppress
+   the final dot on section numbers.
+
+   .. versionadded:: 1.0
+
 .. confval:: htmlhelp_basename
 
    Output file base name for HTML help builder.  Default is ``'pydoc'``.
+
+
+.. _epub-options:
+
+Options for epub output
+-----------------------
+
+These options influence the epub output.  As this builder derives from the HTML
+builder, the HTML options also apply where appropriate.  The actual values for
+some of the options is not really important, they just have to be entered into
+the `Dublin Core metadata <http://dublincore.org/>`_.
+
+.. confval:: epub_basename
+
+   The basename for the epub file.  It defaults to the :confval:`project` name.
+
+.. confval:: epub_theme
+
+   The HTML theme for the epub output.  Since the default themes are not
+   optimized for small screen space, using the same theme for HTML and epub
+   output is usually not wise.  This defaults to ``'epub'``, a theme designed to
+   save visual space.
+
+.. confval:: epub_title
+
+   The title of the document.  It defaults to the :confval:`html_title` option
+   but can be set independently for epub creation.
+
+.. confval:: epub_author
+
+   The author of the document.  This is put in the Dublin Core metadata.  The
+   default value is ``'unknown'``.
+
+.. confval:: epub_language
+
+   The language of the document.  This is put in the Dublin Core metadata.  The
+   default is the :confval:`language` option or ``'en'`` if unset.
+
+.. confval:: epub_publisher
+
+   The publisher of the document.  This is put in the Dublin Core metadata.  You
+   may use any sensible string, e.g. the project homepage.  The default value is
+   ``'unknown'``.
+
+.. confval:: epub_copyright
+
+   The copyright of the document.  It defaults to the :confval:`copyright`
+   option but can be set independently for epub creation.
+
+.. confval:: epub_identifier
+
+   An identifier for the document.  This is put in the Dublin Core metadata.
+   For published documents this is the ISBN number, but you can also use an
+   alternative scheme, e.g. the project homepage.  The default value is
+   ``'unknown'``.
+
+.. confval:: epub_scheme
+
+   The publication scheme for the :confval:`epub_identifier`.  This is put in
+   the Dublin Core metadata.  For published books the scheme is ``'ISBN'``.  If
+   you use the project homepage, ``'URL'`` seems reasonable.  The default value
+   is ``'unknown'``.
+
+.. confval:: epub_uid
+
+   A unique identifier for the document.  This is put in the Dublin Core
+   metadata.  You may use a random string.  The default value is ``'unknown'``.
+
+.. confval:: epub_pre_files
+
+   Additional files that should be inserted before the text generated by
+   Sphinx. It is a list of tuples containing the file name and the title.
+   Example::
+
+      epub_pre_files = [
+          ('index.html', 'Welcome'),
+      ]
+
+   The default value is ``[]``.
+
+.. confval:: epub_post_files
+
+   Additional files that should be inserted after the text generated by Sphinx.
+   It is a list of tuples containing the file name and the title.  The default
+   value is ``[]``.
+
+.. confval:: epub_exclude_files
+
+   A list of files that are generated/copied in the build directory but should
+   not be included in the epub file.  The default value is ``[]``.
+
+.. confval:: epub_tocdepth
+
+   The depth of the table of contents in the file :file:`toc.ncx`.  It should
+   be an integer greater than zero.  The default value is 3.  Note: A deeply
+   nested table of contents may be difficult to navigate.
 
 
 .. _latex-options:
@@ -578,9 +835,37 @@ These options influence LaTeX output.
 
    A list of document names to append as an appendix to all manuals.
 
+.. confval:: latex_domain_indices
+
+   If true, generate domain-specific indices in addition to the general index.
+   For e.g. the Python domain, this is the global module index.  Default is
+   ``True``.
+
+   This value can be a bool or a list of index names that should be generated,
+   like for :confval:`html_domain_indices`.
+
+   .. versionadded:: 1.0
+
 .. confval:: latex_use_modindex
 
    If true, add a module index to LaTeX documents.   Default is ``True``.
+
+   .. deprecated:: 1.0
+      Use :confval:`latex_domain_indices`.
+
+.. confval:: latex_show_pagerefs
+
+   If true, add page references after internal references.  This is very useful
+   for printed copies of the manual.  Default is ``False``.
+
+   .. versionadded:: 1.0
+
+.. confval:: latex_show_urls
+
+   If true, add URL addresses after links.  This is very useful for printed
+   copies of the manual.  Default is ``False``.
+
+   .. versionadded:: 1.0
 
 .. confval:: latex_elements
 
@@ -648,9 +933,15 @@ These options influence LaTeX output.
      ``'logo'``
      ``'releasename'``
      ``'makeindex'``
-     ``'makemodindex'``
      ``'shorthandoff'``
-     ``'printmodindex'``
+
+.. confval:: latex_docclass
+
+   A dictionary mapping ``'howto'`` and ``'manual'`` to names of real document
+   classes that will be used as the base for the two Sphinx classes.  Default
+   is to use ``'article'`` for ``'howto'`` and ``'report'`` for ``'manual'``.
+
+   .. versionadded:: 1.0
 
 .. confval:: latex_additional_files
 
@@ -685,3 +976,42 @@ These options influence LaTeX output.
 
    .. deprecated:: 0.5
       Use the ``'pointsize'`` key in the :confval:`latex_elements` value.
+
+
+.. _man-options:
+
+Options for manual page output
+------------------------------
+
+These options influence manual page output.
+
+.. confval:: man_pages
+
+   This value determines how to group the document tree into manual pages.  It
+   must be a list of tuples ``(startdocname, name, description, authors,
+   section)``, where the items are:
+
+   * *startdocname*: document name that is the "root" of the manual page.  All
+     documents referenced by it in TOC trees will be included in the manual file
+     too.  (If you want one master manual page, use your :confval:`master_doc`
+     here.)
+   * *name*: name of the manual page.  This should be a short string without
+     spaces or special characters.  It is used to determine the file name as
+     well as the name of the manual page (in the NAME section).
+   * *description*: description of the manual page.  This is used in the NAME
+     section.
+   * *authors*: A list of strings with authors, or a single string.  Can be
+     an empty string or list if you do not want to automatically generate
+     an AUTHORS section in the manual page.
+   * *section*: The manual page section.  Used for the output file name as well
+     as in the manual page header.
+
+   .. versionadded:: 1.0
+
+
+.. rubric:: Footnotes
+
+.. [1] A note on available globbing syntax: you can use the standard shell
+       constructs ``*``, ``?``, ``[...]`` and ``[!...]`` with the feature that
+       these all don't match slashes.  A double star ``**`` can be used to match
+       any sequence of characters *including* slashes.
