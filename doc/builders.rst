@@ -36,6 +36,17 @@ The builder's "name" must be given to the **-b** command-line option of
 
    .. versionadded:: 0.6
 
+.. class:: SingleFileHTMLBuilder
+
+   This is an HTML builder that combines the whole project in one output file.
+   (Obviously this only works with smaller projects.)  The file is named like
+   the master document.  No indices will be generated.
+
+   Its name is ``singlehtml``.
+
+   .. versionadded:: 1.0
+
+.. module:: sphinx.builders.htmlhelp
 .. class:: HTMLHelpBuilder
 
    This builder produces the same output as the standalone HTML builder, but
@@ -43,6 +54,41 @@ The builder's "name" must be given to the **-b** command-line option of
    Workshop to compile them into a CHM file.
 
    Its name is ``htmlhelp``.
+
+.. module:: sphinx.builders.qthelp
+.. class:: QtHelpBuilder
+
+   This builder produces the same output as the standalone HTML builder, but
+   also generates `Qt help`_ collection support files that allow
+   the Qt collection generator to compile them.
+
+   Its name is ``qthelp``.
+
+   .. _Qt help: http://doc.trolltech.com/4.6/qthelp-framework.html
+
+.. module:: sphinx.builders.devhelp
+.. class:: DevhelpBuilder
+
+   This builder produces the same output as the standalone HTML builder, but
+   also generates `GNOME Devhelp <http://live.gnome.org/devhelp>`__
+   support file that allows the GNOME Devhelp reader to view them.
+
+   Its name is ``devhelp``.
+
+.. module:: sphinx.builders.epub
+.. class:: EpubBuilder
+
+   This builder produces the same output as the standalone HTML builder, but
+   also generates an *epub* file for ebook readers.  See :ref:`epub-faq` for
+   details about it.  For definition of the epub format, have a look at
+   `<http://www.idpf.org/specs.htm>`_ or `<http://en.wikipedia.org/wiki/EPUB>`_.
+
+   Some ebook readers do not show the link targets of references.  Therefore
+   this builder adds the targets after the link when necessary.  The display
+   of the URLs can be customized by adding CSS rules for the class
+   ``link-target``.
+
+   Its name is ``epub``.
 
 .. module:: sphinx.builders.latex
 .. class:: LaTeXBuilder
@@ -82,6 +128,22 @@ Note that a direct PDF builder using ReportLab is available in `rst2pdf
 
    .. versionadded:: 0.4
 
+.. module:: sphinx.builders.manpage
+.. class:: ManualPageBuilder
+
+   This builder produces manual pages in the groff format.  You have to specify
+   which documents are to be included in which manual pages via the
+   :confval:`man_pages` configuration value.
+
+   Its name is ``man``.
+
+   .. note::
+
+      This builder requires the docutils manual page writer, which is only
+      available as of docutils 0.6.
+
+   .. versionadded:: 1.0
+
 .. currentmodule:: sphinx.builders.html
 .. class:: SerializingHTMLBuilder
 
@@ -89,7 +151,7 @@ Note that a direct PDF builder using ReportLab is available in `rst2pdf
    (`pickle`, `simplejson`, `phpserialize`, and others) to dump the generated
    HTML documentation.  The pickle builder is a subclass of it.
 
-   A concreate subclass of this builder serializing to the `PHP serialization`_
+   A concrete subclass of this builder serializing to the `PHP serialization`_
    format could look like this::
 
         import phpserialize
@@ -161,8 +223,8 @@ Note that a direct PDF builder using ReportLab is available in `rst2pdf
 .. module:: sphinx.builders.changes
 .. class:: ChangesBuilder
 
-   This builder produces an HTML overview of all :dir:`versionadded`,
-   :dir:`versionchanged` and :dir:`deprecated` directives for the current
+   This builder produces an HTML overview of all :rst:dir:`versionadded`,
+   :rst:dir:`versionchanged` and :rst:dir:`deprecated` directives for the current
    :confval:`version`.  This is useful to generate a ChangeLog file, for
    example.
 
@@ -234,8 +296,8 @@ The special files are located in the root output directory.  They are:
    ``project``, ``copyright``, ``release``, ``version``
       The same values as given in the configuration file.
 
-   ``style``, ``use_modindex``
-      :confval:`html_style` and :confval:`html_use_modindex`, respectively.
+   ``style``
+      :confval:`html_style`.
 
    ``last_updated``
       Date of last build.
@@ -260,7 +322,9 @@ The special files are located in the root output directory.  They are:
 ``environment.pickle``
    The build environment.  This is always a pickle file, independent of the
    builder and a copy of the environment that was used when the builder was
-   started.  (XXX: document common members)
+   started.
 
-   Unlike the other pickle files this pickle file requires that the sphinx
-   module is available on unpickling.
+   .. todo:: Document common members.
+
+   Unlike the other pickle files this pickle file requires that the ``sphinx``
+   package is available on unpickling.
