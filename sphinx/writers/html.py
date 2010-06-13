@@ -16,7 +16,8 @@ import os
 from docutils import nodes
 from docutils.writers.html4css1 import Writer, HTMLTranslator as BaseTranslator
 
-from sphinx.locale import admonitionlabels, versionlabels
+from sphinx import addnodes
+from sphinx.locale import admonitionlabels, versionlabels, _
 from sphinx.util.smartypants import sphinx_smarty_pants
 
 try:
@@ -59,9 +60,16 @@ class HTMLTranslator(BaseTranslator):
         self.highlightlinenothreshold = sys.maxint
         self.protect_literal_text = 0
         self.add_permalinks = builder.config.html_add_permalinks
+        self.secnumber_suffix = builder.config.html_secnumber_suffix
+
+    def visit_start_of_file(self, node):
+        # only occurs in the single-file builder
+        self.body.append('<span id="document-%s"></span>' % node['docname'])
+    def depart_start_of_file(self, node):
+        pass
 
     def visit_desc(self, node):
-        self.body.append(self.starttag(node, 'dl', CLASS=node['desctype']))
+        self.body.append(self.starttag(node, 'dl', CLASS=node['objtype']))
     def depart_desc(self, node):
         self.body.append('</dl>\n\n')
 
@@ -69,7 +77,7 @@ class HTMLTranslator(BaseTranslator):
         # the id is set automatically
         self.body.append(self.starttag(node, 'dt'))
         # anchor for per-desc interactive data
-        if node.parent['desctype'] != 'describe' \
+        if node.parent['objtype'] != 'describe' \
                and node['ids'] and node['first']:
             self.body.append('<!--[%s]-->' % node['ids'][0])
     def depart_desc_signature(self, node):
@@ -138,7 +146,7 @@ class HTMLTranslator(BaseTranslator):
         self.body.append('</em>')
 
     def visit_versionmodified(self, node):
-        self.body.append(self.starttag(node, 'p'))
+        self.body.append(self.starttag(node, 'p', CLASS=node['type']))
         text = versionlabels[node['type']] % node['version']
         if len(node):
             text += ': '
@@ -150,16 +158,31 @@ class HTMLTranslator(BaseTranslator):
 
     # overwritten
     def visit_reference(self, node):
-        BaseTranslator.visit_reference(self, node)
-        if node.hasattr('reftitle'):
-            # ugly hack to add a title attribute
-            starttag = self.body[-1]
-            if not starttag.startswith('<a '):
-                return
-            self.body[-1] = '<a title="%s"' % self.attval(node['reftitle']) + \
-                            starttag[2:]
+        atts = {'class': 'reference'}
+        if node.get('internal'):
+            atts['class'] += ' internal'
+        else:
+            atts['class'] += ' external'
+        if 'refuri' in node:
+            atts['href'] = node['refuri']
+            if self.settings.cloak_email_addresses and \
+               atts['href'].startswith('mailto:'):
+                atts['href'] = self.cloak_mailto(atts['href'])
+                self.in_mailto = 1
+        else:
+            assert 'refid' in node, \
+                   'References must have "refuri" or "refid" attribute.'
+            atts['href'] = '#' + node['refid']
+        if not isinstance(node.parent, nodes.TextElement):
+            assert len(node) == 1 and isinstance(node[0], nodes.image)
+            atts['class'] += ' image-reference'
+        if 'reftitle' in node:
+            atts['title'] = node['reftitle']
+        self.body.append(self.starttag(node, 'a', '', **atts))
+
         if node.hasattr('secnumber'):
-            self.body.append('%s. ' % '.'.join(map(str, node['secnumber'])))
+            self.body.append(('%s' + self.secnumber_suffix) %
+                             '.'.join(map(str, node['secnumber'])))
 
     # overwritten -- we don't want source comments to show up in the HTML
     def visit_comment(self, node):
@@ -180,30 +203,21 @@ class HTMLTranslator(BaseTranslator):
 
     def add_secnumber(self, node):
         if node.hasattr('secnumber'):
-            self.body.append('.'.join(map(str, node['secnumber'])) + '. ')
+            self.body.append('.'.join(map(str, node['secnumber'])) +
+                             self.secnumber_suffix)
         elif isinstance(node.parent, nodes.section):
             anchorname = '#' + node.parent['ids'][0]
             if anchorname not in self.builder.secnumbers:
                 anchorname = ''  # try first heading which has no anchor
             if anchorname in self.builder.secnumbers:
                 numbers = self.builder.secnumbers[anchorname]
-                self.body.append('.'.join(map(str, numbers)) + '. ')
+                self.body.append('.'.join(map(str, numbers)) +
+                                 self.secnumber_suffix)
 
-    # overwritten for docutils 0.4
-    if hasattr(BaseTranslator, 'start_tag_with_title'):
-        def visit_section(self, node):
-            # the 0.5 version, to get the id attribute in the <div> tag
-            self.section_level += 1
-            self.body.append(self.starttag(node, 'div', CLASS='section'))
-
-        def visit_title(self, node):
-            # don't move the id attribute inside the <h> tag
-            BaseTranslator.visit_title(self, node, move_ids=0)
-            self.add_secnumber(node)
-    else:
-        def visit_title(self, node):
-            BaseTranslator.visit_title(self, node)
-            self.add_secnumber(node)
+    # overwritten
+    def visit_title(self, node):
+        BaseTranslator.visit_title(self, node)
+        self.add_secnumber(node)
 
     # overwritten
     def visit_literal_block(self, node):
@@ -271,6 +285,14 @@ class HTMLTranslator(BaseTranslator):
     def depart_centered(self, node):
         self.body.append('</strong></p>')
 
+    # overwritten
+    def should_be_compact_paragraph(self, node):
+        """Determine if the <p> tags around paragraph can be omitted."""
+        if isinstance(node.parent, addnodes.desc_content):
+            # Never compact desc_content items.
+            return False
+        return BaseTranslator.should_be_compact_paragraph(self, node)
+
     def visit_compact_paragraph(self, node):
         pass
     def depart_compact_paragraph(self, node):
@@ -284,8 +306,9 @@ class HTMLTranslator(BaseTranslator):
 
     def visit_download_reference(self, node):
         if node.hasattr('filename'):
-            self.body.append('<a href="%s">' % posixpath.join(
-                self.builder.dlpath, node['filename']))
+            self.body.append(
+                '<a class="reference download internal" href="%s">' %
+                posixpath.join(self.builder.dlpath, node['filename']))
             self.context.append('</a>')
         else:
             self.context.append('')
@@ -355,11 +378,6 @@ class HTMLTranslator(BaseTranslator):
     def visit_acks(self, node):
         pass
     def depart_acks(self, node):
-        pass
-
-    def visit_module(self, node):
-        pass
-    def depart_module(self, node):
         pass
 
     def visit_hlist(self, node):

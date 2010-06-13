@@ -84,6 +84,7 @@ _LATEX_STYLES = r'''
 \newcommand\PYGZrb{]}
 '''
 
+doctestopt_re = re.compile(r'#\s*doctest:.+$', re.MULTILINE)
 
 parsing_exceptions = (SyntaxError, UnicodeEncodeError)
 if sys.version_info < (2, 5):
@@ -98,7 +99,8 @@ class PygmentsBridge(object):
     html_formatter = HtmlFormatter
     latex_formatter = LatexFormatter
 
-    def __init__(self, dest='html', stylename='sphinx'):
+    def __init__(self, dest='html', stylename='sphinx',
+                 trim_doctest_flags=False):
         self.dest = dest
         if not pygments:
             return
@@ -112,6 +114,7 @@ class PygmentsBridge(object):
                             stylename)
         else:
             style = get_style_by_name(stylename)
+        self.trim_doctest_flags = trim_doctest_flags
         if dest == 'html':
             self.fmter = {False: self.html_formatter(style=style),
                           True: self.html_formatter(style=style, linenos=True)}
@@ -176,6 +179,8 @@ class PygmentsBridge(object):
             source = source.decode()
         if not pygments:
             return self.unhighlighted(source)
+
+        # find out which lexer to use
         if lang in ('py', 'python'):
             if source.startswith('>>>'):
                 # interactive session
@@ -208,6 +213,12 @@ class PygmentsBridge(object):
                         raise
                 else:
                     lexer.add_filter('raiseonerror')
+
+        # trim doctest options if wanted
+        if isinstance(lexer, PythonConsoleLexer) and self.trim_doctest_flags:
+            source = doctestopt_re.sub('', source)
+
+        # highlight via Pygments
         try:
             if self.dest == 'html':
                 return highlight(source, lexer, self.fmter[bool(linenos)])
