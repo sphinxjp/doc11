@@ -20,9 +20,11 @@ from docutils import nodes
 from docutils.utils import assemble_option_dict
 from docutils.statemachine import ViewList
 
-from sphinx.util import rpartition, nested_parse_with_titles, force_decode
+from sphinx.util import rpartition, force_decode
+from sphinx.locale import _
 from sphinx.pycode import ModuleAnalyzer, PycodeError
 from sphinx.application import ExtensionError
+from sphinx.util.nodes import nested_parse_with_titles
 from sphinx.util.compat import Directive
 from sphinx.util.inspect import isdescriptor, safe_getmembers, safe_getattr
 from sphinx.util.docstrings import prepare_docstring
@@ -72,6 +74,7 @@ class Options(dict):
 
 
 ALL = object()
+INSTANCEATTR = object()
 
 def members_option(arg):
     """Used to convert the :members: option to auto directives."""
@@ -161,11 +164,12 @@ def cut_lines(pre, post=0, what=None):
             lines.append('')
     return process
 
-def between(marker, what=None, keepempty=False):
+def between(marker, what=None, keepempty=False, exclude=False):
     """
-    Return a listener that only keeps lines between lines that match the
-    *marker* regular expression.  If no line matches, the resulting docstring
-    would be empty, so no change will be made unless *keepempty* is true.
+    Return a listener that either keeps, or if *exclude* is True excludes, lines
+    between lines that match the *marker* regular expression.  If no line
+    matches, the resulting docstring would be empty, so no change will be made
+    unless *keepempty* is true.
 
     If *what* is a sequence of strings, only docstrings of a type in *what* will
     be processed.
@@ -175,7 +179,7 @@ def between(marker, what=None, keepempty=False):
         if what and what_ not in what:
             return
         deleted = 0
-        delete = True
+        delete = not exclude
         orig_lines = lines[:]
         for i, line in enumerate(orig_lines):
             if delete:
@@ -355,6 +359,16 @@ class Documenter(object):
         """
         return None
 
+    def format_name(self):
+        """
+        Format the name of *self.object*.  This normally should be something
+        that can be parsed by the generated directive, but doesn't need to be
+        (Sphinx will display it unparsed then).
+        """
+        # normally the name doesn't contain the module (except for module
+        # directives of course)
+        return '.'.join(self.objpath) or self.modname
+
     def format_signature(self):
         """
         Format the signature (arguments and return annotation) of the object.
@@ -387,11 +401,10 @@ class Documenter(object):
 
     def add_directive_header(self, sig):
         """Add the directive header and options to the generated content."""
+        domain = getattr(self, 'domain', 'py')
         directive = getattr(self, 'directivetype', self.objtype)
-        # the name to put into the generated directive -- doesn't contain
-        # the module (except for module directive of course)
-        name_in_directive = '.'.join(self.objpath) or self.modname
-        self.add_line(u'.. %s:: %s%s' % (directive, name_in_directive, sig),
+        name = self.format_name()
+        self.add_line(u'.. %s:%s:: %s%s' % (domain, directive, name, sig),
                       '<autodoc>')
         if self.options.noindex:
             self.add_line(u'   :noindex:', '<autodoc>')
@@ -472,19 +485,30 @@ class Documenter(object):
                     self.directive.warn('missing attribute %s in object %s'
                                         % (mname, self.fullname))
             return False, ret
-        elif self.options.inherited_members:
+
+        if self.options.inherited_members:
             # safe_getmembers() uses dir() which pulls in members from all
             # base classes
-            return False, safe_getmembers(self.object)
+            members = safe_getmembers(self.object)
         else:
             # __dict__ contains only the members directly defined in
             # the class (but get them via getattr anyway, to e.g. get
             # unbound method objects instead of function objects);
             # using keys() because apparently there are objects for which
             # __dict__ changes while getting attributes
-            return False, sorted([
-                (mname, self.get_attr(self.object, mname, None))
-                for mname in self.get_attr(self.object, '__dict__').keys()])
+            obj_dict = self.get_attr(self.object, '__dict__')
+            members = [(mname, self.get_attr(self.object, mname, None))
+                       for mname in obj_dict.keys()]
+        membernames = set(m[0] for m in members)
+        # add instance attributes from the analyzer
+        if self.analyzer:
+            attr_docs = self.analyzer.find_attr_docs()
+            namespace = '.'.join(self.objpath)
+            for item in attr_docs.iteritems():
+                if item[0][0] == namespace:
+                    if item[0][1] not in membernames:
+                        members.append((item[0][1], INSTANCEATTR))
+        return False, sorted(members)
 
     def filter_members(self, members, want_all):
         """
@@ -546,9 +570,9 @@ class Documenter(object):
         do all members, else those given by *self.options.members*.
         """
         # set current namespace for finding members
-        self.env.autodoc_current_module = self.modname
+        self.env.temp_data['autodoc:module'] = self.modname
         if self.objpath:
-            self.env.autodoc_current_class = self.objpath[0]
+            self.env.temp_data['autodoc:class'] = self.objpath[0]
 
         want_all = all_members or self.options.inherited_members or \
                    self.options.members is ALL
@@ -576,12 +600,19 @@ class Documenter(object):
                               '.'.join(self.objpath + [mname])
             documenter = classes[-1](self.directive, full_mname, self.indent)
             memberdocumenters.append((documenter, isattr))
-
-        if (self.options.member_order or self.env.config.autodoc_member_order) \
-               == 'groupwise':
+        member_order = self.options.member_order or \
+                       self.env.config.autodoc_member_order
+        if member_order == 'groupwise':
             # sort by group; relies on stable sort to keep items in the
             # same group sorted alphabetically
-            memberdocumenters.sort(key=lambda d: d[0].member_order)
+            memberdocumenters.sort(key=lambda e: e[0].member_order)
+        elif member_order == 'bysource' and self.analyzer:
+            # sort by source order, by virtue of the module analyzer
+            tagorder = self.analyzer.tagorder
+            def keyfunc(entry):
+                fullname = entry[0].name.split('::')[1]
+                return tagorder.get(fullname, len(tagorder))
+            memberdocumenters.sort(key=keyfunc)
 
         for documenter, isattr in memberdocumenters:
             documenter.generate(
@@ -589,8 +620,8 @@ class Documenter(object):
                 check_module=members_check_module and not isattr)
 
         # reset current objects
-        self.env.autodoc_current_module = None
-        self.env.autodoc_current_class = None
+        self.env.temp_data['autodoc:module'] = None
+        self.env.temp_data['autodoc:class'] = None
 
     def generate(self, more_content=None, real_modname=None,
                  check_module=False, all_members=False):
@@ -743,11 +774,10 @@ class ModuleLevelDocumenter(Documenter):
             else:
                 # if documenting a toplevel object without explicit module,
                 # it can be contained in another auto directive ...
-                if hasattr(self.env, 'autodoc_current_module'):
-                    modname = self.env.autodoc_current_module
+                modname = self.env.temp_data.get('autodoc:module')
                 # ... or in the scope of a module directive
                 if not modname:
-                    modname = self.env.currmodule
+                    modname = self.env.temp_data.get('py:module')
                 # ... else, it stays None, which means invalid
         return modname, parents + [base]
 
@@ -766,21 +796,20 @@ class ClassLevelDocumenter(Documenter):
                 # if documenting a class-level object without path,
                 # there must be a current class, either from a parent
                 # auto directive ...
-                if hasattr(self.env, 'autodoc_current_class'):
-                    mod_cls = self.env.autodoc_current_class
+                mod_cls = self.env.temp_data.get('autodoc:class')
                 # ... or from a class directive
                 if mod_cls is None:
-                    mod_cls = self.env.currclass
+                    mod_cls = self.env.temp_data.get('py:class')
                 # ... if still None, there's no way to know
                 if mod_cls is None:
                     return None, []
             modname, cls = rpartition(mod_cls, '.')
             parents = [cls]
             # if the module name is still missing, get it like above
-            if not modname and hasattr(self.env, 'autodoc_current_module'):
-                modname = self.env.autodoc_current_module
             if not modname:
-                modname = self.env.currmodule
+                modname = self.env.temp_data.get('autodoc:module')
+            if not modname:
+                modname = self.env.temp_data.get('py:module')
             # ... else, it stays None, which means invalid
         return modname, parents + [base]
 
@@ -1032,6 +1061,34 @@ class AttributeDocumenter(ClassLevelDocumenter):
         pass
 
 
+class InstanceAttributeDocumenter(AttributeDocumenter):
+    """
+    Specialized Documenter subclass for attributes that cannot be imported
+    because they are instance attributes (e.g. assigned in __init__).
+    """
+    objtype = 'instanceattribute'
+    directivetype = 'attribute'
+    member_order = 60
+
+    # must be higher than AttributeDocumenter
+    priority = 11
+
+    @classmethod
+    def can_document_member(cls, member, membername, isattr, parent):
+        """This documents only INSTANCEATTR members."""
+        return isattr and (member is INSTANCEATTR)
+
+    def import_object(self):
+        """Never import anything."""
+        # disguise as an attribute
+        self.objtype = 'attribute'
+        return True
+
+    def add_content(self, more_content, no_docstring=False):
+        """Never try to get a docstring from the object."""
+        AttributeDocumenter.add_content(self, more_content, no_docstring=True)
+
+
 class AutoDirective(Directive):
     """
     The AutoDirective class is used for all autodoc directives.  It dispatches
@@ -1052,6 +1109,10 @@ class AutoDirective(Directive):
 
     # a registry of type -> getattr function
     _special_attrgetters = {}
+
+    # flags that can be given in autodoc_default_flags
+    _default_flags = set(['members', 'undoc-members', 'inherited-members',
+                          'show-inheritance'])
 
     # standard docutils directive settings
     has_content = True
@@ -1075,6 +1136,14 @@ class AutoDirective(Directive):
         # find out what documenter to call
         objtype = self.name[4:]
         doc_class = self._registry[objtype]
+        # add default flags
+        for flag in self._default_flags:
+            if flag not in doc_class.option_spec:
+                continue
+            negated = self.options.pop('no-' + flag, 'not given') is None
+            if flag in self.env.config.autodoc_default_flags and \
+               not negated:
+                self.options[flag] = None
         # process the options with the selected documenter's option_spec
         self.genopt = Options(assemble_option_dict(
             self.options.items(), doc_class.option_spec))
@@ -1087,7 +1156,7 @@ class AutoDirective(Directive):
         # record all filenames as dependencies -- this will at least
         # partially make automatic invalidation possible
         for fn in self.filename_set:
-            self.env.note_dependency(fn)
+            self.state.document.settings.record_dependencies.add(fn)
 
         # use a custom reporter that correctly assigns lines to source
         # filename/description and lineno
@@ -1128,9 +1197,11 @@ def setup(app):
     app.add_autodocumenter(FunctionDocumenter)
     app.add_autodocumenter(MethodDocumenter)
     app.add_autodocumenter(AttributeDocumenter)
+    app.add_autodocumenter(InstanceAttributeDocumenter)
 
     app.add_config_value('autoclass_content', 'class', True)
     app.add_config_value('autodoc_member_order', 'alphabetic', True)
+    app.add_config_value('autodoc_default_flags', [], True)
     app.add_event('autodoc-process-docstring')
     app.add_event('autodoc-process-signature')
     app.add_event('autodoc-skip-member')
