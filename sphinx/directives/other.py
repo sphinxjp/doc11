@@ -13,11 +13,17 @@ from docutils import nodes
 from docutils.parsers.rst import Directive, directives
 
 from sphinx import addnodes
-from sphinx.locale import pairindextypes, _
+from sphinx.locale import _
 from sphinx.util import url_re, docname_join
-from sphinx.util.nodes import explicit_title_re
+from sphinx.util.nodes import explicit_title_re, process_index_entry
 from sphinx.util.compat import make_admonition
 from sphinx.util.matching import patfilter
+
+
+def int_or_nothing(argument):
+    if not argument:
+        return 999
+    return int(argument)
 
 
 class TocTree(Directive):
@@ -34,7 +40,7 @@ class TocTree(Directive):
         'maxdepth': int,
         'glob': directives.flag,
         'hidden': directives.flag,
-        'numbered': directives.flag,
+        'numbered': int_or_nothing,
         'titlesonly': directives.flag,
     }
 
@@ -98,7 +104,7 @@ class TocTree(Directive):
         subnode['maxdepth'] = self.options.get('maxdepth', -1)
         subnode['glob'] = glob
         subnode['hidden'] = 'hidden' in self.options
-        subnode['numbered'] = 'numbered' in self.options
+        subnode['numbered'] = self.options.get('numbered', 0)
         subnode['titlesonly'] = 'titlesonly' in self.options
         wrappernode = nodes.compound(classes=['toctree-wrapper'])
         wrappernode.append(subnode)
@@ -151,10 +157,6 @@ class Index(Directive):
     final_argument_whitespace = True
     option_spec = {}
 
-    indextypes = [
-        'single', 'pair', 'double', 'triple',
-    ]
-
     def run(self):
         arguments = self.arguments[0].split('\n')
         env = self.state.document.settings.env
@@ -164,28 +166,7 @@ class Index(Directive):
         indexnode = addnodes.index()
         indexnode['entries'] = ne = []
         for entry in arguments:
-            entry = entry.strip()
-            for type in pairindextypes:
-                if entry.startswith(type+':'):
-                    value = entry[len(type)+1:].strip()
-                    value = pairindextypes[type] + '; ' + value
-                    ne.append(('pair', value, targetid, value))
-                    break
-            else:
-                for type in self.indextypes:
-                    if entry.startswith(type+':'):
-                        value = entry[len(type)+1:].strip()
-                        if type == 'double':
-                            type = 'pair'
-                        ne.append((type, value, targetid, value))
-                        break
-                # shorthand notation for single entries
-                else:
-                    for value in entry.split(','):
-                        value = value.strip()
-                        if not value:
-                            continue
-                        ne.append(('single', value, targetid, value))
+            ne.extend(process_index_entry(entry, targetid))
         return [indexnode, targetnode]
 
 
@@ -369,14 +350,13 @@ from docutils.parsers.rst.directives.misc import Include as BaseInclude
 class Include(BaseInclude):
     """
     Like the standard "Include" directive, but interprets absolute paths
-    correctly.
+    "correctly", i.e. relative to source directory.
     """
 
     def run(self):
-        if self.arguments[0].startswith('/') or \
-               self.arguments[0].startswith(os.sep):
-            env = self.state.document.settings.env
-            self.arguments[0] = os.path.join(env.srcdir, self.arguments[0][1:])
+        env = self.state.document.settings.env
+        rel_filename, filename = env.relfn2path(self.arguments[0])
+        self.arguments[0] = filename
         return BaseInclude.run(self)
 
 
