@@ -149,14 +149,14 @@ class TestCode(object):
 
 class SphinxDocTestRunner(doctest.DocTestRunner):
     def summarize(self, out, verbose=None):
-        io = StringIO.StringIO()
+        string_io = StringIO.StringIO()
         old_stdout = sys.stdout
-        sys.stdout = io
+        sys.stdout = string_io
         try:
             res = doctest.DocTestRunner.summarize(self, verbose)
         finally:
             sys.stdout = old_stdout
-        out(io.getvalue())
+        out(string_io.getvalue())
         return res
 
     def _DocTestRunner__patched_linecache_getlines(self, filename,
@@ -265,6 +265,9 @@ Doctest summary
                                                 optionflags=self.opt)
         self.test_runner = SphinxDocTestRunner(verbose=False,
                                                optionflags=self.opt)
+
+        self.test_runner._fakeout = self.setup_runner._fakeout
+
         if self.config.doctest_test_doctest_blocks:
             def condition(node):
                 return (isinstance(node, (nodes.literal_block, nodes.comment))

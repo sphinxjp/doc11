@@ -1,3 +1,31 @@
+Release 1.1 (in development)
+============================
+
+* Added Python 3.x support.
+
+* Added a Texinfo builder.
+
+* Added i18n support for content, a ``gettext`` builder and
+  related utilities.
+
+* Added the ``websupport`` library.
+
+* #460: Allow limiting the depth of section numbers for HTML.
+
+* #138: Add an ``index`` role, to make inline index entries.
+
+* #443: Allow referencing external graphviz files.
+
+* #221: Add Swedish locale.
+
+* Added ``inline`` option to graphviz directives, and fixed the
+  default (block-style) in LaTeX output.
+
+* #521: Added :confval:`linkcheck_ignore` config value.
+
+* #526: Added Iranian translation.
+
+
 Release 1.0.5 (in development)
 ==============================
 
