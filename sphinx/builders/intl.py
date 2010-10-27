@@ -21,6 +21,7 @@ from sphinx.builders.versioning import VersioningBuilderMixin
 from sphinx.util.nodes import extract_messages
 from sphinx.util.osutil import SEP, copyfile
 from sphinx.util.console import darkgreen
+from sphinx.util.ordereddict import OrderedDict
 
 POHEADER = ur"""
 # SOME DESCRIPTIVE TITLE.
@@ -53,7 +54,7 @@ class I18nBuilder(Builder, VersioningBuilderMixin):
     def init(self):
         Builder.init(self)
         VersioningBuilderMixin.init(self)
-        self.catalogs = defaultdict(dict)
+        self.catalogs = defaultdict(OrderedDict)
 
     def get_target_uri(self, docname, typ=None):
         return ''
