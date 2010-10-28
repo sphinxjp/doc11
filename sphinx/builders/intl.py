@@ -72,6 +72,8 @@ class I18nBuilder(Builder, VersioningBuilderMixin):
         self.handle_versioning(docname, doctree, nodes.TextElement)
 
         for node, msg in extract_messages(doctree):
+            if isinstance(node, nodes.literal_block):
+                continue
             if node.source is None:
                 if self.last_source is not None:
                     source = self.last_source
