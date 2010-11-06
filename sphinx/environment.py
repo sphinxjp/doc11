@@ -217,7 +217,7 @@ class Locale(Transform):
                 continue
             parser.parse(msgstr, patch)
             patch = patch[0]
-            assert isinstance(patch, nodes.paragraph)
+            #assert isinstance(patch, nodes.paragraph)
             for child in patch.children: # update leaves
                 child.parent = node
             node.children = patch.children
