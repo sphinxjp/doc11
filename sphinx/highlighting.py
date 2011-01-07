@@ -30,34 +30,14 @@ try:
     from pygments.lexers import get_lexer_by_name, guess_lexer
     from pygments.formatters import HtmlFormatter, LatexFormatter
     from pygments.filters import ErrorToken
-    from pygments.style import Style
     from pygments.styles import get_style_by_name
-    from pygments.styles.friendly import FriendlyStyle
-    from pygments.token import Generic, Comment, Number
     from pygments.util import ClassNotFound
+    from sphinx.pygments_styles import SphinxStyle, NoneStyle
 except ImportError:
     pygments = None
     lexers = None
     HtmlFormatter = LatexFormatter = None
 else:
-    class SphinxStyle(Style):
-        """
-        Like friendly, but a bit darker to enhance contrast on the green
-        background.
-        """
-
-        background_color = '#eeffcc'
-        default_style = ''
-
-        styles = FriendlyStyle.styles
-        styles.update({
-            Generic.Output: '#333',
-            Comment: 'italic #408090',
-            Number: '#208050',
-        })
-
-    class NoneStyle(Style):
-        """Style without any styling."""
 
     lexers = dict(
         none = TextLexer(),
@@ -156,7 +136,7 @@ class PygmentsBridge(object):
         if sys.version_info >= (2, 5):
             src = 'from __future__ import with_statement\n' + src
 
-        if isinstance(src, unicode):
+        if sys.version_info < (3, 0) and isinstance(src, unicode):
             # Non-ASCII chars will only occur in string literals
             # and comments.  If we wanted to give them to the parser
             # correctly, we'd have to find out the correct source
@@ -175,7 +155,7 @@ class PygmentsBridge(object):
             return True
 
     def highlight_block(self, source, lang, linenos=False, warn=None):
-        if isinstance(source, str):
+        if not isinstance(source, unicode):
             source = source.decode()
         if not pygments:
             return self.unhighlighted(source)
