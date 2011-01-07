@@ -110,22 +110,21 @@ class PyObject(ObjectDescription):
     ]
 
     def get_signature_prefix(self, sig):
-        """
-        May return a prefix to put before the object name in the signature.
+        """May return a prefix to put before the object name in the
+        signature.
         """
         return ''
 
     def needs_arglist(self):
-        """
-        May return true if an empty argument list is to be generated even if
+        """May return true if an empty argument list is to be generated even if
         the document contains none.
         """
         return False
 
     def handle_signature(self, sig, signode):
-        """
-        Transform a Python signature into RST nodes.
-        Returns (fully qualified name of the thing, classname if any).
+        """Transform a Python signature into RST nodes.
+
+        Return (fully qualified name of the thing, classname if any).
 
         If inside a class, the current class name is handled intelligently:
         * it is stripped from the displayed name if present
@@ -195,9 +194,7 @@ class PyObject(ObjectDescription):
         return fullname, name_prefix
 
     def get_index_text(self, modname, name):
-        """
-        Return the text for the index entry of the object.
-        """
+        """Return the text for the index entry of the object."""
         raise NotImplementedError('must be implemented in subclasses')
 
     def add_target_and_index(self, name_cls, sig, signode):
@@ -224,7 +221,7 @@ class PyObject(ObjectDescription):
         indextext = self.get_index_text(modname, name_cls)
         if indextext:
             self.indexnode['entries'].append(('single', indextext,
-                                              fullname, fullname))
+                                              fullname, ''))
 
     def before_content(self):
         # needed for automatic qualification of members (reset in subclasses)
@@ -402,7 +399,7 @@ class PyModule(Directive):
         if not noindex:
             indextext = _('%s (module)') % modname
             inode = addnodes.index(entries=[('single', indextext,
-                                             'module-' + modname, modname)])
+                                             'module-' + modname, '')])
             ret.append(inode)
         return ret
 
@@ -576,9 +573,8 @@ class PythonDomain(Domain):
                 del self.data['modules'][modname]
 
     def find_obj(self, env, modname, classname, name, type, searchmode=0):
-        """
-        Find a Python object for "name", perhaps using the given module and/or
-        classname.  Returns a list of (name, object entry) tuples.
+        """Find a Python object for "name", perhaps using the given module
+        and/or classname.  Returns a list of (name, object entry) tuples.
         """
         # skip parens
         if name[-2:] == '()':
