@@ -2,38 +2,35 @@
 #
 # Sphinx documentation build configuration file
 
-import os, sys
 import re
 import sphinx
 
-sys.path.append(os.path.abspath("."))
-
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.todo',
-              'sphinx.ext.autosummary', 'sphinx.ext.extlinks', 'omegat']
+              'sphinx.ext.autosummary', 'sphinx.ext.extlinks']
 
 master_doc = 'contents'
 templates_path = ['_templates']
 exclude_patterns = ['_build']
 
 project = 'Sphinx'
-copyright = '2007-2010, Georg Brandl'
+copyright = '2007-2010, Georg Brandl, Shibukawa Yoshiki(Japanese)'
 version = sphinx.__released__
 release = version
 show_authors = True
-
-omegat_project_path = './trans/omegat_proj'
-omegat_translated_path = './trans/catalog/'
-language = 'ja'
-locale_dirs = [omegat_translated_path]
+#language = 'ja'
 
 html_theme = 'sphinxdoc'
 modindex_common_prefix = ['sphinx.']
 html_static_path = ['_static']
+html_index = 'index.html'
 html_sidebars = {'index': ['indexsidebar.html', 'searchbox.html']}
 html_additional_pages = {'index': 'index.html'}
 html_use_opensearch = 'http://sphinx.pocoo.org'
 
 htmlhelp_basename = 'Sphinxdoc'
+
+search_language = 'ja'
+search_language_option = {"type":"mecab"}
 
 epub_theme = 'epub'
 epub_basename = 'sphinx'
@@ -53,6 +50,14 @@ latex_elements = {
     'fontpkg': '\\usepackage{palatino}',
 }
 
+latex_docclass = {"manual":"jarticle"}
+
+latex_elements = {
+  "papersize": "a4paper",
+  "pointsize": "12pt",
+}
+
+
 autodoc_member_order = 'groupwise'
 todo_include_todos = True
 extlinks = {'duref': ('http://docutils.sourceforge.net/docs/ref/rst/'
@@ -70,16 +75,6 @@ man_pages = [
     ('man/sphinx-quickstart', 'sphinx-quickstart', 'Sphinx documentation '
      'template generator', '', 1),
 ]
-
-texinfo_documents = [
-    ('contents', 'sphinx', 'Sphinx Documentation', 'Georg Brandl',
-     'Sphinx', 'The Sphinx documentation builder.', 'Documentation tools',
-     1),
-]
-
-# We're not using intersphinx right now, but if we did, this would be part of
-# the mapping:
-intersphinx_mapping = {'python': ('http://docs.python.org/dev', None)}
 
 
 # -- Extension interface -------------------------------------------------------

@@ -1,7 +1,10 @@
 .. _contents:
 
-Sphinx documentation contents
-=============================
+.. Sphinx documentation contents
+.. =============================
+
+Sphinxドキュメント
+======================
 
 .. toctree::
    :maxdepth: 2
@@ -14,11 +17,9 @@ Sphinx documentation contents
    domains
    builders
    config
-   intl
    theming
    templating
    extensions
-   websupport
 
    faq
    glossary
@@ -26,8 +27,11 @@ Sphinx documentation contents
    examples
 
 
-Indices and tables
-==================
+.. Indices and tables
+.. ==================
+
+索引
+======================
 
 * :ref:`genindex`
 * :ref:`modindex`

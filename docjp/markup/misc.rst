@@ -1,152 +1,117 @@
 .. highlight:: rest
 
-Miscellaneous markup
-====================
+.. Miscellaneous markup
+.. ====================
+
+その他のマークアップ
+=====================
 
 .. _metadata:
 
-File-wide metadata
-------------------
+ファイルに関するメタデータ
+--------------------------
 
-reST has the concept of "field lists"; these are a sequence of fields marked up
-like this::
+.. File-wide metadata
+   ------------------
 
-   :fieldname: Field content
+.. reST has the concept of "field lists"; these are a sequence of fields marked up
+   like this:
 
-A field list at the very top of a file is parsed by docutils as the "docinfo",
-which is normally used to record the author, date of publication and other
-metadata.  *In Sphinx*, the docinfo is used as metadata, too, but not displayed
-in the output.
+      :fieldname: Field content
 
-At the moment, these metadata fields are recognized:
+reSTには "フィールドリスト"という考えがあります。以下のようなものが、このフィールドのマークアップのリストのサンプルになります::
+
+   :フィールド名: フィールドの内容
+
+.. A field list at the very top of a file is parsed by docutils as the "docinfo",
+   which is normally used to record the author, date of publication and other
+   metadata.  *In Sphinx*, the docinfo is used as metadata, too, but not displayed
+   in the output.
+
+docutilsは、ファイルの先頭のフィールドリストを "docinfo" としてパースします。これは通常のドキュメントでは著者名や、公開日などのメタデータを記録するのに使用されます。 **Sphinxでは**, docinfoはメタデータとして使用されますが、出力はされません。
+
+.. At the moment, these metadata fields are recognized:
+
+このタイミングでは、以下のメタデータのフィールドが識別されています:
 
 ``tocdepth``
-   The maximum depth for a table of contents of this file.
+   .. The maximum depth for a table of contents of this file.
+
+   このファイルに表示する目次の最大の深さ
 
    .. versionadded:: 0.4
 
+
 ``nocomments``
-   If set, the web application won't display a comment form for a page generated
-   from this source file.
+   .. If set, the web application won't display a comment form for a page generated
+      from this source file.
+
+   もし設定されていれば、このソースファイルから生成されたページをウェブアプリケーションが表示する際には、コメントフォームが表示されなくなります。
+
 
 ``orphan``
-   If set, warnings about this file not being included in any toctree will be
-   suppressed.
+   .. If set, warnings about this file not being included in any toctree will be
+      suppressed.
+
+   もしこれが設定されると、toctreeから参照されていない時に出力される警告が抑制されます。
 
    .. versionadded:: 1.0
 
 
-Meta-information markup
------------------------
+.. Meta-information markup
+.. -----------------------
+
+メタ情報マークアップ
+--------------------
+
+..
+  .. rst:directive:: .. sectionauthor:: 名前 <Eメール>
 
 .. rst:directive:: .. sectionauthor:: name <email>
 
-   Identifies the author of the current section.  The argument should include
-   the author's name such that it can be used for presentation and email
-   address.  The domain name portion of the address should be lower case.
-   Example::
+   .. Identifies the author of the current section.  The argument should include
+      the author's name such that it can be used for presentation and email
+      address.  The domain name portion of the address should be lower case.
+
+   現在のセクションの著者名を指定します。引数には必ず、表示するための著者の名前と、電子メールのアドレスを入れます。アドレスのドメイン名の部分は小文字でなければなりません。
+
+   .. Example:
+
+   サンプル::
+
+     .. sectionauthor:: Guido van Rossum <guido@python.org>
+
+   .. By default, this markup isn't reflected in the output in any way (it helps
+      keep track of contributions), but you can set the configuration value
+      :confval:`show_authors` to True to make them produce a paragraph in the
+      output.
+
+   デフォルトでは、このマークアップは出力に反映されません(貢献者の名前を調べる手助けにはなります)。しかし、設定ファイルの :confval:`show_authors` をTrueに設定すると、出力ファイルの中にこの情報に関する段落が作成されます。
 
       .. sectionauthor:: Guido van Rossum <guido@python.org>
 
-   By default, this markup isn't reflected in the output in any way (it helps
-   keep track of contributions), but you can set the configuration value
-   :confval:`show_authors` to True to make them produce a paragraph in the
-   output.
+..
+   .. rst:directive:: .. codeauthor:: name <email>
 
+.. rst:directive:: .. codeauthor:: 名前 <Eメール>
 
-.. rst:directive:: .. codeauthor:: name <email>
+   .. The :rst:dir:`codeauthor` directive, which can appear multiple times, names the
+      authors of the described code, just like :rst:dir:`sectionauthor` names the
+      author(s) of a piece of documentation.  It too only produces output if the
+      :confval:`show_authors` configuration value is True.
 
-   The :rst:dir:`codeauthor` directive, which can appear multiple times, names the
-   authors of the described code, just like :rst:dir:`sectionauthor` names the
-   author(s) of a piece of documentation.  It too only produces output if the
-   :confval:`show_authors` configuration value is True.
-
-
-Index-generating markup
------------------------
-
-Sphinx automatically creates index entries from all object descriptions (like
-functions, classes or attributes) like discussed in :ref:`domains`.
-
-However, there is also explicit markup available, to make the index more
-comprehensive and enable index entries in documents where information is not
-mainly contained in information units, such as the language reference.
-
-.. rst:directive:: .. index:: <entries>
-
-   This directive contains one or more index entries.  Each entry consists of a
-   type and a value, separated by a colon.
-
-   For example::
-
-      .. index::
-         single: execution; context
-         module: __main__
-         module: sys
-         triple: module; search; path
-
-      The execution context
-      ---------------------
-
-      ...
-
-   This directive contains five entries, which will be converted to entries in
-   the generated index which link to the exact location of the index statement
-   (or, in case of offline media, the corresponding page number).
-
-   Since index directives generate cross-reference targets at their location in
-   the source, it makes sense to put them *before* the thing they refer to --
-   e.g. a heading, as in the example above.
-
-   The possible entry types are:
-
-   single
-      Creates a single index entry.  Can be made a subentry by separating the
-      subentry text with a semicolon (this notation is also used below to
-      describe what entries are created).
-   pair
-      ``pair: loop; statement`` is a shortcut that creates two index entries,
-      namely ``loop; statement`` and ``statement; loop``.
-   triple
-      Likewise, ``triple: module; search; path`` is a shortcut that creates
-      three index entries, which are ``module; search path``, ``search; path,
-      module`` and ``path; module search``.
-   module, keyword, operator, object, exception, statement, builtin
-      These all create two index entries.  For example, ``module: hashlib``
-      creates the entries ``module; hashlib`` and ``hashlib; module``.  (These
-      are Python-specific and therefore deprecated.)
-
-   For index directives containing only "single" entries, there is a shorthand
-   notation::
-
-      .. index:: BNF, grammar, syntax, notation
-
-   This creates four index entries.
-
-.. rst:role:: index
-
-   While the :rst:dir:`index` directive is a block-level markup and links to the
-   beginning of the next paragraph, there is also a corresponding role that sets
-   the link target directly where it is used.
-
-   The content of the role can be a simple phrase, which is then kept in the
-   text and used as an index entry.  It can also be a combination of text and
-   index entry, styled like with explicit targets of cross-references.  In that
-   case, the "target" part can be a full entry as described for the directive
-   above.  For example::
-
-      This is a normal reST :index:`paragraph` that contains several
-      :index:`index entries <pair: index; entry>`.
-
-   .. versionadded:: 1.1
+   :rst:dir:`codeauthor` ディレクティブは、 :rst:dir:`sectionauthor` の名前と同じく、説明しているコードの作者名について、複数人書くことができます。 :confval:`show_authors` 設定値をTrueにしないかぎり、出力はされません。
 
 
 .. _tags:
 
-Including content based on tags
--------------------------------
+タグを使用したインクルード
+--------------------------
 
-.. rst:directive:: .. only:: <expression>
+.. Including content based on tags
+   -------------------------------
+
+.. .. rst:directive:: .. only:: <expression>
 
    Include the content of the directive only if the *expression* is true.  The
    expression should consist of tags, like this::
@@ -160,18 +125,33 @@ Including content based on tags
    The format of the current builder (``html``, ``latex`` or ``text``) is always
    set as a tag.
 
+.. rst:directive:: .. only:: <式>
+
+   *<式>* が真のときだけ、ディレクティブの内容をインクルードします。式は以下のようにタグで構成されます。
+
+      .. only:: html and draft
+
+   未定義のタグはfalseになります。コマンドラインの ``-t`` オプションもしくは :file:`conf.py` によって定義されたタグはtrueとして扱われます。カッコも含めて、ブール演算も使用することができます。 ``html and (latex or draft)`` というような表現がサポートされています。
+
+   現在のビルダーのフォーマットのタグ (``html``, ``latex``, ``text``) は常にタグとしてセットされます。
+
    .. versionadded:: 0.6
 
 
-Tables
-------
+.. Tables
+.. ------
 
-Use :ref:`standard reStructuredText tables <rst-tables>`.  They work fine in
-HTML output, however there are some gotchas when using tables in LaTeX: the
-column width is hard to determine correctly automatically.  For this reason, the
-following directive exists:
+テーブル
+--------
 
-.. rst:directive:: .. tabularcolumns:: column spec
+.. Use :ref:`standard reStructuredText tables <rst-tables>`.  They work fine in
+   HTML output, however there are some gotchas when using tables in LaTeX: the
+   column width is hard to determine correctly automatically.  For this reason, the
+   following directive exists:
+
+:ref:`標準のreStructuredTextの表 <rst-tables>` を使用すると、HTML出力では非常にきれいな表を作成することができますが、LaTeXで出力すると、ちょっとがっかりしてしまうでしょう。現在の仕様ではカラムを自動で正しく決定するのは簡単ではありません。このような理由から、それをサポートするディレクティブがいくつか用意されています:
+
+.. .. rst:directive:: .. tabularcolumns:: column spec
 
    This directive gives a "column spec" for the next table occurring in the
    source file.  The spec is the second argument to the LaTeX ``tabulary``
@@ -201,11 +181,36 @@ following directive exists:
 
    .. versionadded:: 0.3
 
+.. rst:directive:: .. tabularcolumns:: カラム 仕様
+
+   このディレクティブは次に作成するテーブルの "カラム仕様" を設定します。仕様はSphinxがテーブルの変換に使用している、LaTeXの ``tabulary`` パッケージ環境のためのものです。2番目の引数として設定します。以下のような値を設定します::
+
+      |l|l|l|
+
+   これは、３つの左寄せの、改行なしのカラムの意味になります。それぞれのカラムで、長いテキストを適切に自動的に改行させるためには、標準の ``p{width}`` 構造体を使用するか、tabularyの自動設定を使用します。
+
+   +-----+------------------------------------------+
+   |``L``| 左寄せのカラム。長さは自動調整。         |
+   +-----+------------------------------------------+
+   |``R``| 右寄せのカラム。長さは自動調整。         |
+   +-----+------------------------------------------+
+   |``C``| 中央寄せのカラム。長さは自動調整。       |
+   +-----+------------------------------------------+
+   |``J``| テキストを広げるカラム。長さは自動調整。 |
+   +-----+------------------------------------------+
+
+   長さが自動調整となっているものは、全体の長さのうち、それぞれのカラムが占める幅の割合に応じて列の大きさはスケールします。
+
+   デフォルトでは、Sphinxはすべてのカラムに対して ``L`` を適用したレイアウトを自動で行います。
+
 .. warning::
 
-   Tables that contain literal blocks cannot be set with ``tabulary``.  They are
+   リテラルブロックを含むテーブルには ``tabulary`` は適用できません。このような場合には、LaTeX標準の ``tabular`` 環境が使用されます。また、 ``p{width}`` を設定しないと、同様な環境は使用することはできません。デフォルトでは、というのは、Sphinxはそのようなテーブルのためには、そのようなカラムを生成します。 :rst:dir:`tabularcolums` ディレクティブを使用することで、テーブルに対して細かい制御ができるようになります。
+
+.. Tables that contain literal blocks cannot be set with ``tabulary``.  They are
    therefore set with the standard LaTeX ``tabular`` environment.  Also, the
    verbatim environment used for literal blocks only works in ``p{width}``
    columns, which means that by default, Sphinx generates such column specs for
    such tables.  Use the :rst:dir:`tabularcolumns` directive to get finer control
    over such tables.
+

@@ -1,31 +1,24 @@
-<p class="logo"><a href="http://pocoo.org/">
-  <img src="{{ pathto("_static/pocoo.png", 1) }}" /></a></p>
-
-<h3>Download</h3>
+<h3>ダウンロード</h3>
 {% if version.endswith('(hg)') %}
-<p>This documentation is for version <b>{{ version }}</b>, which is
-  not released yet.</p>
-<p>You can use it from the
-  <a href="http://bitbucket.org/birkenfeld/sphinx/">Mercurial repo</a> or look for
-  released versions in the <a href="http://pypi.python.org/pypi/Sphinx">Python
-    Package Index</a>.</p>
+<p>このドキュメントはバージョン<b>{{ version }}</b>のためのものです。まだリリースされていません。</p>
+<p>
+  <a href="http://bitbucket.org/birkenfeld/sphinx/">Mercurialリポジトリ</a>のコードを利用するか、<a href="http://pypi.python.org/pypi/Sphinx">Python Package Index</a>にあるリリースバージョンを探してください。</p>
 {% else %}
-<p>Current version: <b>{{ version }}</b></p>
-<p>Get Sphinx from the <a href="http://pypi.python.org/pypi/Sphinx">Python Package
-Index</a>, or install it with:</p>
-<pre>easy_install -U Sphinx</pre>
-<p>Latest <a href="http://sphinx.pocoo.org/latest/">development version docs</a>
-are also available.</p>
+<p>現在のバージョン: <b>{{ version }}</b></p>
+<p><a href="http://pypi.python.org/pypi/Sphinx">Python Package Index</a>からソースコードをダウロードするか、</p>
+<pre>easy_install -U Sphinx</pre>を使用してインストールしてください。
+<p>最新の<a href="http://sphinx.pocoo.org/latest/">開発バージョンのドキュメント</a>も読むことができます。
+</p>
+
 {% endif %}
 
-<h3>Questions? Suggestions?</h3>
+<h3>疑問? 意見?</h3>
 
-<p>Join the <a href="http://groups.google.com/group/sphinx-dev">Google group</a>:</p>
+<p><a href="http://groups.google.com/group/sphinx-dev">Googleグループ</a>への参加:</p>
 <form action="http://groups.google.com/group/sphinx-dev/boxsubscribe"
       style="padding-left: 1em">
   <input type="text" name="email" value="your@email"/>
   <input type="submit" name="sub" value="Subscribe" />
 </form>
-<p>or come to the <tt>#pocoo</tt> channel on FreeNode.</p>
-<p>You can also open an issue at the
-  <a href="http://www.bitbucket.org/birkenfeld/sphinx/issues/">tracker</a>.</p>
+<p>もしくは、FreeNodeの<tt>#python-docs</tt>チャンネルへどうぞ</p>
+<p>何か気づいたことがあれば、<a href="http://www.bitbucket.org/birkenfeld/sphinx/issues/">issue tracker</a>を使用して通知することもできます。</p>
