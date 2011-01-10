@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-    sphinx.builders.intl
-    ~~~~~~~~~~~~~~~~~~~~
+    sphinx.builders.gettext
+    ~~~~~~~~~~~~~~~~~~~~~~~
 
     The MessageCatalogBuilder class.
 
-    :copyright: Copyright 2007-2010 by the Sphinx team, see AUTHORS.
+    :copyright: Copyright 2007-2011 by the Sphinx team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
@@ -17,11 +17,9 @@ from collections import defaultdict
 from docutils import nodes
 
 from sphinx.builders import Builder
-from sphinx.builders.versioning import VersioningBuilderMixin
 from sphinx.util.nodes import extract_messages
 from sphinx.util.osutil import SEP, copyfile
 from sphinx.util.console import darkgreen
-from sphinx.util.ordereddict import OrderedDict
 
 POHEADER = ur"""
 # SOME DESCRIPTIVE TITLE.
@@ -45,17 +43,16 @@ msgstr ""
 """[1:]
 
 
-class I18nBuilder(Builder, VersioningBuilderMixin):
+class I18nBuilder(Builder):
     """
     General i18n builder.
     """
     name = 'i18n'
+    versioning_method = 'text'
 
     def init(self):
         Builder.init(self)
-        VersioningBuilderMixin.init(self)
-        self.catalogs = defaultdict(OrderedDict)
-        self.last_source = None
+        self.catalogs = defaultdict(dict)
 
     def get_target_uri(self, docname, typ=None):
         return ''
@@ -69,27 +66,8 @@ class I18nBuilder(Builder, VersioningBuilderMixin):
     def write_doc(self, docname, doctree):
         catalog = self.catalogs[docname.split(SEP, 1)[0]]
 
-        self.handle_versioning(docname, doctree, nodes.TextElement)
-
         for node, msg in extract_messages(doctree):
-            #if isinstance(node, nodes.literal_block):
-            #    continue
-            if node.source is None:
-                if self.last_source is not None:
-                    source = self.last_source
-                else:
-                    source = "(unknown)"
-            else:
-                source = self.last_source = path.basename(node.source)
-            if node.line is None:
-                line = 0
-            else:
-                line = node.line 
-            catalog.setdefault(msg, []).append((source, line))
-
-    def finish(self):
-        Builder.finish(self)
-        VersioningBuilderMixin.finish(self)
+            catalog.setdefault(node.uid, msg)
 
 
 class MessageCatalogBuilder(I18nBuilder):
@@ -115,31 +93,11 @@ class MessageCatalogBuilder(I18nBuilder):
             pofile = open(pofn, 'w', encoding='utf-8')
             try:
                 pofile.write(POHEADER % data)
-                for message, poss in messages.iteritems():
+                for uid, message in messages.iteritems():
                     # message contains *one* line of text ready for translation
-                    pos = self._join(
-                        ["%s(%d)" % (s, l) for s, l in poss])
                     message = message.replace(u'\\', ur'\\'). \
                                       replace(u'"', ur'\"')
-                    pomsg = u'%s\nmsgid "%s"\nmsgstr ""\n\n' % (pos, message)
+                    pomsg = u'#%s\nmsgid "%s"\nmsgstr ""\n\n' % (uid, message)
                     pofile.write(pomsg)
             finally:
                 pofile.close()
-
-    def _join(self, strings, prefix="# ", sep=", ", max_length=70):
-        lines = [[prefix, strings[0]]]
-        strings = strings[1:]
-        length = max_length - len(prefix)
-        while strings:
-            next = strings[0]
-            del strings[0]
-            if length - len(next) - len(sep) < 0:
-                length = max_length - len(next) - len(prefix)
-                lines[-1] = "".join(lines[-1])
-                lines.append([prefix, next])
-            else:
-                lines[-1].append(sep)
-                lines[-1].append(next)
-                length = length - len(sep) - len(next)
-        lines[-1] = "".join(lines[-1])
-        return "\n".join(lines)

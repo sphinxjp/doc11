@@ -232,6 +232,14 @@ General configuration
 
    .. versionadded:: 1.0
 
+.. confval:: nitpick_ignore
+
+   A list of ``(type, target)`` tuples (by default empty) that should be ignored
+   when generating warnings in "nitpicky mode".  Note that ``type`` should
+   include the domain name.  An example entry would be ``('py:func', 'int')``.
+
+   .. versionadded:: 1.1
+
 
 Project information
 -------------------
@@ -404,8 +412,6 @@ Options for HTML output
 These options influence HTML as well as HTML Help output, and other builders
 that use Sphinx' HTMLWriter class.
 
-.. XXX document html_context
-
 .. confval:: html_theme
 
    The "theme" that the HTML output should use.  See the :doc:`section about
@@ -453,6 +459,14 @@ that use Sphinx' HTMLWriter class.
 
    .. versionadded:: 0.4
 
+.. confval:: html_context
+
+   A dictionary of values to pass into the template engine's context for all
+   pages.  Single values can also be put in this dictionary using the
+   :option:`-A` command-line option of ``sphinx-build``.
+
+   .. versionadded:: 0.5
+
 .. confval:: html_logo
 
    If given, this must be the name of an image file that is the logo of the
@@ -499,12 +513,18 @@ that use Sphinx' HTMLWriter class.
 
 .. confval:: html_add_permalinks
 
-   If true, Sphinx will add "permalinks" for each heading and description
-   environment as paragraph signs that become visible when the mouse hovers over
-   them.  Default: ``True``.
+   Sphinx will add "permalinks" for each heading and description environment as
+   paragraph signs that become visible when the mouse hovers over them.
+
+   This value determines the text for the permalink; it defaults to ``"¶"``.
+   Set it to ``None`` or the empty string to disable permalinks.
 
    .. versionadded:: 0.6
       Previously, this was always activated.
+
+   .. versionchanged:: 1.1
+      This can now be a string to select the actual text of the link.
+      Previously, only boolean values were accepted.
 
 .. confval:: html_sidebars
 
@@ -688,6 +708,38 @@ that use Sphinx' HTMLWriter class.
 
    .. versionadded:: 1.0
 
+.. confval:: html_search_language
+
+   Language to be used for generating the HTML full-text search index.  This
+   defaults to the global language selected with :confval:`language`.  If there
+   is no support for this language, ``"en"`` is used which selects the English
+   language.
+
+   Support is present for these languages:
+
+   * ``en`` -- English
+   * ``ja`` -- Japanese
+
+   .. versionadded:: 1.1
+
+.. confval:: html_search_options
+
+   A dictionary with options for the search language support, empty by default.
+   The meaning of these options depends on the language selected.
+
+   The English support has no options.
+
+   The Japanese support has these options:
+
+   * ``type`` -- ``'mecab'`` or ``'default'`` (selects either MeCab or
+     TinySegmenter word splitter algorithm)
+   * ``dic_enc`` -- the encoding for the MeCab algorithm
+   * ``dict`` -- the dictionary to use for the MeCab algorithm
+   * ``lib`` -- the library name for finding the MeCab library via ctypes if the
+     Python binding is not installed
+
+   .. versionadded:: 1.1
+
 .. confval:: htmlhelp_basename
 
    Output file base name for HTML help builder.  Default is ``'pydoc'``.
@@ -812,6 +864,7 @@ the `Dublin Core metadata <http://dublincore.org/>`_.
    a chapter, but can be confusing because it mixes entries of differnet
    depth in one list.  The default value is ``True``.
 
+
 .. _latex-options:
 
 Options for LaTeX output
@@ -894,10 +947,18 @@ These options influence LaTeX output.
 
 .. confval:: latex_show_urls
 
-   If true, add URL addresses after links.  This is very useful for printed
-   copies of the manual.  Default is ``False``.
+   Control whether to display URL addresses.  This is very useful for printed
+   copies of the manual.  The setting can have the following values:
+
+   * ``'no'`` -- do not display URLs (default)
+   * ``'footnote'`` -- display URLs in footnotes
+   * ``'inline'`` -- display URLs inline in parentheses
 
    .. versionadded:: 1.0
+   .. versionchanged:: 1.1
+      This value is now a string; previously it was a boolean value, and a true
+      value selected the ``'inline'`` display.  For backwards compatibility,
+      ``True`` is still accepted.
 
 .. confval:: latex_elements
 
@@ -1010,6 +1071,37 @@ These options influence LaTeX output.
       Use the ``'pointsize'`` key in the :confval:`latex_elements` value.
 
 
+.. _text-options:
+
+Options for text output
+-----------------------
+
+These options influence text output.
+
+.. confval:: text_newlines
+
+   Determines which end-of-line character(s) are used in text output.
+
+   * ``'unix'``: use Unix-style line endings (``\n``)
+   * ``'windows'``: use Windows-style line endings (``\r\n``)
+   * ``'native'``: use the line ending style of the platform the documentation
+     is built on
+
+   Default: ``'unix'``.
+
+   .. versionadded:: 1.1
+
+.. confval:: text_sectionchars
+
+   A string of 7 characters that should be used for underlining sections.
+   The first character is used for first-level headings, the second for
+   second-level headings and so on.
+
+   The default is ``'*=-~"+`'``.
+
+   .. versionadded:: 1.1
+
+
 .. _man-options:
 
 Options for manual page output
@@ -1039,6 +1131,12 @@ These options influence manual page output.
      as in the manual page header.
 
    .. versionadded:: 1.0
+
+.. confval:: man_show_urls
+
+   If true, add URL addresses after links.  Default is ``False``.
+
+   .. versionadded:: 1.1
 
 
 .. _texinfo-options:
@@ -1123,6 +1221,21 @@ Options for the linkcheck builder
    when doing a ``linkcheck`` build.  Example::
 
       linkcheck_ignore = [r'http://localhost:\d+/']
+
+   .. versionadded:: 1.1
+
+.. confval:: linkcheck_timeout
+
+   A timeout value, in seconds, for the linkcheck builder.  **Only works in
+   Python 2.6 and higher.**  The default is to use Python's global socket
+   timeout.
+
+   .. versionadded:: 1.1
+
+.. confval:: linkcheck_workers
+
+   The number of worker threads to use when checking links.  Default is 5
+   threads.
 
    .. versionadded:: 1.1
 

@@ -5,7 +5,7 @@
 
     Quickly setup documentation source to work with Sphinx.
 
-    :copyright: Copyright 2007-2010 by the Sphinx team, see AUTHORS.
+    :copyright: Copyright 2007-2011 by the Sphinx team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
@@ -255,6 +255,9 @@ man_pages = [
      [u'%(author_str)s'], 1)
 ]
 
+# If true, show URL addresses after external links.
+#man_show_urls = False
+
 # -- Options for Texinfo output ------------------------------------------------
 
 # Grouping the document tree into Texinfo files. List of tuples
@@ -358,6 +361,8 @@ PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
 ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) \
 $(SPHINXOPTS) %(rsrcdir)s
+# the i18n builder cannot share the environment and doctrees with the others
+I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) %(rsrcdir)s
 
 .PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp \
 epub latex latexpdf text man changes linkcheck doctest gettext
@@ -480,7 +485,7 @@ info:
 \t@echo "makeinfo finished; the Info files are in $(BUILDDIR)/texinfo."
 
 gettext:
-\t$(SPHINXBUILD) -b gettext $(ALLSPHINXOPTS) $(BUILDDIR)/locale
+\t$(SPHINXBUILD) -b gettext $(I18NSPHINXOPTS) $(BUILDDIR)/locale
 \t@echo
 \t@echo "Build finished. The message catalogs are in $(BUILDDIR)/locale."
 
@@ -511,8 +516,10 @@ if "%%SPHINXBUILD%%" == "" (
 )
 set BUILDDIR=%(rbuilddir)s
 set ALLSPHINXOPTS=-d %%BUILDDIR%%/doctrees %%SPHINXOPTS%% %(rsrcdir)s
+set I18NSPHINXOPTS=%%SPHINXOPTS%% %(rsrcdir)s
 if NOT "%%PAPER%%" == "" (
 \tset ALLSPHINXOPTS=-D latex_paper_size=%%PAPER%% %%ALLSPHINXOPTS%%
+\tset I18NSPHINXOPTS=-D latex_paper_size=%%PAPER%% %%I18NSPHINXOPTS%%
 )
 
 if "%%1" == "" goto help
@@ -656,7 +663,7 @@ if "%%1" == "texinfo" (
 )
 
 if "%%1" == "gettext" (
-\t%%SPHINXBUILD%% -b gettext %%ALLSPHINXOPTS%% %%BUILDDIR%%/locale
+\t%%SPHINXBUILD%% -b gettext %%I18NSPHINXOPTS%% %%BUILDDIR%%/locale
 \tif errorlevel 1 exit /b 1
 \techo.
 \techo.Build finished. The message catalogs are in %%BUILDDIR%%/locale.
@@ -784,14 +791,24 @@ def inner_main(args):
     if not color_terminal():
         nocolor()
 
+    if len(args) > 3:
+        print 'Usage: sphinx-quickstart [root]'
+        sys.exit(1)
+    elif len(args) == 2:
+        d['path'] = args[1]
+
     print bold('Welcome to the Sphinx %s quickstart utility.') % __version__
     print '''
 Please enter values for the following settings (just press Enter to
 accept a default value, if one is given in brackets).'''
 
-    print '''
+    if 'path' in d:
+        print bold('''
+Selected root path: %s''' % d['path'])
+    else:
+        print '''
 Enter the root path for documentation.'''
-    do_prompt(d, 'path', 'Root path for the documentation', '.', is_path)
+        do_prompt(d, 'path', 'Root path for the documentation', '.', is_path)
 
     while path.isfile(path.join(d['path'], 'conf.py')) or \
           path.isfile(path.join(d['path'], 'source', 'conf.py')):
@@ -978,4 +995,3 @@ def main(argv=sys.argv):
         print
         print '[Interrupted.]'
         return
-

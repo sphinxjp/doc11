@@ -5,7 +5,7 @@
 
     Test the versioning implementation.
 
-    :copyright: Copyright 2007-2010 by the Sphinx team, see AUTHORS.
+    :copyright: Copyright 2007-2011 by the Sphinx team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 import pickle
@@ -17,6 +17,7 @@ from docutils.parsers.rst.directives.html import MetaBody
 
 from sphinx import addnodes
 from sphinx.versioning import add_uids, merge_doctrees, get_ratio
+from sphinx.util.pycompat import all
 
 def setup_module():
     global app, original, original_uids
