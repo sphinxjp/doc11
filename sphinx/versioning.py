@@ -6,14 +6,13 @@
     Implements the low-level algorithms Sphinx uses for the versioning of
     doctrees.
 
-    :copyright: Copyright 2007-2010 by the Sphinx team, see AUTHORS.
+    :copyright: Copyright 2007-2011 by the Sphinx team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 from uuid import uuid4
 from operator import itemgetter
-from collections import defaultdict
 
-from sphinx.util.pycompat import product, zip_longest
+from sphinx.util.pycompat import product, zip_longest, all
 
 
 # anything below that ratio is considered equal/changed
@@ -49,7 +48,7 @@ def merge_doctrees(old, new, condition):
     new_iter = new.traverse(condition)
     old_nodes = []
     new_nodes = []
-    ratios = defaultdict(list)
+    ratios = {}
     seen = set()
     # compare the nodes each doctree in order
     for old_node, new_node in zip_longest(old_iter, new_iter):

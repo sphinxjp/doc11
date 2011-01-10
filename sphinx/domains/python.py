@@ -5,7 +5,7 @@
 
     The Python domain.
 
-    :copyright: Copyright 2007-2010 by the Sphinx team, see AUTHORS.
+    :copyright: Copyright 2007-2011 by the Sphinx team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
@@ -88,16 +88,19 @@ class PyObject(ObjectDescription):
     option_spec = {
         'noindex': directives.flag,
         'module': directives.unchanged,
+        'annotation': directives.unchanged,
     }
 
     doc_field_types = [
         TypedField('parameter', label=l_('Parameters'),
                    names=('param', 'parameter', 'arg', 'argument',
                           'keyword', 'kwarg', 'kwparam'),
-                   typerolename='obj', typenames=('paramtype', 'type')),
+                   typerolename='obj', typenames=('paramtype', 'type'),
+                   can_collapse=True),
         TypedField('variable', label=l_('Variables'), rolename='obj',
                    names=('var', 'ivar', 'cvar'),
-                   typerolename='obj', typenames=('vartype',)),
+                   typerolename='obj', typenames=('vartype',),
+                   can_collapse=True),
         GroupedField('exceptions', label=l_('Raises'), rolename='exc',
                      names=('raises', 'raise', 'exception', 'except'),
                      can_collapse=True),
@@ -178,6 +181,8 @@ class PyObject(ObjectDescription):
                 nodetext = modname + '.'
                 signode += addnodes.desc_addname(nodetext, nodetext)
 
+        anno = self.options.get('annotation')
+
         signode += addnodes.desc_name(name, name)
         if not arglist:
             if self.needs_arglist():
@@ -185,10 +190,15 @@ class PyObject(ObjectDescription):
                 signode += addnodes.desc_parameterlist()
             if retann:
                 signode += addnodes.desc_returns(retann, retann)
+            if anno:
+                signode += addnodes.desc_annotation(' ' + anno, ' ' + anno)
             return fullname, name_prefix
+
         _pseudo_parse_arglist(signode, arglist)
         if retann:
             signode += addnodes.desc_returns(retann, retann)
+        if anno:
+            signode += addnodes.desc_annotation(' ' + anno, ' ' + anno)
         return fullname, name_prefix
 
     def get_index_text(self, modname, name):
@@ -219,7 +229,7 @@ class PyObject(ObjectDescription):
         indextext = self.get_index_text(modname, name_cls)
         if indextext:
             self.indexnode['entries'].append(('single', indextext,
-                                              fullname, fullname))
+                                              fullname, ''))
 
     def before_content(self):
         # needed for automatic qualification of members (reset in subclasses)
@@ -355,6 +365,38 @@ class PyClassmember(PyObject):
             self.clsname_set = True
 
 
+class PyDecoratorMixin(object):
+    """
+    Mixin for decorator directives.
+    """
+    def handle_signature(self, sig, signode):
+        ret = super(PyDecoratorMixin, self).handle_signature(sig, signode)
+        signode.insert(0, addnodes.desc_addname('@', '@'))
+        return ret
+
+    def needs_arglist(self):
+        return False
+
+
+class PyDecoratorFunction(PyDecoratorMixin, PyModulelevel):
+    """
+    Directive to mark functions meant to be used as decorators.
+    """
+    def run(self):
+        # a decorator function is a function after all
+        self.name = 'py:function'
+        return PyModulelevel.run(self)
+
+
+class PyDecoratorMethod(PyDecoratorMixin, PyClassmember):
+    """
+    Directive to mark methods meant to be used as decorators.
+    """
+    def run(self):
+        self.name = 'py:method'
+        return PyClassmember.run(self)
+
+
 class PyModule(Directive):
     """
     Directive to mark description of a new module.
@@ -385,19 +427,12 @@ class PyModule(Directive):
         targetnode = nodes.target('', '', ids=['module-' + modname], ismod=True)
         self.state.document.note_explicit_target(targetnode)
         ret = [targetnode]
-        # XXX this behavior of the module directive is a mess...
-        if 'platform' in self.options:
-            platform = self.options['platform']
-            node = nodes.paragraph()
-            node += nodes.emphasis('', _('Platforms: '))
-            node += nodes.Text(platform, platform)
-            ret.append(node)
-        # the synopsis isn't printed; in fact, it is only used in the
-        # modindex currently
+        # the platform and synopsis aren't printed; in fact, they are only used
+        # in the modindex currently
         if not noindex:
             indextext = _('%s (module)') % modname
             inode = addnodes.index(entries=[('single', indextext,
-                                             'module-' + modname, modname)])
+                                             'module-' + modname, '')])
             ret.append(inode)
         return ret
 
@@ -532,16 +567,18 @@ class PythonDomain(Domain):
     }
 
     directives = {
-        'function':      PyModulelevel,
-        'data':          PyModulelevel,
-        'class':         PyClasslike,
-        'exception':     PyClasslike,
-        'method':        PyClassmember,
-        'classmethod':   PyClassmember,
-        'staticmethod':  PyClassmember,
-        'attribute':     PyClassmember,
-        'module':        PyModule,
-        'currentmodule': PyCurrentModule,
+        'function':        PyModulelevel,
+        'data':            PyModulelevel,
+        'class':           PyClasslike,
+        'exception':       PyClasslike,
+        'method':          PyClassmember,
+        'classmethod':     PyClassmember,
+        'staticmethod':    PyClassmember,
+        'attribute':       PyClassmember,
+        'module':          PyModule,
+        'currentmodule':   PyCurrentModule,
+        'decorator':       PyDecoratorFunction,
+        'decoratormethod': PyDecoratorMethod,
     }
     roles = {
         'data':  PyXRefRole(),
@@ -579,7 +616,7 @@ class PythonDomain(Domain):
             name = name[:-2]
 
         if not name:
-            return None, None
+            return []
 
         objects = self.data['objects']
         matches = []

@@ -5,7 +5,7 @@
 
     Set up math support in source files and LaTeX/text output.
 
-    :copyright: Copyright 2007-2010 by the Sphinx team, see AUTHORS.
+    :copyright: Copyright 2007-2011 by the Sphinx team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
 
@@ -70,6 +70,8 @@ class MathDirective(Directive):
         node['nowrap'] = 'nowrap' in self.options
         node['docname'] = self.state.document.settings.env.docname
         ret = [node]
+        node.line = self.lineno
+        node.source = self.src
         if node['label']:
             tnode = nodes.target('', '', ids=['equation-' + node['label']])
             self.state.document.note_explicit_target(tnode)
