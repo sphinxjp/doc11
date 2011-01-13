@@ -47,6 +47,25 @@
    :confval:`graphviz_output_format` を参照してください。
 
 
+   .. You can also embed external dot files, by giving the file name as an
+      argument to :rst:dir:`graphviz` and no additional content:
+
+   :rst:dir:`graphviz` ディレクティブの引数にファイル名を与えて、コンテンツを空にすることで、外部のdotファイルを埋め込むこともできます::
+
+      .. graphviz:: external.dot
+
+   .. As for all file references in Sphinx, if the filename is absolute, it is
+      taken as relative to the source directory.
+
+   Sphinx内の他のファイル参照と同様に、絶対パスのファイル名はソースディレクトリからの相対パスとして扱われます。
+
+   .. versionchanged:: 1.1
+
+      .. Added support for external files.
+
+      外部ファイルのサポートの追加
+
+
 .. rst:directive:: graph
 
    .. Directive for embedding a single undirected graph.  The name is given as a
@@ -88,6 +107,25 @@
 .. versionadded:: 1.0
 
    これらの3つのディレクティブのすべてで、 ``alt`` オプションが追加されました。これは、HTML出力時には画像の代替テキストとして使用されます。もし指定しない場合には、デフォルトでgraphvizのコードが代替テキストとして使用されます。
+
+
+.. versionadded:: 1.1
+
+   .. All three directives support an ``inline`` flag that controls paragraph
+      breaks in the output.  When set, the graph is inserted into the current
+      paragraph.  If the flag is not given, paragraph breaks are introduced before
+      and after the image (the default).
+
+   ここで紹介したすべてのディレクティブは、 ``inline`` フラグを持っていて、改パラグラフの調整ができます。これをセットすると、生成されたグラフは現在のパラグラフの中に挿入されます。もしこのフラグが設定されていない場合は、画像の前後でパラグラフが変わります(デフォルト)。
+
+.. versionadded:: 1.1
+
+   .. All three directives support a ``caption`` option that can be used to give a
+      caption to the diagram.  Naturally, diagrams marked as "inline" cannot have a
+      caption.
+
+   これらの3つのディレクティブはすべて ``caption`` オプションが使えるようになりました。図にキャプションを付けられますが、 ``inline`` が設定された場合にはキャプションを付けることはできません。
+
 
 .. There are also these new config values:
 

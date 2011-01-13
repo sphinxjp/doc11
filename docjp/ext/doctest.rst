@@ -75,6 +75,18 @@ doctest拡張は4つのディレクティブを提供します。 **グループ
    but executed before the doctests of the group(s) it belongs to.
 
 
+..
+    rst:directive:: .. testcleanup:: [group]
+
+.. rst:directive:: .. testcleanup:: [グループ]
+
+   .. A cleanup code block.  This code is not shown in the output for other
+      builders, but executed after the doctests of the group(s) it belongs to.
+
+   片付けをするためのコードブロックです。このコードは他のビルダーを使用したときには出力されませんが、それが所属するグループのdoctestが実行された後に実行されます。
+
+   .. versionadded:: 1.1
+
 .. rst:directive:: .. doctest:: [グループ]
 
    doctestスタイルのコードブロックです。標準の :mod:`docteset` のフラグを使用すると、ユーザが指定した理想の出力と、実際に出力したものをどのように比較するのか、というのを制御することができます。以下のオプションが使用できます:
@@ -268,20 +280,33 @@ doctest拡張の動作をカスタマイズする設定がいくつかありま�
 
 .. confval:: doctest_path
 
+   .. A list of directories that will be added to :data:`sys.path` when the doctest
+      builder is used.  (Make sure it contains absolute paths.)
+
    doctestビルダーが使用されるときに、 :data:`sys.path` に対して追加されるディレクトリのリストです。必ず絶対パスで記述してください。
 
-.. A list of directories that will be added to :data:`sys.path` when the doctest
-   builder is used.  (Make sure it contains absolute paths.)
 
 .. confval:: doctest_global_setup
+
+   .. Python code that is treated like it were put in a ``testsetup`` directive for
+      *every* file that is tested, and for every group.  You can use this to
+      e.g. import modules you will always need in your doctests.
 
    Pythonコードを記述します。このコードはテストされる\ **すべての**\ ファイルの\ ``testsetup``\ ディレクティブに書き込んだのと同じように扱われます。例えば、doctest時にいつでも必要となるモジュールをimportするといった用途に使用できます。
 
    .. versionadded:: 0.6
 
-.. Python code that is treated like it were put in a ``testsetup`` directive for
-   *every* file that is tested, and for every group.  You can use this to
-   e.g. import modules you will always need in your doctests.
+
+.. confval:: doctest_global_cleanup
+
+   .. Python code that is treated like it were put in a ``testcleanup`` directive
+      for *every* file that is tested, and for every group.  You can use this to
+      e.g. remove any temporary files that the tests leave behind.
+
+   すべてのテストグループがテストを終了したあとに呼ばれる、 ``testcleanup`` ディレクティブを、すべてのファイルに作ります。この設定にはPythonのコードを書きます。すべてのテンポラリファイルを削除などの使い方ができます。
+
+   .. versionadded:: 1.1
+
 
 .. confval:: doctest_test_doctest_blocks
 

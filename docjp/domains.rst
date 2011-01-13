@@ -69,13 +69,27 @@ Sphinxドメイン
    flag ``:noindex:``.  An example using a Python domain directive:
 
 
-ほとんどのドメインは、いくつかの :dfn:`object description directives` を提供しています。これを使って、モジュールが提供する特定のオブジェクトについて説明をしていきます。それぞれのディレクティブでは、何について説明しているか、説明すべき内容などの基本情報のためのフォーマットや統一のルールを定めています。基本的なスタイルのディレクティブは、全体の索引に、説明対象へのリンクを追加しますが、もし索引に追加したくなければ、ディレクティブのオプションフラグに ``:noindex:`` を追加します。例えば、Pythonのドメインのディレクティブの場合には、次のようになります::
+ほとんどのドメインは、いくつかの :dfn:`object description directives` を提供しています。これを使って、モジュールが提供する特定のオブジェクトについて説明をしていきます。それぞれのディレクティブでは、何について説明しているか、説明すべき内容などの基本情報のためのフォーマットや統一のルールを定めています。基本的なスタイルのディレクティブは、全体の索引に、説明対象へのリンクを追加しますが、もし索引に追加したくなければ、ディレクティブのオプションフラグに ``:noindex:`` を追加します。例えば、Pythonのドメインのディレクティブの場合には、次のようになります。
 
    .. py:function:: spam(eggs)
                     ham(eggs)
+
+      Spam or ham the foo.
+
+.. This describes the two Python functions ``spam`` and ``ham``.  (Note that when
+   signatures become too long, you can break them if you add a backslash to lines
+   that are continued in the next line.  Example:
+
+ここでは、 ``spam`` と ``ham`` という2つのPython関数を説明しています。もしシグニチャが長すぎる場合には、バックスラッシュを使って引数リストの中で改行することができます::
+
+   .. py:function:: filterwarnings(action, message='', category=Warning, \
+                                   module='', lineno=0, append=False)
+
       :noindex:
   
-      Spam or ham the foo.
+.. (This example also shows how to use the ``:noindex:`` flag.)
+
+(このサンプルは、 ``:noindex:`` フラグの使い方でもあります)。
 
 .. The domains also provide roles that link back to these object descriptions.  For
    example, to link to one of the functions described in the example above, you
@@ -213,11 +227,12 @@ Pythonドメイン(**py**)では、モジュールの説明のために、次の
 .. rst:directive:: .. py:currentmodule:: 名前
 
    .. This directive tells Sphinx that the classes, functions etc. documented from
-      here are in the given module (like :rst:dir:`py:module`), but it will not create
-      index entries, an entry in the Global Module Index, or a link target for
-      :rst:role:`mod`.  This is helpful in situations where documentation for things in
-      a module is spread over multiple files or sections -- one location has the
-      :rst:dir:`py:module` directive, the others only :rst:dir:`py:currentmodule`.
+      here are in the given module (like :rst:dir:`py:module`), but it will not 
+      create index entries, an entry in the Global Module Index, or a link target 
+      for :rst:role:`mod`.  This is helpful in situations where documentation 
+      for things in a module is spread over multiple files or sections -- one 
+      location has the :rst:dir:`py:module` directive, the others only 
+      :rst:dir:`py:currentmodule`.
 
    このディレクティブはSphinxに対して、この行以降のクラスや関数などが、指定された与えられたモジュール (:rst:dir:`py:module` のように)の中にある、ということを通知します。これを使用しても、索引のエントリーは作成されません。 :rst:role:`mod` へのリンクターゲットも作成されません。このディレクティブは、モジュールに含まれる項目へのドキュメントが様々なファイルやセクションに分割されている場合に便利です。この場合には一カ所だけ :rst:dir:`py:module` ディレクティブを使用して、他の箇所で :rst:dir:`py:currentmodule` を使用するようにします。
 
@@ -360,6 +375,67 @@ Pythonドメイン(**py**)では、モジュールの説明のために、次の
    .. versionadded:: 0.6
 
 
+.. rst:directive:: .. py:decorator:: name
+                   .. py:decorator:: name(signature)
+
+   .. Describes a decorator function.  The signature should *not* represent the
+      signature of the actual function, but the usage as a decorator.  For example,
+      given the functions
+
+   デコレータ関数の説明を行います。シグネチャは、関数の実際のシグネチャではなく、デコレータを使用する時のシグネチャを指定します。例えば、次のような関数があったとします。
+
+   .. code-block:: python
+
+      def removename(func):
+          func.__name__ = ''
+          return func
+
+      def setnewname(name):
+          def decorator(func):
+              func.__name__ = name
+              return func
+          return decorator
+
+   .. the descriptions should look like this:
+
+   次のように説明を書くことが出来ます
+
+   .. 
+      .. py:decorator:: removename
+
+         Remove name of the decorated function.
+
+      .. py:decorator:: setnewname(name)
+
+         Set name of the decorated function to *name*.
+
+   ::
+      .. py:decorator:: removename
+
+         デコレートされた関数の名前を削除します。
+
+      .. py:decorator:: setnewname(name)
+  
+         デコレートされている関数の名前を **name** に設定します。
+
+   .. There is no ``py:deco`` role to link to a decorator that is marked up with
+      this directive; rather, use the :rst:role:`py:func` role.
+
+   これらに対応する、 ``py:deco`` といったロールはありません。代わりに、 :rst:role:`py:func` ロールを使用してください。
+
+
+.. rst:directive:: .. py:decoratormethod:: name
+                   .. py:decoratormethod:: name(signature)
+
+   .. Same as :rst:dir:`py:decorator`, but for decorators that are methods.
+
+   :rst:dir:`py:decorator` とほぼ同じですが、対象がメソッドになります。
+
+   .. Refer to a decorator method using the :rst:role:`py:meth` role.
+
+   このデコレータを指定したい場合には、 :rst:role:`py:meth` ロールを使います。   
+
+
 .. _signatures:
 
 Pythonシグニチャ
@@ -451,15 +527,6 @@ Pythonのオブジェクト説明のためのディレクティブの内側に�
       :rtype: 文字列のリスト
 
 
-.. It is also possible to combine parameter type and description, if the type is a
-   single word, like this::
-
-   :param integer limit: maximum number of stack frames to show
-
-型情報が一語で表せる場合には、属性の型と説明をひとつにまとめることもできます::
-
-   :param integer limit: 表示するスタックフレームの数の最大数
-
 .. This will render like this:
 
    .. py:function:: format_exception(etype, value, tb[, limit=None])
@@ -489,9 +556,20 @@ Pythonのオブジェクト説明のためのディレクティブの内側に�
       :type limit: 数値 or None
       :rtype: 文字列のリスト
 
+.. It is also possible to combine parameter type and description, if the type is a
+   single word, like this::
+
+   :param integer limit: maximum number of stack frames to show
+
+型情報が一語で表せる場合には、属性の型と説明をひとつにまとめることもできます::
+
+   :param integer limit: 表示するスタックフレームの数の最大数
+
 
 .. Cross-referencing Python objects
    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. _python-roles:
 
 Pythonオブジェクトのクロススリファンレス
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -588,6 +666,11 @@ Pythonオブジェクトのクロススリファンレス
 
 通常、これらのロールで使用される名前は、最初は修飾子なしで検索されます。次に現在のモジュール名を前に付けて検索されます。その次に現在のモジュール名とクラス名(あれば)を付けて検索されます。もし、ドットが先頭についた名前が指定された場合には、この探索順は逆になります。例えば、 :mod:`codecs` というPythonモジュールの定義の中で ``:py:func:`open``` が定義されると、常に組み込み関数を参照しますが、 ``:py:func:`.open``` と書かれると、 :func:`codecs.open` を参照するようになります。
 
+.. A similar heuristic is used to determine whether the name is an attribute of the
+   currently documented class.
+
+属性名が、現在のクラスのものかどうかを決定するのにも、同様の名前検索の仕組みが使用されます。
+
 .. Also, if the name is prefixed with a dot, and no exact match is found, the
    target is taken as a suffix and all object names with that suffix are
    searched.  For example, ``:py:meth:`.TarFile.close``` references the
@@ -597,11 +680,13 @@ Pythonオブジェクトのクロススリファンレス
 
 また、名前の前にドットがついていて、正確に一致するものがないと、ドットを外した名前を持つオブジェクトと、その名前を末尾に含むすべてのオブジェクトが検索されます。例えば、 ``:py:meth:`.TarFile.close``` という文字列は、現在のモジュールが ``tarfile`` でなかったとしても、 ``tarfile.TarFile.close()`` を見つけ出して参照します。もしも該当するオブジェクトが複数ある場合には、どれを参照すればいいのか一意に定まらないため、Sphinxは警告を出します。
 
-.. A similar heuristic is used to determine whether the name is an attribute of the
-   currently documented class.
+.. Note that you can combine the ``~`` and ``.`` prefixes:
+   ``:py:meth:`~.TarFile.close``` will reference the ``tarfile.TarFile.close()``
+   method, but the visible link caption will only be ``close()``.
 
-属性名が、現在のクラスのものかどうかを決定するのにも、同様の名前検索の仕組みが使用されます。
+``~`` と ``.`` をオブジェクトの識別子の前に組み合わせることができます。 ``:py:meth:`~.TarFile.close``` と指定されると、 ``tarfile.TarFile.close()`` が参照されますが、実際に文章中に表示されるのは、 ``close()`` となります。
 
+.. _c-roles:
 
 .. The C Domain
    ------------
@@ -851,6 +936,8 @@ C++ドメインは(**cpp**)は、C++プロジェクトのドキュメント作�
    .. Select the current C++ namespace for the following objects.
 
    ドキュメントの中で、この行以降で説明するオブジェクトが所属するC++の名前空間を選択します。
+
+.. _cpp-roles:
 
 .. These roles link to the given object types:
 
@@ -1245,6 +1332,8 @@ reStructuredTextドメイン(**rst**)は、次のようなディレクティブ�
          Foo description.
 
 .. These roles are provided to refer to the described objects:
+
+.. _rst-roles::
 
 説明したオブジェクトを参照するために、次のようなロールが提供されます:
 

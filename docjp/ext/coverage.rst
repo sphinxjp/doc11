@@ -39,3 +39,20 @@
 .. confval:: coverage_c_regexes
 
 .. confval:: coverage_ignore_c_items
+
+.. confval:: coverage_write_headline
+
+   .. Set to ``False`` to not write headlines.
+
+   もし ``False`` が設定されると、ヘッドラインを出力しなくなります。
+
+   .. versionadded:: 1.1
+
+.. confval:: coverage_skip_undoc_in_source
+
+   .. Skip objects that are not documented in the source with a docstring.
+      ``False`` by default.
+
+   docstringが書かれておらず、ソースにドキュメントがないオブジェクトはスキップします。デフォルトは ``False`` です。
+
+   .. versionadded:: 1.1

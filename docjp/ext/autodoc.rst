@@ -25,6 +25,7 @@
 この拡張機能は、docstringでドキュメントが書かれているモジュールをインポートして、そのdocstringから、半自動的にドキュメントを取り込みます。
 
 .. note
+
    For Sphinx (actually, the Python interpreter that executes Sphinx) to find
    your module, it must be importable.  That means that the module or the
    package must be in one of the directories on :data:`sys.path` -- adapt your
@@ -32,6 +33,7 @@
 
 
 .. note::
+
    Sphinx(実際にはSphinxを実行しているPythonインタプリタ)がモジュールを見つけられるためには、そのモジュールはインポート可能になっていなければなりません。これは、インポートしたいモジュールやパッケージが\ :data:`sys.path`\ で設定されているディレクトリのどれかに入っている必要があるということです。設定ファイル内で、適宜\ :data:`sys.path`\ を調整してください。
 
 .. For this to work, the docstrings must of course be written in correct
@@ -44,20 +46,22 @@
 この機能がうまく働くためには、docstringは正しいreStructuredTextのフォーマットに従って記述されている必要があります。また、すべてのSphinxのマークアップをdocstringの中に書くことができ、最終的に正しくドキュメンテーションされます。手書きのドキュメントと一緒にモジュールのドキュメントを作成する場合には、純粋なAPIのドキュメントを同時に自動生成できるため、この機能を使うと両方を同時に管理しなければならないという痛みを和らげることができます。
 
 .. :mod:`autodoc` provides several directives that are versions of the usual
-   :rst:dir:`module`, :rst:dir:`class` and so forth.  On parsing time, they import the
-   corresponding module and extract the docstring of the given objects, inserting
-   them into the page source under a suitable :rst:dir:`module`, :rst:dir:`class` etc.
-   directive.
+   :rst:dir:`py:module`, :rst:dir:`py:class` and so forth.  On parsing time, they 
+   import the corresponding module and extract the docstring of the given objects, 
+   inserting them into the page source under a suitable :rst:dir:`py:module`, 
+   :rst:dir:`py:class` etc.  directive.
 
-:mod:`autodoc`は通常の\ :rst:dir:`module`, :rst:dir:`class`\ などのディレクティブに似た別バージョンのディレクティブを提供します。ドキュメントのパース時に指定されたモジュールを読み込んで、docstringを抽出して、その内容を通常の\ :rst:dir:`module`, :rst:dir:`class`\ ディレクティブと一緒に差込みます。
+:mod:`autodoc`は通常の\ :rst:dir:`py:module`, :rst:dir:`py:class`\ などのディレクティブに似た別バージョンのディレクティブを提供します。ドキュメントのパース時に指定されたモジュールを読み込んで、docstringを抽出して、その内容を通常の\ :rst:dir:`py:module`, :rst:dir:`py:class`\ ディレクティブと一緒に差込みます。
 
 .. note
-   Just as :rst:dir:`class` respects the current :rst:dir:`module`, :rst:dir:`autoclass`
-   will also do so, and likewise with :rst:dir:`method` and :rst:dir:`class`.
+
+   Just as :rst:dir:`py:class` respects the current :rst:dir:`py:module`, 
+   :rst:dir:`autoclass` will also do so. Likewise with :rst:dir:`automethod` will
+   respect the current :rst:dir:`class`.
 
 .. note::
 
-   :rst:dir:`class`\ を宣言したときに、既に定義されている\ :rst:dir:`module`\ の中に配置されるのと同様に、\ :rst:dir:`autoclass`\ も同じように振舞います。\ :rst:dir:`method`\  と\ :rst:dir:`class`\ についても同様です。
+   :rst:dir:`py:class`\ を宣言したときに、既に定義されている\ :rst:dir:`py:module`\ の中に配置されるのと同様に、\ :rst:dir:`autoclass`\ も同じように振舞います。\ :rst:dir:`automethod`\  と\ :rst:dir:`py:class`\ についても同様です。
 
 
 .. rst:directive:: automodule
@@ -126,6 +130,9 @@
         will document all non-private member functions and properties (that is,
         those whose name doesn't start with ``_``).
 
+        For modules, ``__all__`` will be respected when looking for members; the
+        order of the members will also be the order in ``__all__``.
+
         You can also give an explicit list of members; only these will then be
         documented::
 
@@ -144,15 +151,17 @@
 
      これをビルドすると、すべての非プライベートの関数とプロパティ(名前が\ ``_``\ 以外から始まる)のドキュメントが取り込まれます。
 
+     モジュールに関しては、もしあればメンバーを探すのに ``__all__`` が利用されます。出力されるメンバーの順序も、 ``__all__`` の順序になります。
+
      また、ドキュメントを出力したいメンバーのリストを明示的に書くと、それらの指定されたメンバーのドキュメントが生成されます::
 
         .. autoclass:: Noodle
            :members: eat, slurp
 
-   .. * If you want to make the ``members`` option the default, see
-        :confval:`autodoc_default_flags`.
+   .. * If you want to make the ``members`` option (or other flag options described
+        below) the default, see :confval:`autodoc_default_flags`.
 
-   * もしも、デフォルトでmembersオプションを有効にしたい場合には、 :confval:`autodoc_default_flags` を参照してください。
+   * もしも、デフォルトで ``members`` オプション(や、これから説明する他のオプション)を有効にしたい場合には、 :confval:`autodoc_default_flags` を参照してください。
 
    .. * Members without docstrings will be left out, unless you give the
         ``undoc-members`` flag option::
@@ -163,9 +172,39 @@
            :members:
            :undoc-members:
 
+
+   .. * "Private" members (that is, those named like ``_private`` or ``__private``)
+        will be included if the ``private-members`` flag option is given.
+
+   * "プライベート"メンバー (``_private`` や ``__private`` といった名前を持つ)は、 ``private-members`` フラグをセットすると含まれるようになります。
+
+     .. versionadded:: 1.1
+
+   .. * Python "special" members (that is, those named like ``__special__``) will
+        be included if the ``special-members`` flag option is given:
+
+        .. autoclass:: my.Class
+           :members:
+           :private-members:
+           :special-members:
+
+        would document both "private" and "special" members of the class.
+
+   * Pythonの"特殊メンバー" (``__special__`` のような名前)は、 ``special-members`` フラグをセットすると、含まれるようになります::
+
+        .. autoclass:: my.Class
+           :members:
+           :private-members:
+           :special-members:
+
+        このようにセットすると、クラスのプライベートメンバー、特殊メンバーの両方が出力されるようになります。
+
+     .. versionadded:: 1.1
+
+
    .. * For classes and exceptions, members inherited from base classes will be
-        left out, unless you give the ``inherited-members`` flag option, in
-        addition to ``members``::
+        left out when documenting all members, unless you give the 
+        ``inherited-members`` flag option, in addition to ``members``::
 
            .. autoclass:: Noodle
               :members:
@@ -177,7 +216,7 @@
         Note: this will lead to markup errors if the inherited members come from a
         module whose docstrings are not reST formatted.
 
-   * クラスと例外で、\ ``members``\ と一緒に\ ``inherited-members``\ フラグオプションが指定されていない場合には、ベースクラスで定義されているメンバーは省略されます。を指定しないと、docstringの付いていないメンバーは省略されます::
+   * クラスと例外で、\ ``members``\ と一緒に\ ``inherited-members``\ フラグオプションが指定されていない場合には、例えすべてのメンバーにドキュメントが書かれていたとしても、ベースクラスで定義されているメンバーは省略されます。を指定しないと、docstringの付いていないメンバーは省略されます::
 
         .. autoclass:: Noodle
            :members:
@@ -209,37 +248,38 @@
 
      .. versionadded:: 0.4
 
-   .. * The :rst:dir:`automodule`, :rst:dir:`autoclass` and :rst:dir:`autoexception` directives
-        also support a flag option called ``show-inheritance``.  When given, a list
-        of base classes will be inserted just below the class signature (when used
-        with :rst:dir:`automodule`, this will be inserted for every class that is
-        documented in the module).
+   .. * The :rst:dir:`automodule`, :rst:dir:`autoclass` and 
+        :rst:dir:`autoexception` directives also support a flag option called 
+        ``show-inheritance``.  When given, a list of base classes will be inserted 
+        just below the class signature (when used with :rst:dir:`automodule`, this 
+        will be inserted for every class that is documented in the module).
 
         .. versionadded:: 0.4
 
    * :rst:dir:`automodule`\ と、\ :rst:dir:`autocalss`\ 、\ :rst:dir:`autoexception`\ ディレクティブは\ ``show-inheritance``\ というオプションをサポートしています。これが設定されると、クラスのシグニチャの直前に、継承しているベースクラスのリストが表示されるようになります。\ :rst:dir:`automodule`\ に対して使用されると、モジュール内でドキュメントが記述されているすべてのクラスのベースクラスが表示されるようになります。
 
    .. * All autodoc directives support the ``noindex`` flag option that has the
-        same effect as for standard :rst:dir:`function` etc. directives: no index
-        entries are generated for the documented object (and all autodocumented
-        members).
+        same effect as for standard :rst:dir:`py:function` etc. directives: no 
+        index entries are generated for the documented object (and all 
+        autodocumented members).
 
         .. versionadded:: 0.4
 
-   * autodocのすべてのディレクティブは\ ``noindex``\ というフラグオプションをサポートしています。これは標準の\ :rst:dir:`function`\ などと同様の効果があります。ドキュメントが生成されるオブジェクトと、それに含まれるメンバーに対する索引が生成されなくなります。
+   * autodocのすべてのディレクティブは\ ``noindex``\ というフラグオプションをサポートしています。これは標準の\ :rst:dir:`py:function`\ などと同様の効果があります。ドキュメントが生成されるオブジェクトと、それに含まれるメンバーに対する索引が生成されなくなります。
 
      .. versionadded:: 0.4
 
    .. * :rst:dir:`automodule` also recognizes the ``synopsis``, ``platform`` and
-        ``deprecated`` options that the standard :rst:dir:`module` directive supports.
+        ``deprecated`` options that the standard :rst:dir:`py:module` directive 
+        supports.
 
-   * :rst:dir:`automodule`\ は標準の\ :rst:dir:`module`\ ディレクティブがサポートしている\ ``synopsis``, ``platform``, ``deprecated``\ オプションをサポートしています。
+   * :rst:dir:`automodule`\ は標準の\ :rst:dir:`py:module`\ ディレクティブがサポートしている\ ``synopsis``, ``platform``, ``deprecated``\ オプションをサポートしています。
 
      .. versionadded:: 0.5
 
-   .. * :rst:dir:`automodule` and :rst:dir:`autoclass` also has an ``member-order`` option
-     that can be used to override the global value of
-     :confval:`autodoc_member_order` for one directive.
+   .. * :rst:dir:`automodule` and :rst:dir:`autoclass` also has an ``member-order`` 
+        option that can be used to override the global value of
+        :confval:`autodoc_member_order` for one directive.
 
    * :rst:dir:`automodule`\ と\ :rst:dir:`autoclass`\ は\ ``member-order``\ というオプションを持っています。これを設定すると、このディレクティブの中でのみグローバルな\ :confval:`autodoc_member_order`\ という設定をオーバーライドすることができます。
 
@@ -281,27 +321,42 @@
    .. For module data members and class attributes, documentation can either be put
       into a special-formatted comment *before* the attribute definition, or in a
       docstring *after* the definition.  This means that in the following class
-      definition, both attributes can be autodocumented::
+      definition, all attributes can be autodocumented::
 
       class Foo:
           """Docstring for class Foo."""
 
-          #: Doc comment for attribute Foo.bar.
+          #: Doc comment for class attribute Foo.bar.
           bar = 1
 
           baz = 2
-          """Docstring for attribute Foo.baz."""
+          """Docstring for class attribute Foo.baz."""
+
+          def __init__(self):
+              #: Doc comment for instance attribute qux.
+              self.qux = 3
+
+              self.spam = 4
+              """Docstring for instance attribute spam."""
 
    モジュールのデータメンバーとクラスの属性は、属性定義の\ **前の**\ 行の特別な書式のコメント、もしくは、定義の\ **後の**\ docstringのドキュメントのどちらかを参照してドキュメントを生成します。そのため、以下のサンプルではどちらの属性もドキュメントが生成されます::
 
       class Foo:
           """Fooクラスに関するdocstring"""
 
-          #: Foo.bar属性に関するdocコメント
+          #: Foo.barクラス属性に関するdocコメント
           bar = 1
 
           baz = 2
-          """Foo.baz属性に関するdocstring"""
+          """Foo.bazクラス属性に関するdocstring"""
+
+          def __init__(self):
+              #: インスタンス属性quxに関するdocコメント
+              self.qux = 3
+
+              self.spam = 4
+              """インスタンス属性spamに関するdocstring"""
+
 
    ..
       .. versionchanged:: 0.6
@@ -342,8 +397,8 @@ autodoc拡張には、新しい設定値がいくつかあります。
 
    .. ``"class"``
          Only the class' docstring is inserted.  This is the default.  You can
-         still document ``__init__`` as a separate method using :rst:dir:`automethod`
-         or the ``members`` option to :rst:dir:`autoclass`.
+         still document ``__init__`` as a separate method using 
+         :rst:dir:`automethod` or the ``members`` option to :rst:dir:`autoclass`.
       ``"both"``
          Both the class' and the ``__init__`` method's docstring are concatenated
          and inserted.
@@ -388,10 +443,10 @@ autodoc拡張には、新しい設定値がいくつかあります。
 
    .. This value is a list of autodoc directive flags that should be automatically
       applied to all autodoc directives.  The supported flags are ``'members'``,
-      ``'undoc-members'``, ``'inherited-members'`` and ``'show-inheritance'``.
+      ``'undoc-members'``, ``'private-members'``, ``'special-members'``, 
+      ``'inherited-members'`` and ``'show-inheritance'``.
 
-   この値には、すべてのautodocディレクティブに対して、自動で適用したいフラグのリストを設定します。設定できるフラグは、
-   ``'members'``, ``'undoc-members'``, ``'inherited-members'``, ``'show-inheritance'`` です。
+   この値には、すべてのautodocディレクティブに対して、自動で適用したいフラグのリストを設定します。設定できるフラグは、 ``'members'``, ``'undoc-members'``, ``'private-members'``, ``'special-members'``, ``'inherited-members'``, ``'show-inheritance'`` です。
 
    .. If you set one of these flags in this config value, you can use a negated
       form, :samp:`'no-{flag}'`, in an autodoc directive, to disable it once.
@@ -408,6 +463,26 @@ autodoc拡張には、新しい設定値がいくつかあります。
    このように記述すると、 ``:members:`` だけが指定されているという解釈がされます。
 
    .. versionadded:: 1.0
+
+
+.. confval:: autodoc_docstring_signature
+
+   .. Functions imported from C modules cannot be introspected, and therefore the
+      signature for such functions cannot be automatically determined.  However, it
+      is an often-used convention to put the signature into the first line of the
+      function's docstring.
+
+   Cモジュールからインポートされた関数は、情報を取得することができないため、これらの関数に関するシグニチャを自動的に決定することはできません。しかし、これを使用すると、これらの関数のdocstringの最初の行に、これらの関数のシグニチャを入れることができます。
+
+   .. If this boolean value is set to ``True`` (which is the default), autodoc will
+      look at the first line of the docstring for functions and methods, and if it
+      looks like a signature, use the line as the signature and remove it from the
+      docstring content.
+
+   もしこの設定を ``True`` (デフォルト)にすると、autodocは関数やメソッドのdocstringの最初の行を見て、もしシグニチャのような情報が書かれていたら、その行をシグニチャとして読み込み、docstringからはその行の内容を削除して扱います。
+
+   .. versionadded:: 1.1
+
 
 
 .. Docstring preprocessing
