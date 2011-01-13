@@ -114,11 +114,11 @@
 
    .. Node visitor functions for the Sphinx HTML, LaTeX, text and manpage writers
       can be given as keyword arguments: the keyword must be one or more of
-      ``'html'``, ``'latex'``, ``'text'``, ``'man'``, the value a 2-tuple of
-      ``(visit, depart)`` methods.  ``depart`` can be ``None`` if the ``visit``
-      function raises :exc:`docutils.nodes.SkipNode`.  Example:
+      ``'html'``, ``'latex'``, ``'text'``, ``'man'``, ``'texinfo'``, the value a 
+      2-tuple of ``(visit, depart)`` methods.  ``depart`` can be ``None`` if the 
+      ``visit`` function raises :exc:`docutils.nodes.SkipNode`.  Example:
 
-   キーワード引数を使用することで、SphinxのHTMLや、LaTeX、テキスト、manページなど、出力形式ごとにノードのビジター関数を与えることができます。キーワードは ``'html'``, ``'latex'``, ``'text'``, ``'man'`` のうちの一つ以上で、値としては、ノードに入ったときと出力したときのメソッドをそれぞれ１つずつ含む２要素のタプルを指定します。 ``depart`` には、 ``None`` を指定可能ですが、この場合は、 ``visit`` 関数は :exc:`docutils.nodes.SkipNode` 例外を発生させます:
+   キーワード引数を使用することで、SphinxのHTMLや、LaTeX、テキスト、manページなど、出力形式ごとにノードのビジター関数を与えることができます。キーワードは ``'html'``, ``'latex'``, ``'text'``, ``'man'``, ``'texinfo'`` のうちの一つ以上で、値としては、ノードに入ったときと出力したときのメソッドをそれぞれ１つずつ含む２要素のタプルを指定します。 ``depart`` には、 ``None`` を指定可能ですが、この場合は、 ``visit`` 関数は :exc:`docutils.nodes.SkipNode` 例外を発生させます:
 
    .. code-block:: python
 
@@ -235,7 +235,9 @@
 .. Register a Docutils role that does nothing but wrap its contents in the
    node given by *nodeclass*.
 
-.. method:: Sphinx.add_object_type(directivename, rolename, indextemplate='', parse_node=None, ref_nodeclass=None, objname='')
+.. method:: Sphinx.add_object_type(directivename, rolename, indextemplate='', parse_node=None, \
+                                   ref_nodeclass=None, objname='', doc_field_types=[])
+
 
    .. This method is a very convenient way to add a new :term:`object` type that
       can be cross-referenced.  It will do this:
@@ -314,9 +316,9 @@
    ロールの中身に関しては、標準のSphinxのロールと同じ構文を使用することができます(:ref:`xref-syntax` 参照)。
 
    .. This method is also available under the deprecated alias
-      :meth:`add_description_unit`.
+      ``add_description_unit``.
 
-   このメソッドは旧名の　:meth:`add_description_unit` という名前でも呼び出すことができます。
+   このメソッドは旧名の　``add_description_unit`` という名前でも呼び出すことができます。
 
 
 .. method:: Sphinx.add_crossref_type(directivename, rolename, indextemplate='', ref_nodeclass=None, objname='')
@@ -376,9 +378,11 @@
 
    .. Add *filename* to the list of JavaScript files that the default HTML template
       will include.  The filename must be relative to the HTML static path, see
-      :confval:`the docs for the config value <html_static_path>`.
+      :confval:`the docs for the config value <html_static_path>`. A full URI with
+      scheme, like ``http://example.org/foo.js``, is also supported.
 
-   JavaScriptのファイルのリストに、指定された *filename* のファイルを追加します。ここで指定されたファイルは、デフォルトのHTMLテンプレートの中にインクルードされます。ファイル名はHTMLの静的パスへの相対パスでなければなりません。詳しくは :confval:`設定値のドキュメント <html_static_path>` を参照してください。
+
+   JavaScriptのファイルのリストに、指定された *filename* のファイルを追加します。ここで指定されたファイルは、デフォルトのHTMLテンプレートの中にインクルードされます。ファイル名はHTMLの静的パスへの相対パスでなければなりません。詳しくは :confval:`設定値のドキュメント <html_static_path>` を参照してください。 ``http://example.org/foo.js`` といった完全なURIのスキームもサポートされています。
 
    .. versionadded:: 0.5
 
@@ -411,6 +415,8 @@
       This allows to auto-document new types of objects.  See the source of the
       autodoc module for examples on how to subclass :class:`Documenter`.
 
+      .. XXX add real docs for Documenter and subclassing
+
    :mod:`sphinx.ext.autodoc` 拡張のための新しいドキュメンタークラスとして、 *cls* クラスを追加します。この引数は :class:`sphinx.ext.autodoc.Documenter` のサブクラスでなければなりません。これによって、新しいタイプのオブジェクトの自動ドキュメントが可能になります。どのように :class:`Documenter` のサブクラスを作ればいいのか、というサンプルを参照したい場合には、autodocモジュールのソースコードを参照してください。
 
    .. versionadded:: 0.6
@@ -426,6 +432,18 @@
    組み込みの :func:`getattr` 関数と互換性のあるインタフェースを持つ、 **getter** 関数を追加します。これは **type** 型のインスタンスのオブジェクトから、自動的に属性を取得してドキュメントを作成するのに使用されます。autodocが型の属性を取得する必要がある場面では、標準の :func:`getattr` 関数の代わりに、ここで指定された関数が呼ばれます。
 
    .. versionadded:: 0.6
+
+
+.. method:: Sphinx.add_search_language(cls)
+
+   .. Add *cls*, which must be a subclass of :class:`sphinx.search.SearchLanguage`,
+      as a support language for building the HTML full-text search index.  The
+      class must have a *lang* attribute that indicates the language it should be
+      used for.  See :confval:`html_search_language`.
+
+   言語ごとに、HTMLの全文検索インデックスを構築する、 :class:`sphinx.search.SearchLanguage` クラスのサブクラスを追加します。このクラスにはどの言語から使われるのかを表す、 **lang** 属性を持たせる必要があります。詳しくは、 :confval:`html_search_language` を参照してください。
+
+   .. versionadded:: 1.1
 
 
 .. method:: Sphinx.connect(event, callback)
@@ -511,6 +529,18 @@ Sphinxコアイベント
 
 .. Emitted when the builder object has been created.  It is available as
    ``app.builder``.
+
+.. event:: env-get-outdated (app, env, added, changed, removed)
+
+   .. Emitted when the environment determines which source files have changed and
+      should be re-read.  *added*, *changed* and *removed* are sets of docnames
+      that the environment has determined.  You can return a list of docnames to
+      re-read in addition to these.
+
+   ソースファイルが変更されたりして、再読み込みする必要がある場合に発光されます。 **added**, **changed**, **removed** には、ドキュメント名のセットです。さらに追加で読み込み直すべきドキュメントのリストを返すことができます。
+
+   .. versionadded:: 1.1
+
 
 .. event:: env-purge-doc (app, env, docname)
 

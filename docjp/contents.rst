@@ -17,9 +17,11 @@ Sphinxドキュメント
    domains
    builders
    config
+   intl
    theming
    templating
    extensions
+   websupport
 
    faq
    glossary

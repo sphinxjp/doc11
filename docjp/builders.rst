@@ -421,17 +421,17 @@
 
 すべてのシリアライズを行うビルダーは、ソースファイル１つごとに対応するファイルと、いくつかの特殊なファイルを出力します。また、reST形式のソースファイルは、出力ディレクトリ内の ``_sources`` ディレクトリ内にコピーされます。
 
-.. The :class:`PickleHTMLBuilder` is a builtin subclass that implements the pickle
+.. The :class:`.PickleHTMLBuilder` is a builtin subclass that implements the pickle
    serialization interface.
 
-:class:`PickleHTMLBuilder` クラスは組み込みのサブクラスで、pickleでシリアライズを行うインタフェースを実装しています。
+:class:`.PickleHTMLBuilder` クラスは組み込みのサブクラスで、pickleでシリアライズを行うインタフェースを実装しています。
 
 .. The files per source file have the extensions of
-   :attr:`~SerializingHTMLBuilder.out_suffix`, and are arranged in directories
+   :attr:`~.SerializingHTMLBuilder.out_suffix`, and are arranged in directories
    just as the source files are.  They unserialize to a dictionary (or dictionary
    like structure) with these keys:
 
-ソースファイルごとに出力されるファイルは :attr:`~SerializingHTMLBuilder.out_suffix` で指定された拡張子を持ち、ソースファイルと同様のディレクトリ構成で書き出されます。これらのファイルは以下のようなキーを持つ辞書、あるいは辞書のようなオブジェクトとして復元することが可能です。
+ソースファイルごとに出力されるファイルは :attr:`~.SerializingHTMLBuilder.out_suffix` で指定された拡張子を持ち、ソースファイルと同様のディレクトリ構成で書き出されます。これらのファイルは以下のようなキーを持つ辞書、あるいは辞書のようなオブジェクトとして復元することが可能です。
 
 ``body``
    HTMLの本体が格納されています。HTMLトランスレータを利用してレンダリングされたものになります。
@@ -482,7 +482,7 @@
 
 出力ディレクトリのルートには、以下の特殊なファイルが配置されます:
 
-:attr:`SerializingHTMLBuilder.globalcontext_filename`
+:attr:`.SerializingHTMLBuilder.globalcontext_filename`
    pickleでシリアライズされた辞書です。以下のキーを持っています:
 
    ``project``, ``copyright``, ``release``, ``version``
@@ -518,7 +518,7 @@
    ``titles``
       A dictionary of all documents' titles, as HTML strings.
 
-:attr:`SerializingHTMLBuilder.searchindex_filename`
+:attr:`.SerializingHTMLBuilder.searchindex_filename`
    ドキュメントの検索で使用されるインデックスになります。以下のエントリーを含む、pickleでシリアライズされたエントリーのリストになります。
 
    * インデックスが作成されたドキュメント名のリストです。

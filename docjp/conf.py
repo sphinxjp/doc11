@@ -13,7 +13,7 @@ templates_path = ['_templates']
 exclude_patterns = ['_build']
 
 project = 'Sphinx'
-copyright = '2007-2010, Georg Brandl, Shibukawa Yoshiki(Japanese)'
+copyright = '2007-2011, Georg Brandl, Shibukawa Yoshiki(Japanese)'
 version = sphinx.__released__
 release = version
 show_authors = True
@@ -22,7 +22,6 @@ show_authors = True
 html_theme = 'sphinxdoc'
 modindex_common_prefix = ['sphinx.']
 html_static_path = ['_static']
-html_index = 'index.html'
 html_sidebars = {'index': ['indexsidebar.html', 'searchbox.html']}
 html_additional_pages = {'index': 'index.html'}
 html_use_opensearch = 'http://sphinx.pocoo.org'
@@ -56,6 +55,7 @@ latex_elements = {
   "papersize": "a4paper",
   "pointsize": "12pt",
 }
+latex_show_urls = 'footnote'
 
 
 autodoc_member_order = 'groupwise'
@@ -75,6 +75,16 @@ man_pages = [
     ('man/sphinx-quickstart', 'sphinx-quickstart', 'Sphinx documentation '
      'template generator', '', 1),
 ]
+
+texinfo_documents = [
+    ('contents', 'sphinx', 'Sphinx Documentation', 'Georg Brandl',
+     'Sphinx', 'The Sphinx documentation builder.', 'Documentation tools',
+     1),
+]
+
+# We're not using intersphinx right now, but if we did, this would be part of
+# the mapping:
+intersphinx_mapping = {'python': ('http://docs.python.org/dev', None)}
 
 
 # -- Extension interface -------------------------------------------------------
@@ -101,8 +111,12 @@ def parse_event(env, sig, signode):
 
 def setup(app):
     from sphinx.ext.autodoc import cut_lines
+    from sphinx.util.docfields import GroupedField
     app.connect('autodoc-process-docstring', cut_lines(4, what=['module']))
-    app.add_description_unit('confval', 'confval',
-                             objname='configuration value',
-                             indextemplate='pair: %s; configuration value')
-    app.add_description_unit('event', 'event', 'pair: %s; event', parse_event)
+    app.add_object_type('confval', 'confval',
+                        objname='configuration value',
+                        indextemplate='pair: %s; configuration value')
+    fdesc = GroupedField('parameter', label='Parameters',
+                         names=['param'], can_collapse=True)
+    app.add_object_type('event', 'event', 'pair: %s; event', parse_event,
+                        doc_field_types=[fdesc])
