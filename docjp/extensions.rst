@@ -75,19 +75,25 @@ Sphinx拡張はシンプルなPythonモジュールです。拡張機能がロ�
 サードパーティ製の拡張機能
 --------------------------
 
-.. There are several extensions that are not (yet) maintained in the Sphinx
-   distribution.  The `Wiki at BitBucket`_ maintains a list of those.
+.. You can find several extensions contributed by users in the `Sphinx Contrib`_
+   repository.  It is open for anyone who wants to maintain an extension
+   publicly; just send a short message asking for write permissions.
 
-Sphinxのディストリビューション内で(まだ)メンテナンスされていない拡張機能もいくつか存在します。
-`BitBucketのWiki`_ の中に、これらのリストがあります。
+多くのコントリビューターによる拡張機能を、 `Sphinx Contrib`_ リポジトリで見つけることができます。このリポジトリは、拡張機能をオープンな場でメンテナンスしたい人に公開しています。必要な方は、Georgまで書き込み権限の追加をお願いするメッセージを送ってください。
 
-.. If you write an extension that you think others will find useful, please write
-   to the project mailing list (`join here <http://groups.google.com/group/sphinx-dev>`_) and we'll find the
-   proper way of including or hosting it for the public.
+.. There are also several extensions hosted elsewhere.  The `Wiki at BitBucket`_
+   maintains a list of those.
+
+この場所以外にも、さまざまな拡張機能が公開されています。 `BitBucketのWiki`_ でこれらのリストを作成しています。
+
+.. If you write an extension that you think others will find useful or you think
+   should be included as a part of Sphinx, please write to the project mailing
+   list (`join here <http://groups.google.com/group/sphinx-dev>`_).
 
 もしも他の人から見て便利そうに見えると思えるような拡張機能を書いた場合には、プロジェクトのメーリングリスト(`ここから参加してください <http://groups.google.com/group/sphinx-dev>`_)に知らせてください。Sphinxに取り込まれたり、公開するためのホスティングの仕方について説明してもらえるでしょう。
 
 .. _BitBucketのWiki: http://www.bitbucket.org/birkenfeld/sphinx/wiki/Home
+.. _Sphinx Contrib: http://www.bitbucket.org/birkenfeld/sphinx-contrib
 
 
 .. Where to put your own extensions?

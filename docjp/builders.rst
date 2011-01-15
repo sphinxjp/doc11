@@ -232,7 +232,7 @@
       GNU project.  More information on Texinfo can be found at
       `<http://www.gnu.org/software/texinfo/>`_.
 
-   InfoフォーマットはGNU Emacsやターミナルベースの :program:`info` プログラムで使用される、オンラインヘルプシステムの基盤となっています。詳しくは、 :ref:`texinfo_faq` を参照してください。Texinfoフォーマットは、GNUプロジェクトの、公式なドキュメントシステムです。Texinfoについての詳細は、 `<http://www.gnu.org/software/texinfo/>`_ で見ることができます。 
+   InfoフォーマットはGNU Emacsやターミナルベースの :program:`info` プログラムで使用される、オンラインヘルプシステムの基盤となっています。詳しくは、 :ref:`texinfo-faq` を参照してください。Texinfoフォーマットは、GNUプロジェクトの、公式なドキュメントシステムです。Texinfoについての詳細は、 `<http://www.gnu.org/software/texinfo/>`_ で見ることができます。 
 
    .. Its name is ``texinfo``.
 
