@@ -26,13 +26,13 @@ HTMLでは、ネイティブでは数式の記法はサポートされていま�
 
 .. note::
 
-   :mod:`sphinx.ext.mathbase` は :confval:`extensions` の設定値に追加しないでください。追加するのは、これから説明を行う :mod:`sphinx.ext.pngmath` もしくは :mod:`sphinx.ext.jsmath` を設定してください。
+   .. :mod:`.mathbase` is not meant to be added to the :confval:`extensions` config 
+      value, instead, use either :mod:`sphinx.ext.pngmath` or 
+      :mod:`sphinx.ext.jsmath` as described below.
 
-.. .. note:
+   :mod:`.mathbase` は :confval:`extensions` の設定値に追加しないでください。追加するのは、これから説明を行う :mod:`sphinx.ext.pngmath` もしくは :mod:`sphinx.ext.jsmath` を設定してください。
 
-   :mod:`sphinx.ext.mathbase` is not meant to be added to the
-   :confval:`extensions` config value, instead, use either
-   :mod:`sphinx.ext.pngmath` or :mod:`sphinx.ext.jsmath` as described below.
+
 
 .. The input language for mathematics is LaTeX markup.  This is the de-facto
    standard for plain-text math notation and has the added advantage that no
@@ -40,9 +40,9 @@ HTMLでは、ネイティブでは数式の記法はサポートされていま�
 
 数式の入力言語としてはLaTeXのマークアップを利用します。これはプレーンテキストで数式を表現する記法としてはデファクトスタンダードになっています。また、LaTeX出力を行う場合には、変換をしないでそのまま利用できるというメリットもあります。
 
-.. :mod:`mathbase` defines these new markup elements:
+.. :mod:`.mathbase` defines these new markup elements:
 
-:mod:`mathbase` は以下の新しいマークアップの要素を定義しています:
+:mod:`.mathbase` は以下の新しいマークアップの要素を定義しています:
 
 .. rst:role:: math
 
@@ -276,6 +276,72 @@ HTMLでは、ネイティブでは数式の記法はサポートされていま�
    残念ながら、このオプションは、 `preview-latex package`_ がインストールされていなければ動作しません。そのため、デフォルトの値は ``False`` になっています。
 
 
+.. confval:: pngmath_add_tooltips
+
+   .. Default: true.  If false, do not add the LaTeX code as an "alt" attribute for
+      math images.
+
+   デフォルトはTrue。Falseの時は、画像の"alt"属性に、LaTeXのコードを埋め込みません。
+
+   .. versionadded:: 1.1
+
+
+.. :mod:`sphinx.ext.mathjax` -- Render math via JavaScript
+   -------------------------------------------------------
+
+:mod:`sphinx.ext.mathjax` -- JavaScriptを使った数式のレンダリング
+-----------------------------------------------------------------
+
+.. 
+   module:: sphinx.ext.mathjax
+   :synopsis: Render math using JavaScript via MathJax.
+
+.. module:: sphinx.ext.mathjax
+   :synopsis: MathJaxを使用して、JavaScriptで数式をレンダリング
+
+.. versionadded:: 1.1
+
+.. This extension puts math as-is into the HTML files.  The JavaScript package
+   MathJax_ is then loaded and transforms the LaTeX markup to readable math live in
+   the browser.
+
+この拡張機能は、HTMLの中に数式を埋め込みます。JavaScriptの MathJax_ パッケージは、ブラウザの中で、LaTeXのマークアップを読める数式に、動的に変換します。
+
+
+.. Because MathJax (and the necessary fonts) is very large, it is not included in
+   Sphinx.  You must install it yourself, and give Sphinx its path in this config
+   value:
+
+MathJax(と必要なフォント)はとても大きいため、これはSphinxには組み込まれていません。自分自身でインストールし、設定値を使ってSphinxにパスを教える必要があります。
+
+.. confval:: mathjax_path
+
+   .. The path to the JavaScript file to include in the HTML files in order to load
+      JSMath.  There is no default.
+
+   HTMLにJSMathをロードして読み込ませるための、JavaScriptファイルへのパスを設定します。デフォルト値はありません。
+
+   .. The path can be absolute or relative; if it is relative, it is relative to
+      the ``_static`` directory of the built docs.
+
+   パスは、絶対パスでも相対パスでも指定ができます。相対パスの場合、ビルドした出力の ``_static`` ディレクトリへのパスになっています。
+
+   .. For example, if you put JSMath into the static path of the Sphinx docs, this
+      value would be ``MathJax/MathJax.js``.  If you host more than one Sphinx
+      documentation set on one server, it is advisable to install MathJax in a
+      shared location.
+
+   もし、JSMathをSphinxドキュメントの静的なパスに入れた場合には、おそらく、 ``MathJax/MathJax.js`` という名前になります。もし、多くのSphinxドキュメントを1つのサーバで公開している場所であれば、MathJaxを共有の場所に置くことができます。
+
+   .. You can also give a full ``http://`` URL.  Kevin Dunn maintains a MathJax
+      installation on a public server, which he offers for use by development and
+      production servers:
+
+   完全な ``http://`` から始まるURLを指定することもできます。Kevin Dunnが自由に使えるMathJaxのメンテナンスをしてくれていて、開発中や商用のサーバからの利用を提案しています::
+
+      mathjax_path = 'http://mathjax.connectmv.com/MathJax.js'
+
+
 .. :mod:`sphinx.ext.jsmath` -- Render math via JavaScript
    ------------------------------------------------------
 
@@ -284,21 +350,14 @@ HTMLでは、ネイティブでは数式の記法はサポートされていま�
 
 
 .. module:: sphinx.ext.jsmath
-   :synopsis: JavaScriptを使った数式のレンダリング
+   :synopsis: JSMathによる、JavaScriptを使った数式のレンダリング
 
-.. :synopsis: Render math via JavaScript.
+.. :synopsis: Render math using JavaScript via JSMath.
 
-.. This extension puts math as-is into the HTML files.  
-   The JavaScript package jsMath_ is then loaded and transforms 
-   the LaTeX markup to readable math live in the browser.
+.. This extension works just as the MathJax extension does, but uses the older
+   package jsMath_.  It provides this config value:
 
-この拡張機能は、数式をそのままHTMLファイルに埋め込みます。JavaScriptのパッケージの jsMath_ がロードされ、LaTeXのマークアップが、ブラウザ上で動的に読める数式に変換します。
-
-.. Because jsMath (and the necessary fonts) is very large, it is not 
-   included in Sphinx.  You must install it yourself, and give Sphinx its 
-   path in this config value:
-
-jsMath(と必要なフォント)はかなり巨大です。そのため、Sphinxには含まれていません。自分でインストールを行い、設定値を使って、その置き場のパスをSphinxに知らせなければなりません:
+この拡張機能はMathJax拡張と同じように動作しますが、古い jsMath_ パッケージを利用します。この拡張機能には、次のような設定があります。
 
 .. confval:: jsmath_path
 
@@ -321,6 +380,7 @@ jsMath(と必要なフォント)はかなり巨大です。そのため、Sphinx
 
 
 .. _dvipng: http://savannah.nongnu.org/projects/dvipng/
+.. _MathJax: http://www.mathjax.org/
 .. _jsMath: http://www.math.union.edu/~dpvc/jsmath/
 .. _preview-latex package: http://www.gnu.org/software/auctex/preview-latex.html
 .. _AmSMath LaTeX パッケージ: http://www.ams.org/tex/amslatex.html

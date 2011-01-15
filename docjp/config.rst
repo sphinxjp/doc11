@@ -522,10 +522,10 @@
    .. versionadded:: 1.0
 
 
-.. _intl-options:
-
 .. Options for internationalization
    --------------------------------
+
+.. _intl-options:
 
 国際化のオプション
 ------------------

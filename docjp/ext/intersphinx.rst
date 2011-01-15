@@ -125,7 +125,8 @@ Sphinx間リンクを使用する場合には、 :confval:`extensions` 設定値
 
    Pythonの標準のライブラリドキュメントの中のモジュールやオブジェクトに対してリンクが張りたい場合には次のようにします::
 
-      intersphinx_mapping = {'python': ('http://docs.python.org/', None)}
+      intersphinx_mapping = {'python': ('http://docs.python.org/3.2', 
+                                        'python-inv.txt')}
 
    .. This will download the corresponding :file:`objects.inv` file from the
       Internet and generate links to the pages under the given URI.  The downloaded
@@ -144,15 +145,10 @@ Sphinx間リンクを使用する場合には、 :confval:`extensions` 設定値
 
    .. This will read the inventory from :file:`python-inv.txt` in the source
       directory, but still generate links to the pages under
-      ``http://docs.python.org/``.  It is up to you to update the inventory file as 
+      ``http://docs.python.org/3.2``.  It is up to you to update the inventory file as 
       new objects are added to the Python documentation.
 
    これを設定すると、ソースディレクトリの中の :file:`python-inv.txt` からインベントリー情報を読み込みますが、先ほどの例と同じように ``http://docs.python.org/`` 以下のページに対するリンクを作成します。もしもPythonのドキュメントに新しいオブジェクトが追加された場合には、自分でアップデートする必要があります。
-
-
-
-
-
 
 
 .. confval:: intersphinx_cache_limit
