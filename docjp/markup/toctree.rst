@@ -67,6 +67,10 @@ ReSTにはドキュメント間の連携をサポートする機能はありま�
    * ここで指定されたファイル群(intro, stringsなど)の項目も取り込んで目次を作成しています。最大の深さは2に指定されています。つまり、関連するドキュメントからトップの1階層分の項目を取得してきて目次に挿入しています。指定されたファイルに ``toctree`` ディレクティブがあればそれも利用されます。
    * Sphinxはこのディレクティブから、関連するドキュメントが ``intro``, ``strings`` という順番を持っていて、これらのファイルがライブラリインデックスの子供であるという情報を収集します。これらの情報を使って、"next chapter", "previous chapter", "parent chapter"というリンクが作成されます。
 
+   .. **Entries**
+
+   **エントリー**
+
    .. Document titles in the :rst:dir:`toctree` will be automatically read from the
       title of the referenced document. If that isn't what you want, you can
       specify an explicit title and target using a similar syntax to reST
@@ -98,10 +102,15 @@ ReSTにはドキュメント間の連携をサポートする機能はありま�
 
    また、ドキュメント名の代わりに、HTTPのURLを指定することで外部へのリンクを追加することもできます。
 
-   If you want to have section numbers even in HTML output, give the toctree a
-   ``numbered`` flag option.  For example:
+   .. 
+      **Section numbering**
 
-   もし、セクション番号をHTML出力に追加したい場合には、 ``numbered`` フラグオプションをtoctreeに追加します::
+   **セクションのナンバリング**
+
+   If you want to have section numbers even in HTML output, give the toctree a
+   ``numbered`` option.  For example:
+
+   もし、セクション番号をHTML出力に追加したい場合には、 ``numbered`` オプションをtoctreeに追加します::
 
       .. toctree::
          :numbered:
@@ -113,6 +122,15 @@ ReSTにはドキュメント間の連携をサポートする機能はありま�
       automatically numbered (don't give the ``numbered`` flag to those).
 
    ナンバリングは ``foo`` の見出しから開始されます。サブの目次のツリーに対しても自動的にナンバリングされています。サブの文章のtoctreeには ``numbered`` フラグが設定されていなくても自動的に処理が行われます。  
+
+   .. Numbering up to a specific depth is also possible, by giving the depth as a
+      numeric argument to ``numbered``.
+
+   特定の深さまでのナンバリングだけを行うこともできます。 ``numbered`` 引数に対して、数値で深さを指定してください。
+
+   .. **Additional options**
+
+   **追加のオプション**
 
    .. If you want only the titles of documents in the tree to show up, not other
       headings of the same level, you can use the ``titlesonly`` option:
@@ -182,24 +200,26 @@ ReSTにはドキュメント間の連携をサポートする機能はありま�
 
    "マスタードキュメント" (:confval:`master_doc` で指定します)はTOCツリー階層の"ルート"のドキュメントになります。これはドキュメントのメインページとして使うことができます。あるいは、``maxdepth``オプションを指定しない、完全な目次を作成することもできます。
 
-   .. .. versionchanged:: 0.3
-         Added "globbing" option.
-
    .. versionchanged:: 0.3
       "glob"オプションが追加されました
 
-   .. .. versionchanged:: 0.6
-         Added "numbered" and "hidden" options as well as external links and
-         support for "self" references.
+      .. Added "globbing" option.
 
    .. versionchanged:: 0.6
       "numbered"と"hidden"オプション、外部リンクのサポート、"self"参照が追加されました。
 
-   .. .. versionchanged:: 1.0
-         Added "titlesonly" option.
+      .. Added "numbered" and "hidden" options as well as external links and
+         support for "self" references.
 
    .. versionchanged:: 1.0
       "titlesonly" オプションが追加されました。
+      
+      .. Added "titlesonly" option.
+
+   .. versionchanged:: 1.1
+      "numbered" に数値の引数が追加されました。
+
+      .. Added numeric argument to "numbered".
 
 
 .. Special names
@@ -226,7 +246,7 @@ Sphinxはいくつかのドキュメント名を、自分で使用するため�
      :ref:`object descriptions <basic-domain-markup>`, and from :rst:dir:`index`
      directives.
 
-     The module index contains one entry per :rst:dir:`module` directive.
+     The Python module index contains one entry per :rst:dir:`py:module` directive.
 
      The search page contains a form that uses the generated JSON search index and
      JavaScript to full-text search the generated documents for search words; it

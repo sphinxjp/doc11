@@ -686,7 +686,6 @@ Pythonオブジェクトのクロススリファンレス
 
 ``~`` と ``.`` をオブジェクトの識別子の前に組み合わせることができます。 ``:py:meth:`~.TarFile.close``` と指定されると、 ``tarfile.TarFile.close()`` が参照されますが、実際に文章中に表示されるのは、 ``close()`` となります。
 
-.. _c-roles:
 
 .. The C Domain
    ------------
@@ -779,6 +778,8 @@ C言語ドメイン(**c**)はC言語のAPIのドキュメントを書くのに�
 
 .. Cross-referencing C constructs
    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. _c-roles:
 
 C言語の要素へのクロスリファレンス
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1232,6 +1233,8 @@ JavaScriptドメイン(**js**)は次のようなディレクティブを提供�
 
 .. These roles are provided to refer to the described objects:
 
+.. _js-roles:
+
 このドメインでは、オブジェクトの説明を参照する、次のようなロールが提供されています:
 
 .. rst:role:: js:func
@@ -1333,7 +1336,7 @@ reStructuredTextドメイン(**rst**)は、次のようなディレクティブ�
 
 .. These roles are provided to refer to the described objects:
 
-.. _rst-roles::
+.. _rst-roles:
 
 説明したオブジェクトを参照するために、次のようなロールが提供されます:
 
