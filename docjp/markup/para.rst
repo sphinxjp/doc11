@@ -45,32 +45,35 @@
    noteよりも重要な情報があり、APIを使用する際に、気をつけなければならない警告情報をユーザに伝えるために使用するのに適しています。このディレクティブの中身には、適切に句読点が付いた、完全な文章を書くべきです。 :rst:dir:`note` との違いで言えば、セキュリティに関する情報は :rst:dir:`note` よりもこのディレクティブを使用する方が良いでしょう。
 
 
-.. .. rst:directive:: .. versionadded:: version
-
-..   This directive documents the version of the project which added the described feature to the library or C API. When this applies to an entire module, it should be placed at the top of the module section before any prose.
-
-..   The first argument must be given and is the version in question; you can add a second argument consisting of a *brief* explanation of the change.
-
-
-..   Example
-
-..      .. versionadded:: 2.5
-..         The `spam` parameter.
-
-..   Note that there must be no blank line between the directive head and the explanation; this is to make these blocks visually continuous in the markup.
+.. 
+   .. rst:directive:: .. versionadded:: version
 
 .. rst:directive:: .. versionadded:: バージョン
 
+   .. This directive documents the version of the project which added the 
+      described feature to the library or C API. When this applies to an 
+      entire module, it should be placed at the top of the module section 
+      before any prose.
+
    このディレクティブは説明している機能がライブラリ、もしくはC APIに追加された時のプロジェクトのバージョンについて記述するのに使用します。このディレクティブがモジュール全体に対して適用する場合には、モジュールセクションの先頭の、文章が始まる前の位置に置くべきです。
+
+   .. The first argument must be given and is the version in question; you 
+      can add a second argument consisting of a *brief* explanation of the change.
 
    最初の引数は必須で、バージョン番号を書く必要があります。2番目の引数も追加することができ、変化に対する *短い* 説明を書くことができます。
 
-..   Example
+   .. Example
+      .. versionadded:: 2.5
+         The *spam* parameter.
 
    サンプル::
 
       .. versionadded:: 2.5
-         `spam` パラメータ
+         *spam* パラメータ
+
+   .. Note that there must be no blank line between the directive head and 
+      the explanation; this is to make these blocks visually continuous in 
+      the markup.
 
    ディレクティブヘッドと説明の間には空行を入れてはいけません。マークアップの中では見た目上つながっているようにしなければなりません。
 
@@ -80,10 +83,29 @@
 
 .. rst:directive:: .. versionchanged:: バージョン
 
-   .. Similar to :rst:dir:`versionadded`, but describes when and what changed in the named 
-      feature in some way (new parameters, changed side effects, etc.).
+   .. Similar to :rst:dir:`versionadded`, but describes when and what changed in 
+      the named feature in some way (new parameters, changed side effects, etc.).
 
    :rst:dir:`versionadded` と似ていますが、現在説明している機能がいつどのように変化したのか(新しい引数、副作用の変更など)を説明するのに使用します。
+
+
+.. 
+   rst:directive:: .. deprecated:: version
+
+.. rst:directive:: .. deprecated:: バージョン
+
+   .. Similar to :rst:dir:`versionchanged`, but describes when the feature was
+      deprecated.  An explanation can also be given, for example to inform the
+      reader what should be used instead.  Example::
+
+      .. deprecated:: 3.1
+         Use :func:`spam` instead.
+
+   
+   :rst:dir:`versionchanged` と似ていますが、このディレクティブは、この機能がすでに古くて非推奨になったことを示しています。代替として、今後何を使っていくべきなのかといった説明文を付けることができます::
+
+      .. deprecated:: 3.1
+         今後は代わりに :func:`spam` を使用すること
 
 --------------
 
@@ -172,6 +194,12 @@
 
       .. centered:: ラインセンス契約
 
+   .. deprecated:: 1.1
+
+      この表現のみのディレクティブはレガシーなディレクティブになりますので、今後は、 :rst:dir:`rst-class` ディレクティブを代わりに使い、適切なスタイルを与えてください。
+
+      .. This presentation-only directive is a legacy from older versions.  Use a
+         :rst:dir:`rst-class` directive instead and add an appropriate style.
 
 .. rst:directive:: hlist
 
@@ -218,114 +246,6 @@
 
 .. Index-generating markup
 
-インデックス生成のためのマークアップ
-------------------------------------
-
-.. Sphinx automatically creates index entries from all object description (like 
-   functions, classes or attributes) like discussed :ref:`domains`.
-
-Sphinxはすべてのオブジェクトの説明(関数、クラス、属性)から、自動的にインデックスのエントリーを作成します。オブジェクトの説明に関しては、 :ref:`domains` で詳しく説明しています。
-
-.. However, there is also an explicit directive available, to make the index more 
-   comprehensive and enable index entries in documents where information is not 
-   mainly contained in information units, such as the language reference.
-
-しかし、これ以外に明示的に指定するディレクティブもあります。これを使用することで、言語のリファレンスのように、メインの情報のユニットが存在しない情報をドキュメントの中に書いてインデックスのエントリーを作ることができるようになります。より包括的なインデックスを作成することができるようになります。
-
-.. 
-   .. rst:directive:: .. index:: <entries>
-
-.. rst:directive:: .. index:: <エントリー>
-
-   .. This directive contains one or more index entries.  Each entry consists of a 
-      type and a value, separated by a colon.
-
-   このディレクティブは一つ以上のインデックスのエントリーを含みます。それぞれのエントリーはコロン(:)で区切られた、タイプ、値を含みます。
-
-   .. For example:
-
-      .. index
-         single: 実行; コンテキスト
-         module: __main__
-         module: sys
-         triple: モジュール; 検索; パス
-
-      The execution context
-      ---------------------
-
-      ...
-
-   サンプル::
-
-      .. index::
-         single: execution; context
-         module: __main__
-         module: sys
-         triple: module; search; path
-
-      実行時のコンテキスト
-      ---------------------
-
-      ...
-
-   .. This directive contains five entries, which will be converted to entries in 
-      the generated index which link to the exact location of the index statement 
-      (or, in case of offline media, the corresponding page number).
-
-   このディレクティブは5つのエントリーを含んでいます。これらは生成されたインデックスのエントリーに変換され、index文の正確な位置へのリンクが張られることになります。オフラインのメディアに出力される場合には、リンクの代わりに対応するページ番号が出力されます。
-
-   .. Since index directives generate cross-reference targets at their location in 
-      the source, it makes sense to put them *before* the thing they refer to -- 
-      e.g. a heading, as in the example above.
-
-   indexディレクティブはそのソースの位置のターゲットとのクロスリファレンスを生成するため、それらが参照するものの *前の位置* に置くことが大切になります。上記のサンプルコードの例では、リンクを張りたい見出しの前に配置されています。
-
-   .. The possible entry types are:
-
-   設定可能なエントリーのタイプは以下の通りです:
-
-   .. single
-      Creates a single index entry.  Can be made a subentry by separating the
-      subentry text with a semicolon (this notation is also used below to 
-      describe what entries are created).
-
-   single
-      単体のインデックスのエントリーを作成します。 サブエントリーのテキストとの間をセミコロンで区切ることにより、サブエントリーをサブエントリーを作ることもできます。この記法はどのエントリーが作成されたのか、という説明のところで詳しく説明します。
-
-   .. pair
-      ``pair: loop; statement`` is a shortcut that creates two index entries, 
-      namely ``loop; statement`` and ``statement; loop``.
-
-   pair
-      ``pair: loop; statement`` はインデックスエントリーを2つ作成します。
-      ``loop; statement`` と ``statement; loop`` の2つのエントリーが作成されます。
-
-   .. triple
-      Likewise, ``triple: module; search; path`` is a shortcut that creates 
-      three index entries, which are ``module; search path``, ``search; path, 
-      module`` and ``path; module search``.
-
-   triple
-      pairと似ていますが ``triple: module; search; path`` は3つのエントリーを作成します。 ``module; search path``, ``search; path, module``, ``path; module search`` が作成されます。
-
-   .. module, keyword, operator, object, exception, statement, builtin
-      These all create two index entries.  For example, ``module: hashlib``
-      creates the entries ``module; hashlib`` and ``hashlib; module``.  (These
-      are Python-specific and therefore deprecated.)
-
-   module, keyword, operator, object, exception, statement, builtin
-      これらはすべて、2つのエントリーを作成します。例えば、 ``module: hashlib`` という項目があると、 ``module; hashlib`` と ``hashlib; module`` の2つのエントリーが作成されます。(これらはPython固有で、deperecatedになっています。)
-
-   .. For index directives containing only "single" entries, there is a shorthand notation:
-
-   "single"のエントリーだけが含まれるindexディレクティブの場合、以下のように短縮記法で簡単に作成することもできます::
-
-      .. index:: BNF, grammar, syntax, notation
-
-   .. This creates four index entries.
-
-   これは4つのインデックスのエントリーが作成されます。
-
 
 .. Glossary
 
@@ -338,21 +258,25 @@ Sphinxはすべてのオブジェクトの説明(関数、クラス、属性)か
       definitions.  The definitions will then be referencable with the :rst:role:`term` 
       role.  
 
+   .. This directive must contain a reST definition-list-like markup with terms and
+      definitions.  The definitions will then be referencable with the
+      :rst:role:`term` role.  Example:
+
+   どのディレクティブは、用語と定義が一緒になった、マークアップのようなreST定義リストを含みます。定義は :rst:role:`term` というロールを利用することで参照が可能になります:
+
    .. .. Example:
 
-   .. .. glossary::
+      .. glossary::
 
-   ..    environment
-         A structure where information about all documents under the root is 
-         saved, and used for cross-referencing.  The environment is pickled 
-         after the parsing stage, so that successive runs only need to read 
-         and parse new and changed documents.
+         environment
+            A structure where information about all documents under the root is 
+            saved, and used for cross-referencing.  The environment is pickled 
+            after the parsing stage, so that successive runs only need to read 
+            and parse new and changed documents.
 
-   ..    source directory
-         The directory which, including its subdirectories, contains all 
-         source files for one Sphinx project.
-
-   このディレクティブは用語と定義がリストになった、reST定義リストを含みます。定義は :rst:role:`term` というロールを利用することで参照が可能になります。以下にサンプルを示します。
+         source directory
+            The directory which, including its subdirectories, contains all 
+            source files for one Sphinx project.
 
    サンプル::
 
@@ -370,13 +294,38 @@ Sphinxはすべてのオブジェクトの説明(関数、クラス、属性)か
             このディレクトリ直下だけではなく、サブディレクトリを使用してソースファイルを
             分類して入れておくことも可能です。
 
-   .. 
-      .. versionadded:: 0.6
-         You can now give the glossary directive a ``:sorted:`` flag that will
-         automatically sort the entries alphabetically.
+   .. In contrast to regular definition lists, *multiple* terms per entry are
+      allowed, and inline markup is allowed in terms.  You can link to all of the
+      terms.  For example:
+
+      .. glossary::
+
+         term 1
+         term 2
+            Definition of both terms.
+
+      (When the glossary is sorted, the first term determines the sort order.)
+
+   通常の定義リストとは異なり、一つのエントリーに対して、複数の用語を定義することができます。それぞれの用語に対してインラインマークアップを使うことができます。また、すべての用語への参照も可能です::
+
+      .. glossary::
+
+         用語1
+         用語2
+            両方の単語の定義
 
    .. versionadded:: 0.6
       glossaryディレクティブに ``:sorted:`` というフラッグを与えることができるようになりました。これを指定すると、自動的にエントリーをアルファベット順に並べることができます。
+
+      .. You can now give the glossary directive a ``:sorted:`` flag that will
+         automatically sort the entries alphabetically.
+
+   .. versionchanged:: 1.1
+ 
+      複数用語の定義と、用語に対するインラインマークアップが可能になりました。
+      
+      .. Now supports multiple terms and inline markup in terms.
+
 
 
 .. Grammar production displays

@@ -61,6 +61,21 @@ Sphinxは解釈済みのテキストのロールというものを使用して�
 
   HTML出力時には、リンクの ``title`` アトリビュート(マウスを上に持って行ったときにツールチップとして表示されるテキスト)には、常に、完全な参照対象の名前が設定されます。
 
+.. Cross-referencing objects
+   -------------------------
+
+オブジェクトのクロスリファレンス
+---------------------------------
+
+.. These roles are described with their respective domains:
+
+これらのロールは、それぞれのドメインの中で説明されています。
+
+* :ref:`Python <python-roles>`
+* :ref:`C <c-roles>`
+* :ref:`C++ <cpp-roles>`
+* :ref:`JavaScript <js-roles>`
+* :ref:`ReST <rst-roles>`
 
 .. Cross-referencing arbitrary locations
 
@@ -213,11 +228,75 @@ Sphinxは解釈済みのテキストのロールというものを使用して�
    ``example.py`` ファイルは出力ディレクトリにコピーされ、適切なリンクが生成されます。
 
 
+.. Cross-referencing other items of interest
+   -----------------------------------------
+
+他の要素へのクロスリファレンス
+------------------------------
+
+.. The following roles do possibly create a cross-reference, but do not refer to 
+   objects:
+
+以下のロールはクロスリファレンスを作成しますが、特定のオブジェクトを参照しません。
+
+.. rst:role:: envvar
+
+   .. An environment variable.  Index entries are generated.  Also generates a link 
+      to the matching :rst:dir:`envvar` directive, if it exists.
+
+   環境変数です。エントリーのインデックスが作成されます。もし :rst:dir:`envvar` ディレクティブがあれば、それへのリンクが作成されます。
+
+
+.. rst:role:: token
+
+   .. The name of a grammar token (used to create links between 
+      :rst:dir:`productionlist` directives).
+
+   文法のトークンの名前です。 :rst:dir:`productionlist` ディレクティブ内の定義との間でリンクが作成されます。
+
+
+.. rst:role:: keyword
+
+   .. The name of a keyword in Python.  This creates a link to a reference label 
+      with that name, if it exists.
+
+   Pythonのキーワード名です。もし存在していれば、この名前を持つ参照ラベルとの間にリンクが作成されます。
+
+
+.. rst:role:: option
+
+   .. A command-line option to an executable program.  The leading hyphen(s) must 
+      be included.  This generates a link to a :rst:dir:`cmdoption` directive, if it 
+      exists.
+
+   実行ファイルのコマンドラインオプションです。前に付くハイフンも含める必要があります。 :rst:dir:`cmdoption` ディレクティブで定義されていれば、リンクを作成します。
+
+
+.. The following role creates a cross-reference to the term in the glossary:
+
+以下のロールは用語集との間にクロスリファレンスを作成します:
+
+.. rst:role:: term
+
+   .. Reference to a term in the glossary.  The glossary is created using the
+      ``glossary`` directive containing a definition list with terms and
+      definitions.  It does not have to be in the same file as the ``term`` markup, 
+      for example the Python docs have one global glossary in the ``glossary.rst`` 
+      file.
+
+   用語集の用語への参照。用語集は ``glossary`` ディレクティブを使用して定義します。用語集と ``term`` マークアップは同じファイルにある必要はありません。例えばPythonのドキュメントは一つの用語集の ``glossary.rst`` というファイルの中にすべての用語の定義が書かれています。
+
+   .. If you use a term that's not explained in a glossary, you'll get a warning 
+      during build.
+
+   もしも、用語集の中で説明されていない用語がある場合には、ビルド時に警告が出力されます。
+
+
 .. Other semantic markup
-.. ---------------------
+   ~~~~~~~~~~~~~~~~~~~~~
 
 上記以外の意味のマークアップ
------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. The following roles don't do anything special except formatting the text in a different style:
 
@@ -364,18 +443,20 @@ Sphinxは解釈済みのテキストのロールというものを使用して�
 .. rst:role:: samp
 
    .. A piece of literal text, such as code.  Within the contents, you can use 
-      curly braces to indicate a "variable" part, as in :rst:dir:`file` For
+      curly braces to indicate a "variable" part, as in :rst:role:`file` For
       example, in ``:samp:`print 1+{variable}```, the part ``variable`` would be
       emphasized.
 
-   リテラルのテキストの一部です。マークアップの内容の中には、 :rst:dir:`file` と同様に波括弧を使った"変数"を書くことができます。たとえば、 ``:samp:`print 1+{variable}``` というテキストがあると、 ``variable`` の部分が強調されます。
+   リテラルのテキストの一部です。マークアップの内容の中には、 :rst:role:`file` と同様に波括弧を使った"変数"を書くことができます。たとえば、 ``:samp:`print 1+{variable}``` というテキストがあると、 ``variable`` の部分が強調されます。
 
    .. If you don't need the "variable part" indication, use the standard 
       ````code```` instead.
 
    もし"変数部分"が不要であれば、標準の ````コード```` という形式を代わりに使用してください。
 
+.. There is also an :rst:role:`index` role to generate index entries.
 
+インデックスのエントリーを生成するための、  :rst:role:`index` ロールもあります。
 
 .. The following roles generate external links:
 
@@ -398,77 +479,16 @@ Sphinxは解釈済みのテキストのロールというものを使用して�
 
 このような目的を達成しようとしても、標準のreSTマークアップだけではハイパーリンクを取り込む特別なロールは存在しません。
 
-.. Cross-referencing other items of interest
-   -----------------------------------------
 
-他の要素へのクロスリファレンス
-------------------------------
-
-.. The following roles do possibly create a cross-reference, but do not refer to 
-   objects:
-
-以下のロールはクロスリファレンスを作成しますが、特定のオブジェクトを参照しません。
-
-.. rst:role:: envvar
-
-   .. An environment variable.  Index entries are generated.  Also generates a link 
-      to the matching :rst:dir:`envvar` directive, if it exists.
-
-   環境変数です。エントリーのインデックスが作成されます。もし :rst:dir:`envvar` ディレクティブがあれば、それへのリンクが作成されます。
-
-
-.. rst:role:: token
-
-   .. The name of a grammar token (used to create links between 
-      :rst:dir:`productionlist` directives).
-
-   文法のトークンの名前です。 :rst:dir:`productionlist` ディレクティブ内の定義との間でリンクが作成されます。
-
-
-.. rst:role:: keyword
-
-   .. The name of a keyword in Python.  This creates a link to a reference label 
-      with that name, if it exists.
-
-   Pythonのキーワード名です。もし存在していれば、この名前を持つ参照ラベルとの間にリンクが作成されます。
-
-
-.. rst:role:: option
-
-   .. A command-line option to an executable program.  The leading hyphen(s) must 
-      be included.  This generates a link to a :rst:dir:`cmdoption` directive, if it 
-      exists.
-
-   実行ファイルのコマンドラインオプションです。前に付くハイフンも含める必要があります。 :rst:dir:`cmdoption` ディレクティブで定義されていれば、リンクを作成します。
-
-
-.. The following role creates a cross-reference to the term in the glossary:
-
-以下のロールは用語集との間にクロスリファレンスを作成します:
-
-.. rst:role:: term
-
-   .. Reference to a term in the glossary.  The glossary is created using the
-      ``glossary`` directive containing a definition list with terms and
-      definitions.  It does not have to be in the same file as the ``term`` markup, 
-      for example the Python docs have one global glossary in the ``glossary.rst`` 
-      file.
-
-   用語集の用語への参照。用語集は ``glossary`` ディレクティブを使用して定義します。用語集と ``term`` マークアップは同じファイルにある必要はありません。例えばPythonのドキュメントは一つの用語集の ``glossary.rst`` というファイルの中にすべての用語の定義が書かれています。
-
-   .. If you use a term that's not explained in a glossary, you'll get a warning 
-      during build.
-
-   もしも、用語集の中で説明されていない用語がある場合には、ビルド時に警告が出力されます。
 
 
 .. Substitutions
-   -------------
+   ~~~~~~~~~~~~~
 
 .. _default-substitutions:
 
 置換
-----
+~~~~
 
 .. The documentation system provides three substitutions that are defined by default. They are set in the build configuration file.
 

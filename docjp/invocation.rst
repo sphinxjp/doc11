@@ -49,13 +49,13 @@ Sphinxのドキュメント群を生成するのは、 :program:`sphinx-build` �
    .. Build a single HTML with the whole content.
 
    **htmlhelp**, **qthelp**, **devhelp**, **epub**
-      フォーマットごとに、ドキュメントのコレクションを構築するのに必要な情報と一緒にHTMLファイルをビルドします。
+      フォーマットごとに、ドキュメントのコレクションを構築するのに必要な情報と一緒に、HTMLファイルにビルドします。
 
    .. Build HTML files with additional information for building a documentation
       collection in one of these formats.
 
    **latex**
-      :program:`pdflatex` を使用して、PDFドキュメントにコンパイルできるような、LaTeXのソースをビルドします。
+      :program:`pdflatex` を使用して、PDFドキュメントにコンパイルできるような、LaTeXのソースにビルドします。
 
    .. Build LaTeX sources that can be compiled to a PDF document using
       :program:`pdflatex`.
@@ -65,10 +65,21 @@ Sphinxのドキュメント群を生成するのは、 :program:`sphinx-build` �
 
    .. Build manual pages in groff format for UNIX systems.
 
+   **texinfo**
+      :program:`makeinfo` を使ってInfoファイルを生成するための、Texinfoファイルにビルドします。
+
+   .. Build Texinfo files that can be processed into Info files using
+      :program:`makeinfo`.
+
    **text**
       プレーンテキストファイルをビルドします。
 
    .. Build plain text files.
+
+   **gettext**
+      gettextスタイルのメッセージカタログ(``.pot`` ファイル)にビルドします。
+
+   .. Build gettext-style message catalogs (``.pot`` files).
 
    **doctest**
       もしも :mod:`~sphinx.ext.doctest` 拡張が有効になっている場合には、ドキュメント内のすべてのdoctestを実行します。

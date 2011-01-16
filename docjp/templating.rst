@@ -30,10 +30,10 @@ HTMLを生成するのにSphinxのテンプレートを使用する必要があ�
 * 読者が使用したいテンプレートエンジンを呼び出すような :class:`~sphinx.application.TemplateBridge` クラスのサブクラスを書いて、それが呼ばれるように :confval:`template_bridge` 設定値に設定します。
 
 .. * You can :ref:`write a custom builder <writing-builders>` that derives from
-     :class:`~sphinx.builders.StandaloneHTMLBuilder` and calls your template engine
-     of choice.
+     :class:`~sphinx.builders.html.StandaloneHTMLBuilder` and calls your template 
+     engine of choice.
 
-* :class:`~sphinx.builders.StandaloneHTMLBuilder` を継承して :ref:`カスタムビルダーを書いて <writing-builders>` 好きなテンプレートエンジンを呼ぶようにします。
+* :class:`~sphinx.builders.html.StandaloneHTMLBuilder` を継承して :ref:`カスタムビルダーを書いて <writing-builders>` 好きなテンプレートエンジンを呼ぶようにします。
 
 .. * You can use the :class:`~sphinx.builders.PickleHTMLBuilder` that produces
      pickle files with the page contents, and postprocess them using a custom tool,
@@ -376,11 +376,11 @@ Sphinxはテンプレートで使用できるJinja関数をいくつか提供し
 
 .. data:: file_suffix
 
-   .. The value of the builder's :attr:`out_suffix` attribute, i.e. the file name
-      extension that the output files will get.  For a standard HTML builder, this
-      is usually ``.html``.
+   .. The value of the builder's :attr:`~.SerializingHTMLBuilder.out_suffix` 
+      attribute, i.e. the file name extension that the output files will get.  For 
+      a standard HTML builder, this is usually ``.html``.
 
-   ビルダーの :attr:`out_suffix` アトリビュートの値です。出力ファイル名に付く拡張子などです。標準のHTMLビルダーの場合には、通常は ``.html`` になります。
+   ビルダーの :attr:`~.SerializingHTMLBuilder.out_suffix` アトリビュートの値です。出力ファイル名に付く拡張子などです。標準のHTMLビルダーの場合には、通常は ``.html`` になります。
 
 
 .. data:: has_source

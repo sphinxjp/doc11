@@ -541,7 +541,7 @@ Sphinxによって追加されたディレクティブに関しては :ref:`sphi
 
    .. function:: foo(x)
                  foo(y, z)
-      :bar: no
+      :module: some.module.name
 
       Return a line of text input from the user.
 
@@ -549,16 +549,18 @@ Sphinxによって追加されたディレクティブに関しては :ref:`sphi
 
    .. function:: foo(x)
                  foo(y, z)
-      :bar: no
+      :module: some.module.name
 
       ユーザから入力されたテキストのうち、１行を返します。
 
 .. ``function`` is the directive name.  It is given two arguments here, the
    remainder of the first line and the second line, as well as one option 
-   ``bar`` (as you can see, options are given in the lines immediately 
-   following the arguments and indicated by the colons).
+   ``module`` (as you can see, options are given in the lines immediately following 
+   the arguments and indicated by the colons). Options must be indented to the
+   same level as the directive content.
 
-``function`` がディレクティブの名前です。ここでは二つの引数が与えられています。1行目の残りの部分と、2行目が引数です。そして1つのオプション ``bar`` も同様に設定されています。見ての通り、オプションは引数のある行のすぐ次の行に書かれていています。そして、目印としてコロンが付いています。
+
+``function`` がディレクティブの名前です。ここでは二つの引数が与えられています。1行目の残りの部分と、2行目が引数です。そして1つのオプション ``module`` も同様に設定されています。見ての通り、オプションは引数のある行のすぐ次の行に書かれていています。そして、目印としてコロンが付いています。オプションは、ディレクティブのコンテンツと同じインデントの高さにします。
 
 .. The directive content follows after a blank line and is indented relative 
    to the directive start.

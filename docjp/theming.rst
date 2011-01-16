@@ -107,9 +107,9 @@ Sphinxに組み込まれていないテーマを利用する方法は2通りの�
 |                    |                    |
 | *traditional*      | *nature*           |
 +--------------------+--------------------+
-| |haiku|            |                    |
+| |haiku|            | |pyramid|          |
 |                    |                    |
-| *haiku*            |                    |
+| *haiku*            | *pyramid*          |
 +--------------------+--------------------+
 
 .. |default|     image:: themes/default.png
@@ -119,6 +119,7 @@ Sphinxに組み込まれていないテーマを利用する方法は2通りの�
 .. |traditional| image:: themes/traditional.png
 .. |nature|      image:: themes/nature.png
 .. |haiku|       image:: themes/haiku.png
+.. |pyramid|     image:: themes/pyramid.png
 
 .. Sphinx comes with a selection of themes to choose from.
 
@@ -165,6 +166,8 @@ Sphinxではテーマを選択することができます。
      - **footerbgcolor** (CSS color): Background color for the footer line.
      - **footertextcolor** (CSS color): Text color for the footer line.
      - **sidebarbgcolor** (CSS color): Background color for the sidebar.
+     - **sidebarbtncolor** (CSS color): Background color for the sidebar collapse
+       button (used when *collapsiblesidebar* is true).
      - **sidebartextcolor** (CSS color): Text color for the sidebar.
      - **sidebarlinkcolor** (CSS color): Link color for the sidebar.
      - **relbarbgcolor** (CSS color): Background color for the relation bar.
@@ -198,6 +201,7 @@ Sphinxではテーマを選択することができます。
   - **footerbgcolor** (CSSカラー): フッターの背景色です。
   - **footertextcolor** (CSSカラー): フッターのテキストカラーです。
   - **sidebarbgcolor** (CSSカラー): サイドバーの背景色です。
+  - **sidebarbtncolor** (CSSカラー): サイドバーの展開ボタンの背景色です(*collapsiblesidebar* がtrueの時)。
   - **sidebartextcolor** (CSSカラー): サイドバーのテキストカラーです。
   - **sidebarlinkcolor** (CSSカラー): サイドバーのリンクの色です。
   - **relbarbgcolor** (CSSカラー): リレーションバーの背景色です。
@@ -222,10 +226,10 @@ Sphinxではテーマを選択することができます。
      currently no options beyond *nosidebar*.
 
 .. * **scrolls** -- A more lightweight theme, based on `the Jinja documentation
-     <http://jinja.pocoo.org/2/documentation/>`_.  The following color options are
+     <http://jinja.pocoo.org/>`_.  The following color options are
      available:
 
-* **scrolls** -- `テンプレートエンジンのJinjaのドキュメント <http://jinja.pocoo.org/2/documentation/>`_ で使用されている、軽量なテーマです。次のような色に関するオプションがあります。
+* **scrolls** -- `テンプレートエンジンのJinjaのドキュメント <http://jinja.pocoo.org/>`_ で使用されている、軽量なテーマです。次のような色に関するオプションがあります。
 
   - **headerbordercolor**
   - **subheadlinecolor**
@@ -286,6 +290,12 @@ Sphinxではテーマを選択することができます。
      - **textcolor**, **headingcolor**, **linkcolor**, **visitedlinkcolor**,
        **hoverlinkcolor** (CSS colors): Colors for various body elements.
 
+.. * **pyramid** -- A theme from the Pyramid web framework project, designed by
+     Blaise Laflamme.  THere are currently no options beyond *nosidebar*.
+
+* **pyramid** -- Blaise Laflammeがデザインした、Pyramidウェブフレームワークプロジェクトのテーマです。 *nosidebar* 以外のオプションはありません。
+
+
 * **haiku** -- `Haiku OS user guide <http://www.haiku-os.org/docs/userguide/en/contents.html>`_ にインスパイアされた、サイドバーのないテーマです。次のようなオプションが提供されています:
 
   - **full_logo** (True/False デフォルトはFalse): もしTrueの場合は、ヘッダーには :confval:`html_logo` だけが表示されます。大きなロゴを使用するときに設定して下さい。Falseが設定されると、ロゴはフローティングで右寄せに表示され(あれば)、ドキュメントタイトルがヘッダに表示されます。
@@ -315,7 +325,7 @@ Sphinxではテーマを選択することができます。
 .. * A :file:`theme.conf` file, see below.
    * HTML templates, if needed.
    * A ``static/`` directory containing any static files that will be copied to the
-     output statid directory on build.  These can be images, styles, script files.
+     output static directory on build.  These can be images, styles, script files.
 
 * :file:`theme.conf` ファイル
 * HTMLテンプレート(必要に応じて)

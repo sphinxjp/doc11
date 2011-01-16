@@ -70,19 +70,25 @@
 前提条件
 --------
 
-.. Sphinx needs at least **Python 2.4** to run, as well as the docutils_ and
-   Jinja2_ libraries.  Sphinx should work with docutils version 0.5 or some
-   (not broken) SVN trunk snapshot.  If you like to have source code highlighting
-   support, you must also install the Pygments_ library.
+.. Sphinx needs at least **Python 2.4** or **Python 3.1** to run, as well as the 
+   docutils_ and Jinja2_ libraries.  Sphinx should work with docutils version 0.5 
+   or some (not broken) SVN trunk snapshot.  If you like to have source code 
+   highlighting support, you must also install the Pygments_ library.
 
-Sphinxおよび、 docutils_, Jinja2_ などのライブラリの実行には **Python 2.4** よりも新しいバージョンのPythonが必要です。Sphinxが依存しているコンポーネントとしては、docutilsのバージョン 0.5、もしくはSVNリポジトリのTrunkのスナップショット(壊れていないものに限定)があります。もしもソースコードハイライトのサポートが必要であれば、 Pygments_ ライブラリも一緒にインストールする必要がありますが、setuptoolsのeasy_installを使用して、インストールすることができます。
+Sphinxおよび、 docutils_, Jinja2_ などのライブラリの実行には **Python 2.4** よりも新しいバージョンのPython、もしくは **Python 3.1** が必要です。Sphinxが依存しているコンポーネントとしては、docutilsのバージョン 0.5、もしくはSVNリポジトリのTrunkのスナップショット(壊れていないものに限定)があります。もしもソースコードハイライトのサポートが必要であれば、 Pygments_ ライブラリも一緒にインストールする必要がありますが、setuptoolsのeasy_installを使用して、インストールすることができます。
 
+.. If you use **Python 2.4** you also need uuid_.
+
+もしも **Python 2.4** を使用する場合には、 uuid_ をインストールしてください。
+
+.. The given homepage is only a directory listing so I'm using the pypi site.
  
 .. _reStructuredText: http://docutils.sf.net/rst.html
 .. _docutils: http://docutils.sf.net/
 .. _Jinja2: http://jinja.pocoo.org/2/
 .. _Pygments: http://pygments.org/
-
+.. 与えられたホームページは単なるリストです。私はPyPIサイトを使用しています。
+.. _uuid: http://pypi.python.org/pypi/uuid/
 
 .. Usage
    -----
