@@ -26,7 +26,7 @@ Sphinxでは、ナビゲーションバーなどの文字列を各国語にす�
    localization.  It naïvely maps messages in a program to a translated string.
    Sphinx uses these facilities to translate whole documents.
 
-**gettext** [1]_ は国際化とローカル化の手段として、良く使用されている方法です。プログラム中で使用されるメッセージと、翻訳文字列の対応表を使って置き換えてきます。Sphinxはこの機能を使って、ドキュメント全体を翻訳していきます。
+**gettext** [1]_ は国際化とローカル化の手段として、よく使用されている方法です。プログラム中で使用されるメッセージと、翻訳文字列の対応表を使って置き換えてきます。Sphinxはこの機能を使って、ドキュメント全体を翻訳していきます。
 
 .. Initially project maintainers have to collect all translatable strings (also
    referred to as *messages*) to make them known to translators.  Sphinx extracts
