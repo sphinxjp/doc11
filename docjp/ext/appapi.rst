@@ -537,7 +537,7 @@ Sphinxコアイベント
       that the environment has determined.  You can return a list of docnames to
       re-read in addition to these.
 
-   ソースファイルが変更されたりして、再読み込みする必要がある場合に発光されます。 **added**, **changed**, **removed** には、ドキュメント名のセットです。さらに追加で読み込み直すべきドキュメントのリストを返すことができます。
+   ソースファイルが変更されたりして、再読み込みする必要がある場合に発行されます。 **added**, **changed**, **removed** には、ドキュメント名のセットです。さらに追加で読み込み直すべきドキュメントのリストを返すことができます。
 
    .. versionadded:: 1.1
 
