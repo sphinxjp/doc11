@@ -17,7 +17,7 @@ copyright = '2007-2011, Georg Brandl, Shibukawa Yoshiki(Japanese)'
 version = sphinx.__released__
 release = version
 show_authors = True
-#language = 'ja'
+language = 'ja'
 
 html_theme = 'sphinxdoc'
 modindex_common_prefix = ['sphinx.']
