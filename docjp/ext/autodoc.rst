@@ -51,7 +51,7 @@
    inserting them into the page source under a suitable :rst:dir:`py:module`, 
    :rst:dir:`py:class` etc.  directive.
 
-:mod:`autodoc`は通常の\ :rst:dir:`py:module`, :rst:dir:`py:class`\ などのディレクティブに似た別バージョンのディレクティブを提供します。ドキュメントのパース時に指定されたモジュールを読み込んで、docstringを抽出して、その内容を通常の\ :rst:dir:`py:module`, :rst:dir:`py:class`\ ディレクティブと一緒に差込みます。
+:mod:`autodoc` は通常の\ :rst:dir:`py:module`, :rst:dir:`py:class`\ などのディレクティブに似た別バージョンのディレクティブを提供します。ドキュメントのパース時に指定されたモジュールを読み込んで、docstringを抽出して、その内容を通常の\ :rst:dir:`py:module`, :rst:dir:`py:class`\ ディレクティブと一緒に差込みます。
 
 .. note
 

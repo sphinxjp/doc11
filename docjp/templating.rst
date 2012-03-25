@@ -446,7 +446,7 @@ Sphinxはテンプレートで使用できるJinja関数をいくつか提供し
 
    .. Like :data:`next`, but for the previous page.
 
-   「前のトピック」にあたるページの情報です。 :data`next` と似ています。
+   「前のトピック」にあたるページの情報です。 :data:`next` と似ています。
 
 
 .. data:: project
