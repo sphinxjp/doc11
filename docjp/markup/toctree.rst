@@ -95,7 +95,7 @@ ReSTにはドキュメント間の連携をサポートする機能はありま�
    .. The second line above will link to the ``strings`` document, but will use the
       title "All about strings" instead of the title of the ``strings`` document.
 
-   上記のサンプルの2行目は ``strings``ドキュメントへのリンクになります。デフォルトの動作では ``strings`` ドキュメントのタイトルが使用されますが、ここでは"文字列のすべて"という文字列がタイトルとして使用されます。
+   上記のサンプルの2行目は ``strings`` ドキュメントへのリンクになります。デフォルトの動作では ``strings`` ドキュメントのタイトルが使用されますが、ここでは"文字列のすべて"という文字列がタイトルとして使用されます。
 
    .. You can also add external links, by giving an HTTP URL instead of a document
       name.
@@ -107,8 +107,8 @@ ReSTにはドキュメント間の連携をサポートする機能はありま�
 
    **セクションのナンバリング**
 
-   If you want to have section numbers even in HTML output, give the toctree a
-   ``numbered`` option.  For example:
+   .. If you want to have section numbers even in HTML output, give the toctree a
+      ``numbered`` option.  For example:
 
    もし、セクション番号をHTML出力に追加したい場合には、 ``numbered`` オプションをtoctreeに追加します::
 

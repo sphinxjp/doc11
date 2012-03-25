@@ -318,7 +318,7 @@
    .. This method is also available under the deprecated alias
       ``add_description_unit``.
 
-   このメソッドは旧名の　``add_description_unit`` という名前でも呼び出すことができます。
+   このメソッドは旧名の ``add_description_unit`` という名前でも呼び出すことができます。
 
 
 .. method:: Sphinx.add_crossref_type(directivename, rolename, indextemplate='', ref_nodeclass=None, objname='')
