@@ -200,7 +200,7 @@ Sphinxはすべてのオブジェクトの説明(関数、クラス、属性)か
       ``other``.
 
    see
-      ``see: entry; other`` という項目があると、``entry`` から ``other`` を参照するインデックスエントリーが作成されます。
+      ``see: entry; other`` という項目があると、 ``entry`` から ``other`` を参照するインデックスエントリーが作成されます。
 
    .. seealso
       Like ``see``, but inserts "see also" instead of "see".
