@@ -18,7 +18,7 @@ Webサポートクイックスタート
    things are in a document.  To do this you will need to create an instance of the
    :class:`~.WebSupport` class and call its :meth:`~.WebSupport.build` method::
 
-アプリケーションの中でウェブサポートパッケージを使用する場合は、まずはデータを作る必要があります。データには、pickle化されたドキュメントや検索インデックス、コメントなどがどのドキュメントに付加されたのかを追跡するためのノードデータが含まれます。これを行うためには、　:class:`~.WebSupport` クラスのインスタンスを作り、 :meth:`~.WebSupport.build` メソッドを呼ぶ必要があります::
+アプリケーションの中でウェブサポートパッケージを使用する場合は、まずはデータを作る必要があります。データには、pickle化されたドキュメントや検索インデックス、コメントなどがどのドキュメントに付加されたのかを追跡するためのノードデータが含まれます。これを行うためには、 :class:`~.WebSupport` クラスのインスタンスを作り、 :meth:`~.WebSupport.build` メソッドを呼ぶ必要があります::
 
    from sphinx.websupport import WebSupport
 
