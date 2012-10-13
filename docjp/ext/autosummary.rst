@@ -113,7 +113,7 @@
    .. * If you don't want the :rst:dir:`autosummary` to show function signatures in the
         listing, include the ``nosignatures`` option:
 
-   * 関数のシグネチャを、:rst:dir:`autosummary` が出力するリストの中に入れたくない場合には、 ``nosignatures`` オプションを設定します::
+   * 関数のシグネチャを、 :rst:dir:`autosummary` が出力するリストの中に入れたくない場合には、 ``nosignatures`` オプションを設定します::
 
          .. autosummary::
             :nosignatures:

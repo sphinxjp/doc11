@@ -28,7 +28,7 @@
    reads simple names from the file's namespace as its configuration.
 
 設定ファイルは、ビルド時にPythonコードとして実行されます。 設定ファイルが含まれる
-フォルダをカレントディレクトリに設定し、:func:`execfile` を使用してコールされので、
+フォルダをカレントディレクトリに設定し、 :func:`execfile` を使用してコールされので、
 任意の複雑なコードを記述することができます。Sphinxが読み込む際には単純にファイルの
 中の名前空間に定義されている名前を使うことで、設定を読み込みます。
 
