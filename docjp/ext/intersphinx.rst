@@ -125,8 +125,7 @@ Sphinx間リンクを使用する場合には、 :confval:`extensions` 設定値
 
    Pythonの標準のライブラリドキュメントの中のモジュールやオブジェクトに対してリンクが張りたい場合には次のようにします::
 
-      intersphinx_mapping = {'python': ('http://docs.python.org/3.2', 
-                                        'python-inv.txt')}
+      intersphinx_mapping = {'python': ('http://docs.python.org/3.2', None)}
 
    .. This will download the corresponding :file:`objects.inv` file from the
       Internet and generate links to the pages under the given URI.  The downloaded
