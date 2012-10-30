@@ -125,22 +125,21 @@ Sphinx間リンクを使用する場合には、 :confval:`extensions` 設定値
 
    Pythonの標準のライブラリドキュメントの中のモジュールやオブジェクトに対してリンクが張りたい場合には次のようにします::
 
-      intersphinx_mapping = {'python': ('http://docs.python.org/3.2', 
-                                        'python-inv.txt')}
+      intersphinx_mapping = {'python': ('http://docs.python.org/3.2', None)}
 
    .. This will download the corresponding :file:`objects.inv` file from the
       Internet and generate links to the pages under the given URI.  The downloaded
       inventory is cached in the Sphinx environment, so it must be redownloaded
       whenever you do a full rebuild.
 
-   これを設定すると、ソースディレクトリの中の :file:`python.inv` からインベントリー情報を読み込み、 ``http://docs.python.org/`` 以下のページに対するリンクを作成します。ダウンロードされたインベントリ情報はキャッシュされるので、もしもPythonのドキュメントに新しいオブジェクトが追加された場合には、自分でアップデートする必要があります。
+   これを設定すると、ソースディレクトリの中の :file:`python.inv` からインベントリー情報を読み込み、 ``http://docs.python.org/3.2`` 以下のページに対するリンクを作成します。ダウンロードされたインベントリ情報はキャッシュされるので、もしもPythonのドキュメントに新しいオブジェクトが追加された場合には、自分でアップデートする必要があります。
 
    .. A second example, showing the meaning of a non-``None`` value of the second 
       tuple item:
 
    2番目のサンプルは、2つ目のタプルの要素に ``None`` ではない値を与える場合です::
 
-      intersphinx_mapping = {'python': ('http://docs.python.org/': 
+      intersphinx_mapping = {'python': ('http://docs.python.org/3.2': 
                                         'python-inv.txt')}
 
    .. This will read the inventory from :file:`python-inv.txt` in the source
@@ -148,7 +147,7 @@ Sphinx間リンクを使用する場合には、 :confval:`extensions` 設定値
       ``http://docs.python.org/3.2``.  It is up to you to update the inventory file as 
       new objects are added to the Python documentation.
 
-   これを設定すると、ソースディレクトリの中の :file:`python-inv.txt` からインベントリー情報を読み込みますが、先ほどの例と同じように ``http://docs.python.org/`` 以下のページに対するリンクを作成します。もしもPythonのドキュメントに新しいオブジェクトが追加された場合には、自分でアップデートする必要があります。
+   これを設定すると、ソースディレクトリの中の :file:`python-inv.txt` からインベントリー情報を読み込みますが、先ほどの例と同じように ``http://docs.python.org/3.2`` 以下のページに対するリンクを作成します。もしもPythonのドキュメントに新しいオブジェクトが追加された場合には、自分でアップデートする必要があります。
 
 
 .. confval:: intersphinx_cache_limit
