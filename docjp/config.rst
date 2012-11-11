@@ -5,8 +5,8 @@
 
 .. _build-config:
 
-ビルド設定ファイル
-==================
+ビルド設定ファイル(conf.py)
+================================
 
 .. .. module:: conf
       :synopsis: Build configuration file.
