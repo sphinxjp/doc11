@@ -197,7 +197,7 @@
            :private-members:
            :special-members:
 
-        このようにセットすると、クラスのプライベートメンバー、特殊メンバーの両方が出力されるようになります。
+     このようにセットすると、クラスのプライベートメンバー、特殊メンバーの両方が出力されるようになります。
 
      .. versionadded:: 1.1
 
@@ -585,6 +585,7 @@ autodocは以下のイベントを追加で提供します:
       from sphinx.ext.autodoc import cut_lines
       app.connect('autodoc-process-docstring', cut_lines(4, what=['module']))
 
+   This can (and should) be used in place of :confval:`automodule_skip_lines`.
 
 .. function:: between(marker, what=None, keepempty=False)
 

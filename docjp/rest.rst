@@ -738,6 +738,9 @@ Sphinxはデフォルトの置換をいくつか定義しています。詳し�
 .. Comments
 .. --------
 
+コメント
+--------
+
 .. Every explicit markup block which isn't a valid markup construct (like the
    footnotes above) is regarded as a comment (:duref:`ref <comments>`). For example::
 

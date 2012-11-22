@@ -63,16 +63,16 @@
 
    .. produces a table like this:
 
-   これは以下のようなテーブルを作成します::
+   これは以下のようなテーブルを作成します:
 
-       .. currentmodule:: sphinx
+      :obj:`environment.BuildEnvironment <sphinx.environment.BuildEnvironment>`\ (srcdir, ...)
 
-       .. autosummary::
+         The environment in which the ReST files are translated.
 
-          environment.BuildEnvironment
-          util.relative_uri
+      :obj:`util.relative_uri <sphinx.util.relative_uri>`\ (base, to)
 
-       .. currentmodule:: sphinx.ext.autosummary
+         Return a relative URL from ``base`` to ``to``.
+
 
    .. Autosummary preprocesses the docstrings and signatures with the same
       :event:`autodoc-process-docstring` and :event:`autodoc-process-signature`
@@ -187,7 +187,7 @@
 .. If you do not want to create stub pages with :program:`sphinx-autogen`, you can
    also use this new config value:
 
-   もしも、 :program:`sphinx-autogen` を使用してスタブページを作成したくない場合は、以下の設定値を使用することもできます:
+もしも、 :program:`sphinx-autogen` を使用してスタブページを作成したくない場合は、以下の設定値を使用することもできます:
 
 .. confval:: autosummary_generate
 

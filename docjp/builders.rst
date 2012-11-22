@@ -502,21 +502,21 @@
 
 .. A pickled dict with these keys:
 
-   ``project``, ``copyright``, ``release``, ``version``
-      The same values as given in the configuration file.
+.. ``project``, ``copyright``, ``release``, ``version``
+..    The same values as given in the configuration file.
 
-   ``style``
-      :confval:`html_style`.
+.. ``style``
+..    :confval:`html_style`.
 
-   ``last_updated``
-      Date of last build.
+.. ``last_updated``
+..    Date of last build.
 
-   ``builder``
-      Name of the used builder, in the case of pickles this is always
-      ``'pickle'``.
+.. ``builder``
+..    Name of the used builder, in the case of pickles this is always
+..    ``'pickle'``.
 
-   ``titles``
-      A dictionary of all documents' titles, as HTML strings.
+.. ``titles``
+..    A dictionary of all documents' titles, as HTML strings.
 
 :attr:`.SerializingHTMLBuilder.searchindex_filename`
    ドキュメントの検索で使用されるインデックスになります。以下のエントリーを含む、pickleでシリアライズされたエントリーのリストになります。

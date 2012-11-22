@@ -253,7 +253,7 @@ Release 1.0.7(開発中)
 
 * ターゲットより前にある ``only`` ディレクティブのtracebackの修正。
 
-* Fix tracebacks occurring for duplicate C++ domain objects.
+.. * Fix tracebacks occurring for duplicate C++ domain objects.
 
 * C++ドメインのオブジェクトが重複した場合に発生するtracebackの修正。
 
@@ -410,8 +410,8 @@ Release 1.0 (Jul 23, 2010)
 
 .. Incompatible changes
 
-互換性のない変更
-----------------
+Incompatible changes
+---------------------
 
 .. * Support for domains has been added.  A domain is a collection of
      directives and roles that all describe objects belonging together,
@@ -480,7 +480,7 @@ Release 1.0 (Jul 23, 2010)
     - In the Python domain, references like ``:func:`.name``` now look for
       matching names with any prefix if no direct match is found.
 
-* マークアップ:
+* Markup:
 
   - :rst:role:`menuselection` と :rst:role:`guilabel` ロールにアンパサンドを利用したアクセラレータの表示に対応しました。
   - docフィールドの新しい簡潔な文法として、次の書き方を推奨します: ``:param type name: description``.
@@ -519,7 +519,7 @@ Release 1.0 (Jul 23, 2010)
       empty string now means "no suffix" instead of "default suffix", use
       ``None`` for "default suffix".
 
-* 設定:
+* Configuration:
 
   - :confval:`rst_prolog` 設定値を追加しました。
   - セクションの番号付けフォーマット指定の :confval:`html_secnumber_suffix` 設定値を追加しました。
@@ -573,7 +573,7 @@ Release 1.0 (Jul 23, 2010)
      - #322: Improved responsiveness of the search page by loading the
        search index asynchronously.
 
-* HTML出力:
+* HTML output:
 
   - インラインのroleはそのロール名のCSSクラス名が付くようになりました。このCSSクラス名を利用してデザインのカスタマイズを行うことが出来ます。ドメインのロールは二つのCSSクラス ``domain`` と ``domain-rolename`` が設定されます。
   - 同一ページ内への参照だけでなく、同一プロジェクト内への参照にはCSSクラス名 ``internal`` が付くようになりました。
@@ -600,7 +600,7 @@ Release 1.0 (Jul 23, 2010)
      - #200: Added :meth:`~sphinx.application.Sphinx.add_stylesheet`
        application API method.
 
-* Sphinx拡張API:
+* Extension API:
 
   - :event:`html-collect-pages` を追加しました。
   - :confval:`needs_sphinx` 設定値を追加し、 :meth:`~sphinx.application.Sphinx.require_sphinx` アプリケーションAPIメソッドを追加しました。
@@ -626,7 +626,7 @@ Release 1.0 (Jul 23, 2010)
      - Added ``alt`` option to :rst:dir:`graphviz` extension directives.
      - Added ``exclude`` argument to :func:`.autodoc.between`.
 
-* Sphinx拡張:
+* Extensions:
 
   - :mod:`~sphinx.ext.viewcode` 拡張を追加しました。
   - :mod:`~sphinx.ext.extlinks` 拡張を追加しました。
@@ -1915,4 +1915,3 @@ Release 0.1.61611 (Mar 21, 2008)
 
 * First public release.
 
->>>>>>> other

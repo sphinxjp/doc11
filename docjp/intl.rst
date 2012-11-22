@@ -101,3 +101,4 @@ gettextの :program:`msgfmt` コマンドを使い、バイナリ形式で効率
 .. [1] このツール群の詳細については、 `GNU gettextユーティリティ
        <http://www.gnu.org/software/gettext/manual/gettext.html#Introduction>`_
        を参照してください。
+.. [2] Because nobody expects the Spanish Inquisition!

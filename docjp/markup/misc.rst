@@ -74,11 +74,9 @@ docutilsは、ファイルの先頭付近のフィールドリストを "docinfo
    .. Identifies the author of the current section.  The argument should include
       the author's name such that it can be used for presentation and email
       address.  The domain name portion of the address should be lower case.
+      Example:
 
    現在のセクションの著者名を指定します。引数には必ず、表示するための著者の名前と、電子メールのアドレスを入れます。アドレスのドメイン名の部分は小文字でなければなりません。
-
-   .. Example:
-
    サンプル::
 
      .. sectionauthor:: Guido van Rossum <guido@python.org>

@@ -201,6 +201,8 @@ setup関数
 
 * :meth:`~Sphinx.add_node` メソッドは、ビルドシステムに対して新しい\ **ノードクラス**\ を追加します。このメソッドはサポートする出力形式ごとにビジター関数を定義することができます。これらのビジター関数は新しいノードがフェーズ.4まで残っている場合に必要になります。\ ``todolist``\ はフェーズ.3までにすべて置き換えられてしまうため、ビジターを指定する必要はありません。
 
+  We need to create the two node classes ``todo`` and ``todolist`` later.
+
 .. * :meth:`~Sphinx.add_directive` adds a new *directive*, given by name and class.
 
      The handler functions are created later.

@@ -23,10 +23,13 @@
 
    .. method:: get_relative_uri(from_, to, typ=None)
 
-      .. Return a relative URI between two source filenames. May raise environment.
-         NoUri if there’s no way to return a sensible URI.
+      .. Return a relative URI between two source filenames.
 
-      2つのソースファイル間の相対URIを返します。URIを返す方法がない場合には、 environment.NoUri 例外を投げる場合があります。
+         May raise environment.NoUri if there’s no way to return a sensible URI.
+
+      2つのソースファイル間の相対URIを返します。
+
+      URIを返す方法がない場合には、 environment.NoUri 例外を投げる場合があります。
 
    .. method:: build_all
 
@@ -48,9 +51,13 @@
 
    .. method:: build(docnames, summary=None, method='update')
 
-      .. Main build method. First updates the environment, and then calls write().
+      .. Main build method.
 
-      メインのビルド用メソッドです。最初に環境をアップデートしてから, write() を呼びます。
+         First updates the environment, and then calls write().
+
+      メインのビルド用メソッドです。
+
+      最初に環境をアップデートしてから, write() を呼びます。
 
    .. These methods can be overridden in concrete builder classes:
 
@@ -92,6 +99,10 @@
 
    .. method:: finish
 
-      .. Finish the building process. The default implementation does nothing.
+      .. Finish the building process.
 
-      ビルドプロセスの終了です。デフォルトの実装では何も呼び出されません。
+         The default implementation does nothing.
+
+      ビルドプロセスの終了です。
+
+      デフォルトの実装では何も呼び出されません。
