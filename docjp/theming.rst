@@ -217,6 +217,9 @@ Sphinxではテーマを選択することができます。
   - **codebgcolor** (CSSカラー): コードブロックの背景色です。
   - **codetextcolor** (CSSカラー): ハイライトスタイルを設定していない場合に使用される、コードブロックのデフォルトのテキストカラーです。
 
+  - **bodyfont** (CSS font-family): Font for normal text.
+  - **headfont** (CSS font-family): Font for headings.
+
 .. * **sphinxdoc** -- The theme used for this documentation.  It features a sidebar
      on the right side.  There are currently no options beyond *nosidebar*.
 

@@ -15,7 +15,6 @@ Sphinxを使用しているプロジェクト
    interesting examples.
 
 興味をもったサンプルを探しやすいように、いくつかのセクションに分けてリストしています。
-
 日本のページは、 `Sphinx-Users.jp <http://sphinx-users.jp/example.html>`_ でまとめています。
 
 .. Documentation using the default theme
@@ -26,7 +25,6 @@ Sphinxを使用しているプロジェクト
 
 * APSW: http://apsw.googlecode.com/svn/publish/index.html
 * ASE: https://wiki.fysik.dtu.dk/ase/
-* Blender: http://www.blender.org/documentation/250PythonDoc/
 * boostmpi: http://documen.tician.de/boostmpi/
 * Calibre: http://calibre.kovidgoyal.net/user_manual/
 * CodePy: http://documen.tician.de/codepy/
@@ -143,6 +141,7 @@ sphinxdocテーマを使用しているドキュメント
   http://www.florian-diesch.de/doc/python-und-glade/online/ (agogo)
 * sqlparse: http://python-sqlparse.googlecode.com/svn/docs/api/index.html
   (agogo)
+* libLAS: http://liblas.org/ (nature)
 
 
 .. Documentation using a custom theme/integrated in a site
@@ -151,8 +150,12 @@ sphinxdocテーマを使用しているドキュメント
 カスタムテーマを使用していたり、サイトに統合されているドキュメント
 ------------------------------------------------------------------
 
+* Blender: http://www.blender.org/documentation/250PythonDoc/
 * Blinker: http://discorporate.us/projects/Blinker/docs/
+* Classy: classy: http://classy.pocoo.org/
 * Django: http://docs.djangoproject.com/
+* Flask: http://flask.pocoo.org/docs/
+* Flask-OpenID: http://packages.python.org/Flask-OpenID/
 * GeoServer: http://docs.geoserver.org/
 * Glashammer: http://glashammer.org/
 * MirrorBrain: http://mirrorbrain.org/docs/
@@ -194,5 +197,5 @@ Sphinxを使って書かれた書籍
 --------------------------
 
 * The ``repoze.bfg`` Web Application Framework: 
-     http://www.amazon.com/repoze-bfg-Web-Application-Framework-Version/dp/0615345379
+  http://www.amazon.com/repoze-bfg-Web-Application-Framework-Version/dp/0615345379
 * A Theoretical Physics Reference book: http://theoretical-physics.net/

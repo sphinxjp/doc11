@@ -242,7 +242,7 @@ Epub情報
      included. This sometimes applies to appendixes, e.g. the glossary or
      the indices.  You can add them with the :confval:`epub_post_files` option.
 
- * ``toctree`` ディレクティブ外のファイルは、手動でインクルードしなければなりません。用語集、索引などのAppendixが、時々これに該当します。 :confval:`epub_post_files` オプションを使うと、これらのファイルを追加することができます。 
+* ``toctree`` ディレクティブ外のファイルは、手動でインクルードしなければなりません。用語集、索引などのAppendixが、時々これに該当します。 :confval:`epub_post_files` オプションを使うと、これらのファイルを追加することができます。 
 
 .. _Epubcheck: http://code.google.com/p/epubcheck/
 .. _Calibre: http://calibre-ebook.com/
@@ -354,8 +354,7 @@ Emacsで参照をどのように表示するかは、 ``Info-hide-note-reference
      following characters are replaced by spaces in these contexts: ``@``, ``{``,
      ``}``, ``.``, ``,``, and ``:``.
 
-- いくつかの文字はメニューのエントリーやクロスリファレンスの中でエスケープすることができません。以下の文字はスペースに置き換えられます: ``@``, ``{``,
-     ``}``, ``.``, ``,``, ``:``.
+- いくつかの文字はメニューのエントリーやクロスリファレンスの中でエスケープすることができません。以下の文字はスペースに置き換えられます: ``@``, ``{``, ``}``, ``.``, ``,``, ``:``.
 
 .. - In the HTML and Tex output, the word ``see`` is automatically inserted before
      all xrefs.

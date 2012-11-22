@@ -332,9 +332,7 @@
       them using custom roles instead of generic ones (like :rst:role:`ref`).  Example
       call:
 
-   これは、セマンティックのターゲットをソースに追加して、カスタムのロールを使用して参照することができるということを意味しています。ただし、 :rst:role:`ref` のような一般的なものは使用することができません。
-
-   サンプル::
+   これは、セマンティックのターゲットをソースに追加して、カスタムのロールを使用して参照することができるということを意味しています。ただし、 :rst:role:`ref` のような一般的なものは使用することができません。サンプル::
 
       app.add_crossref_type('topic', 'topic', 'single: %s', docutils.nodes.emphasis)
 
@@ -805,6 +803,7 @@ Sphinxコアイベント
              - -1: object should not show up in search at all
 
         * `name`     -- 完全な修飾付きの名前
+        * `dispname` -- name to display when searching/linking
         * `type`     -- オブジェクトの種類。 ``self.object_types`` のキー
         * `docname`  -- そのオブジェクトが発見されたドキュメント名
         * `anchor`   -- そのオブジェクトのアンカー名
@@ -814,6 +813,14 @@ Sphinxコアイベント
           - 0: 重要なオブジェクト(出フィルとの優先順位のオブジェクトの前に置かれる)
           - 2: 重要でないオブジェクト(全文検索マッチの後に置かれる)
           - -1: 検索結果に出すべきではないオブジェクト
+
+   .. method:: get_type_name(self, type, primary=False)
+
+      Return full name for given ObjType.
+
+   .. method:: process_doc(self, env, docname, documente
+
+      Process a document after it is read by the environment.
 
    .. method:: resolve_xref(env, fromdocname, builder, typ, target, node, contnode)
 
@@ -844,6 +851,10 @@ Sphinxコアイベント
          role its full name ('domain:name') as the first argument.
 
       登録された完全な名前を持つロール('ドメイン:名前')を最初の引数として与える、ロールアダプター関数を返します。
+
+   .. attribute:: dangling_warnings
+
+      role name -> a warning message if reference is missing
 
    .. attribute:: data_version
 

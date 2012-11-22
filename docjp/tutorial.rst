@@ -255,7 +255,7 @@ Pythonドメインはデフォルトのドメインとなるので、それに�
 
       ...
 
-.. does the same job if you keep the default setting for the default domain.
+does the same job if you keep the default setting for the default domain.
 
 .. There are several more directives for documenting other types of Python objects,
    for example :dir:`py:class` or :dir:`py:method`.  There is also a

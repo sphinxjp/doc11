@@ -204,17 +204,30 @@ Sphinxの *basic* テーマでは2つのブロックを持つ基本となるテ�
 `sidebarlogo`
     サイドバーの中にロゴを置くための位置を示すブロックです。もしもサイドバーの最上段に何かコンテンツを置きたい場合には、このブロックをオーバーライドします。
 
+`footer`
+    The block for the footer div.  If you want a custom footer or markup before
+    or after it, override this one.
+
+The following four blocks are *only* used for pages that do not have assigned a
+list of custom sidebars in the :confval:`html_sidebars` config value.  Their use
+is deprecated in favor of separate sidebar templates, which can be included via
+:confval:`html_sidebars`.
+
 .. `sidebartoc`
     The table of contents within the sidebar.
 
 `sidebartoc`
     サイドバー内部の目次です。
 
+    .. deprecated:: 1.0
+
 .. `sidebarrel`
     The relation links (previous, next document) within the sidebar.
 
 `sidebarrel`
     サイドバー内の関連リンク(前後のトピックへのリンク)です。
+
+    .. deprecated:: 1.0
 
 .. `sidebarsourcelink`
     The "Show source" link within the sidebar (normally only shown if this is
@@ -223,6 +236,8 @@ Sphinxの *basic* テーマでは2つのブロックを持つ基本となるテ�
 `sidebarsourcelink`
     サイドバー内の "ソースコードを表示" へのリンクです。通常は設定の :confval:`html_show_sourcelink` が有効になっている時にだけ表示されます。
 
+    .. deprecated:: 1.0
+
 .. `sidebarsearch`
     The search box within the sidebar.  Override this if you want to place some
     content at the bottom of the sidebar.
@@ -230,12 +245,8 @@ Sphinxの *basic* テーマでは2つのブロックを持つ基本となるテ�
 `sidebarsearch`
     サイドバー内の検索ボックスです。いくつかのコンテンツをサイドバーの下部に追加したい場合には、このブロックをオーバーライドします。
 
-.. `footer`
-    The block for the footer div.  If you want a custom footer or markup before
-    or after it, override this one.
+    .. deprecated:: 1.0
 
-`footer`
-    フッターのブロックです。フッターをカスタマイズしたり、フッターの前後にマークアップを追加したりしたい時には、このブロックをオーバーライドします。
 
 
 .. Configuration Variables

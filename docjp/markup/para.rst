@@ -124,9 +124,6 @@
    :rst:dir:`seealso` ディレクティブはサブセクションの直前のセクションに置かれることが多いです。HTMLアウトプットにおいては、メインのテキストの流れから離されて、箱に囲まれて表示されます。
 
    .. The content of the :rst:dir:`seealso` directive should be a reST definition list.
-
-   :rst:dir:`seealso` の中身は、reSTの定義リストを使用しなければなりません。
-
    .. Example:
 
       .. seealso::
@@ -137,6 +134,7 @@
          `GNU tar manual, Basic Tar Format <http://link>`_
             Documentation for tar archive files, including GNU tar extensions.
 
+   :rst:dir:`seealso` の中身は、reSTの定義リストを使用しなければなりません。
    サンプル::
 
       .. seealso::
@@ -262,10 +260,6 @@
       definitions.  The definitions will then be referencable with the
       :rst:role:`term` role.  Example:
 
-   どのディレクティブは、用語と定義が一緒になった、マークアップのようなreST定義リストを含みます。定義は :rst:role:`term` というロールを利用することで参照が可能になります:
-
-   .. .. Example:
-
       .. glossary::
 
          environment
@@ -278,6 +272,7 @@
             The directory which, including its subdirectories, contains all 
             source files for one Sphinx project.
 
+   どのディレクティブは、用語と定義が一緒になった、マークアップのようなreST定義リストを含みます。定義は :rst:role:`term` というロールを利用することで参照が可能になります。
    サンプル::
 
       .. glossary::

@@ -86,7 +86,6 @@ HTMLでは、ネイティブでは数式の記法はサポートされていま�
       yourself that the math is properly set up.  For example:
 
    ``nowrap`` オプションを使用することで、math環境で自動的にラッピングされるのを止めることができます。このオプションを指定した場合には、自分自身で適切な設定を行う必要があります。
-
    サンプル::
 
       .. math::
@@ -140,7 +139,6 @@ HTMLでは、ネイティブでは数式の記法はサポートされていま�
 .. rst:role:: eq
 
    数式のラベルに対する、クロスリファレンスを行うためのロールです。この機能は、現在では同じドキュメント内でのみ動作します。
-
    サンプル::
 
       .. math:: e^{i\pi} + 1 = 0
@@ -364,12 +362,12 @@ MathJax(と必要なフォント)はとても大きいため、これはSphinx�
    .. The path to the JavaScript file to include in the HTML files in order to load
       JSMath.  There is no default.
 
-   JavaScriptファイルをHTMLファイルに取り込み、JSMathをロードするために必要なオプションです。パスを設定します。デフォルト値はありません。
+   HTMLにJSMathをロードして読み込ませるための、JavaScriptファイルへのパスを設定します。デフォルト値はありません。
 
    .. The path can be absolute or relative; if it is relative, it is relative to
       the ``_static`` directory of the built docs.
 
-   パスは絶対パスでも、相対パスでもどちらでも大丈夫です。相対パスの場合には、ビルド済みのドキュメントの ``_static`` ディレクトリからのが相対パスになります。
+   パスは、絶対パスでも相対パスでも指定ができます。相対パスの場合、ビルドした出力の ``_static`` ディレクトリへのパスになっています。
 
    .. For example, if you put JSMath into the static path of the Sphinx docs, this
       value would be ``jsMath/easy/load.js``.  If you host more than one

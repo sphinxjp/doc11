@@ -69,7 +69,7 @@ Sphinxドメイン
    flag ``:noindex:``.  An example using a Python domain directive:
 
 
-ほとんどのドメインは、いくつかの :dfn:`object description directives` を提供しています。これを使って、モジュールが提供する特定のオブジェクトについて説明をしていきます。それぞれのディレクティブでは、何について説明しているか、説明すべき内容などの基本情報のためのフォーマットや統一のルールを定めています。基本的なスタイルのディレクティブは、全体の索引に、説明対象へのリンクを追加しますが、もし索引に追加したくなければ、ディレクティブのオプションフラグに ``:noindex:`` を追加します。例えば、Pythonのドメインのディレクティブの場合には、次のようになります。
+ほとんどのドメインは、いくつかの :dfn:`object description directives` を提供しています。これを使って、モジュールが提供する特定のオブジェクトについて説明をしていきます。それぞれのディレクティブでは、何について説明しているか、説明すべき内容などの基本情報のためのフォーマットや統一のルールを定めています。基本的なスタイルのディレクティブは、全体の索引に、説明対象へのリンクを追加しますが、もし索引に追加したくなければ、ディレクティブのオプションフラグに ``:noindex:`` を追加します。例えば、Pythonのドメインのディレクティブの場合には、次のようになります。例::
 
    .. py:function:: spam(eggs)
                     ham(eggs)
@@ -410,12 +410,13 @@ Pythonドメイン(**py**)では、モジュールの説明のために、次の
          Set name of the decorated function to *name*.
 
    ::
+
       .. py:decorator:: removename
 
          デコレートされた関数の名前を削除します。
 
       .. py:decorator:: setnewname(name)
-  
+
          デコレートされている関数の名前を **name** に設定します。
 
    .. There is no ``py:deco`` role to link to a decorator that is marked up with
@@ -954,6 +955,15 @@ C++ドメインは(**cpp**)は、C++プロジェクトのドキュメント作�
 
    C++オブジェクトへの参照です。完全なシグニチャを指定することができます。オーバーロードされた関数へのリンクを張る場合には、完全なシグニチャを指定する必要があります。
 
+   .. note::
+
+      Sphinx' syntax to give references a custom title can interfere with
+      linking to template classes, if nothing follows the closing angle
+      bracket, i.e. if the link looks like this: ``:cpp:class:`MyClass<T>```.
+      This is interpreted as a link to ``T`` with a title of ``MyClass``.
+      In this case, please escape the opening angle bracket with a backslash,
+      like this: ``:cpp:class:`MyClass\<T>```.
+
 ..
    .. admonition:: Note on References
 
@@ -1257,11 +1267,7 @@ reStructuredTextドメイン(**rst**)は、次のようなディレクティブ�
 
    .. Describes a reST directive.  The *name* can be a single directive name or
       actual directive syntax (`..` prefix and `::` suffix) with arguments that
-      will be rendered differently. 
-
-   reSTディレクティブの説明をします。 *name* には単独のディレクティブ名か、引数付きの実際のディレクティブの文法(`..` を前に付けたり、後ろに `::` を付けたり)で記述をします。
-
-   .. For example
+      will be rendered differently.  For example::
 
       .. rst:directive:: foo
 
@@ -1271,7 +1277,7 @@ reStructuredTextドメイン(**rst**)は、次のようなディレクティブ�
 
          Bar description.
 
-   サンプル::
+   reSTディレクティブの説明をします。 *name* には単独のディレクティブ名か、引数付きの実際のディレクティブの文法(`..` を前に付けたり、後ろに `::` を付けたり)で記述をします。例::
 
       .. rst:directive:: foo
 
@@ -1305,17 +1311,13 @@ reStructuredTextドメイン(**rst**)は、次のようなディレクティブ�
 
 .. rst:directive:: .. rst:role:: name
 
-   .. Describes a reST role.  
-
-   reSTのロールの説明をします。
-
-   .. For example:
+   .. Describes a reST role.  For example:
 
       .. rst:role:: foo
 
          Foo description.
 
-   サンプル::
+   reSTのロールの説明をします。 例::
 
       .. rst:role:: foo
 
@@ -1338,7 +1340,7 @@ reStructuredTextドメイン(**rst**)は、次のようなディレクティブ�
 
 .. _rst-roles:
 
-説明したオブジェクトを参照するために、次のようなロールが提供されます:
+このドメインでは、オブジェクトの説明を参照する、次のようなロールが提供されています:
 
 .. rst:role:: rst:dir
               rst:role
