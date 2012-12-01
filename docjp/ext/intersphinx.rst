@@ -139,7 +139,7 @@ Sphinx間リンクを使用する場合には、 :confval:`extensions` 設定値
 
    2番目のサンプルは、2つ目のタプルの要素に ``None`` ではない値を与える場合です::
 
-      intersphinx_mapping = {'python': ('http://docs.python.org/3.2': 
+      intersphinx_mapping = {'python': ('http://docs.python.org/3.2',
                                         'python-inv.txt')}
 
    .. This will read the inventory from :file:`python-inv.txt` in the source
