@@ -596,29 +596,43 @@
    * ``zh_CN`` -- 簡体字中国語
    * ``zh_TW`` -- 繁体字中国語
 
-
 .. confval:: locale_dirs
 
    .. versionadded:: 0.5
 
-   .. Directories in which to search for additional Sphinx message catalogs (see
+   .. Directories in which to search for additional message catalogs (see
       :confval:`language`), relative to the source directory.  The directories on
       this path are searched by the standard :mod:`gettext` module.
 
-      Internal messages are fetched from a text domain of ``sphinx``; so if you 
+      Internal messages are fetched from a text domain of ``sphinx``; so if you
       add the directory :file:`./locale` to this settting, the message catalogs
       (compiled from ``.po`` format using :program:`msgfmt`) must be in
-      :file:`./locale/{language}/LC_MESSAGES/sphinx.mo`. The text domain of 
-      individual documents depends on their docname if they are top-level project
-      files and on their base directory otherwise.
+      :file:`./locale/{language}/LC_MESSAGES/sphinx.mo`.  The text domain of
+      individual documents depends on :confval:`gettext_compact`.
+
 
    追加のSphinxメッセージカタログ( :confval:`language` 参照)を探索するディレクトリを指定します。ここで指定されたパスが、標準の :mod:`gettext` モジュールによって検索されます。
 
-   内部メッセージは、 ``sphinx`` ドメインから検索されます。 :file:`./locale` を設定ファイルに指定した場合には、 :file:`./locale/{language}/LC_MESSAGES/sphinx.mo` という場所にメッセージカタログを置かなければなりません(:program:`msgfmt` を使って、 ``.po`` にコンパイルする)。個々のドキュメントのテキストドメインは、一番上のディレクトリにあるファイルであればドキュメント名が、ディレクトリ以下に含まれる場合には、一番上のディレクトリの名前が使用されます。
+   内部メッセージは、 ``sphinx`` ドメインから検索されます。 :file:`./locale` を設定ファイルに指定した場合には、 :file:`./locale/{language}/LC_MESSAGES/sphinx.mo` という場所にメッセージカタログを置かなければなりません(:program:`msgfmt` を使って、 ``.po`` にコンパイルする)。個々のドキュメントを別々のドメイン（ファイル）となるかどうかは :confval:`gettext_compact` によって決まります。
 
    .. The default is ``[]``.
 
    デフォルトは ``[]`` です。
+
+.. confval:: gettext_compact
+
+   .. versionadded:: 1.1
+
+   .. If true, a document's text domain is its docname if it is a top-level
+      project file and its very base directory otherwise.
+
+      By default, the document ``markup/code.rst`` ends up in the ``markup`` text
+      domain.  With this option set to ``False``, it is ``markup/code``.
+
+   True なら、ドキュメントがトップレベルのプロジェクトファイルだった場合はドキュメントのテキストドメインはそのドキュメント名が使われ、サブディレクトリ以下の場合はサブディレクトリ名が使われます。
+
+   デフォルトでは  ``markup/code.rst`` というドキュメントは ``markup`` テキストドメインとなります。この設定が ``False`` の場合、 ``markup/code`` となります。
+
 
 
 .. _html-options:
