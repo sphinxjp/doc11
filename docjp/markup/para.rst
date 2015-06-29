@@ -272,7 +272,7 @@
             The directory which, including its subdirectories, contains all 
             source files for one Sphinx project.
 
-   どのディレクティブは、用語と定義が一緒になった、マークアップのようなreST定義リストを含みます。定義は :rst:role:`term` というロールを利用することで参照が可能になります。
+   このディレクティブは、用語と定義が一緒になった、マークアップのようなreST定義リストを含みます。定義は :rst:role:`term` というロールを利用することで参照が可能になります。
    サンプル::
 
       .. glossary::
